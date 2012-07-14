@@ -5,7 +5,15 @@ require "redstone_bot/pack"
 
 module RedstoneBot
   ProtocolVersion = 29
+      
+  class UnknownPacketError < StandardError
+    attr_reader :packet_type
 
+    def initialize(type)
+      @packet_type = type
+    end
+  end
+  
   class Packet
     include DataEncoder
   
@@ -25,11 +33,11 @@ module RedstoneBot
     def self.type
       @packet_type
     end
-
+    
     def self.receive(socket)
       type = socket.read_byte
       packet_class = packet_types[type]
-      raise "WHAT'S %02X PRECIOUSSS?" % [type] if packet_class.nil?
+      raise UnknownPacketError.new(type) if packet_class.nil?
       return packet_class.receive_data(socket)
     end
     
@@ -116,6 +124,14 @@ module RedstoneBot
   class Packet::ChatMessage < Packet
     packet_type 0x03
     attr_reader :data
+    
+    def initialize(data)
+      @data = data
+    end
+    
+    def encode_data
+      string(data)
+    end
   end
   
   class Packet::TimeUpdate < Packet

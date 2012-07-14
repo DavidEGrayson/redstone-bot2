@@ -6,6 +6,8 @@ require 'socket'
 require 'io/wait'
 require 'thread'
 
+Thread.abort_on_exception = true
+
 module RedstoneBot
   class Client
     include Synchronizer
@@ -51,11 +53,16 @@ module RedstoneBot
       
       # Receive packets
       Thread.new do
-        while true
-          packet = receive_packet
-          synchronize do
-            notify_listeners packet
+        begin
+          while true
+            packet = receive_packet
+            synchronize do
+              notify_listeners packet
+            end
           end
+        rescue UnknownPacketError => e
+          chat "WHAT'S 0x%02X PRECIOUSSS?" % [e.packet_type]
+          exit 1
         end
       end
       
@@ -72,6 +79,10 @@ module RedstoneBot
     
     def send_packet(packet)
       socket.write packet.encode
+    end
+    
+    def chat(message)
+      send_packet Packet::ChatMessage.new(message) 
     end
   end
 end
