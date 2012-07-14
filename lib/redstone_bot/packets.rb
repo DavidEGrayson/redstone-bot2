@@ -91,6 +91,7 @@ module RedstoneBot
     def receive_data(socket)
       @entity_id = socket.read_int
       @level_type = socket.read_string
+      socket.read_string
       @game_mode = socket.read_int
       @dimension = socket.read_int
       @difficulty = socket.read_byte
@@ -139,9 +140,19 @@ module RedstoneBot
     attr_reader :ticks
   end
   
+  class Packet::SpawnPosition < Packet
+    packet_type 0x06
+    attr_reader :x, :y, :z
+    
+    def receive_data(socket)
+      @x = socket.read_int
+      @y = socket.read_int
+      @z = socket.read_int
+    end
+  end
+  
   class Packet::PlayerPositionAndLook < Packet
     packet_type 0x0D
-    
-    
   end
+  
 end

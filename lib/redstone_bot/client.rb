@@ -56,9 +56,8 @@ module RedstoneBot
         begin
           while true
             packet = receive_packet
-            synchronize do
-              notify_listeners packet
-            end
+            puts packet.inspect
+            notify_listeners packet
           end
         rescue UnknownPacketError => e
           error_message = "WHAT'S 0x%02X PRECIOUSSS?" % [e.packet_type]
