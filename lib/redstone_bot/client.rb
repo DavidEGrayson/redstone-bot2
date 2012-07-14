@@ -16,7 +16,7 @@ module RedstoneBot
     attr_reader :username
     attr_reader :hostname
     attr_reader :port
-    attr_reader :entity_id
+    attr_reader :eid
     
     def initialize(username, hostname, port)
       @username = username
@@ -50,7 +50,7 @@ module RedstoneBot
       receive_packet
       
       send_packet Packet::LoginRequest.new(username)
-      @entity_id = receive_packet.entity_id
+      @eid = receive_packet.eid
       
       @connected = true
       notify_listeners :start

@@ -68,6 +68,19 @@ module RedstoneBot
 
   class Packet::KeepAlive < Packet
     packet_type 0x00
+    attr_accessor :id
+    
+    def initialize(id=0)
+      @id = id
+    end
+    
+    def receive_data(socket)
+      @id = socket.read_int
+    end
+    
+    def encode_data(socket)
+      int(@id)
+    end
   end
   
   class Packet::LoginRequest < Packet
@@ -157,9 +170,9 @@ module RedstoneBot
     
     def receive_data(socket)
       @eid = socket.read_int
-      @slot = read_short
-      @item_id = read_short
-      @damage = read_short
+      @slot = socket.read_short
+      @item_id = socket.read_short
+      @damage = socket.read_short
     end
   end
   
@@ -204,8 +217,47 @@ module RedstoneBot
     end
   end
   
+  class Packet::Player < Packet
+    packet_type 0x0A
+    attr_reader :on_ground
+  end
+  
+  class Packet::PlayerPosition < Packet
+    packet_type 0x0B
+    attr_reader :x, :y, :z, :stance, :on_ground
+  end
+  
+  class Packet::PlayerLook < Packet
+    packet_type 0x0C
+    attr_reader :yaw, :pitch, :on_ground
+  end
+  
   class Packet::PlayerPositionAndLook < Packet
     packet_type 0x0D
+    attr_reader :x, :stance, :y, :z, :yaw, :pitch, :on_ground
+    
+    def initialize(x, y, z, stance, yaw, pitch, on_ground)
+      @x, @y, @z = x, y, z
+      @stance = stance
+      @yaw, @pitch = yaw, pitch
+      @on_ground = on_ground
+    end
+    
+    def receive_data(socket)
+      @x = socket.read_double
+      @stance = socket.read_double
+      @y = socket.read_double
+      @z = socket.read_double
+      @yaw = socket.read_float
+      @pitch = socket.read_float
+      @on_ground = socket.read_byte
+    end
+    
+    def encode_data
+      puts self.inspect
+      double(x) + double(y) + double(stance) + double(z) +
+      float(yaw) + float(pitch) + bool(on_ground)
+    end
   end
   
   class Packet::UseBed < Packet
@@ -310,7 +362,7 @@ module RedstoneBot
     end
   end
   
-  def Packet::MobSpawn < Packet
+  class Packet::MobSpawn < Packet
     packet_type 0x18
     attr_reader :eid
     attr_reader :type
@@ -370,9 +422,9 @@ module RedstoneBot
     
     def receive_data(socket)
       @eid = socket.read_int
-      @vx = socket.read_int
-      @vy = socket.read_int
-      @vz = socket.read_int      
+      @vx = socket.read_short
+      @vy = socket.read_short
+      @vz = socket.read_short
     end
   end
   
@@ -476,7 +528,7 @@ module RedstoneBot
   end
   
   class Packet::Experience < Packet
-    packet_id 0x2B
+    packet_type 0x2B
     attr_reader :experience_bar, :level, :total_experience
     
     def receive_data(socket)
@@ -487,7 +539,7 @@ module RedstoneBot
   end
   
   class Packet::PreChunk < Packet
-    packet_id 0x32
+    packet_type 0x32
     attr_reader :x, :z, :mode
     
     def receive_data(socket)
@@ -498,7 +550,7 @@ module RedstoneBot
   end
   
   class Packet::MapChunk < Packet
-    packet_id 0x33
+    packet_type 0x33
     attr_reader :x, :z
     attr_reader :ground_up_contiguous
     attr_reader :primary_bit_map, :add_bit_map
@@ -517,7 +569,7 @@ module RedstoneBot
   end
   
   class Packet::MultiBlockChange < Packet
-    packet_id 0x34
+    packet_type 0x34
     attr_reader :chunk_x, :chunk_z
     attr_reader :count
     attr_reader :data
@@ -531,7 +583,7 @@ module RedstoneBot
   end
   
   class Packet::BlockChange < Packet
-    packet_id 0x35
+    packet_type 0x35
     attr_reader :x, :y, :z
     attr_reader :block_type, :block_metadata
     
@@ -545,13 +597,13 @@ module RedstoneBot
   end
   
   class Packet::BlockAction < Packet
-    packet_id 0x36
-    attr_reader :x, ;y, :z
+    packet_type 0x36
+    attr_reader :x, :y, :z
     #attr_reader :byte_1, :byte_2
     
     def receive_data(socket) 
       @x = socket.read_int
-      @y = socket.read_byte
+      @y = socket.read_short
       @z = socket.read_int
       @byte_1 = socket.read_byte
       @byte_2 = socket.read_byte
@@ -559,7 +611,7 @@ module RedstoneBot
   end
   
   class Packet::Explosion < Packet
-    packet_id 0x3C
+    packet_type 0x3C
     attr_reader :x, :y, :z
     attr_reader :radius_maybe, :records
     
@@ -576,7 +628,7 @@ module RedstoneBot
   end
   
   class Packet::SoundOrParticleEffect < Packet
-    packet_id 0x3D
+    packet_type 0x3D
     attr_reader :effect_id, :x, :y, :z, :data
     
     def receive_data(socket)
@@ -589,7 +641,7 @@ module RedstoneBot
   end
   
   class Packet::NewOrInvalidState < Packet
-    packet_id 0x46
+    packet_type 0x46
     attr_reader :reason, :game_mode
     
     def receive_data(socket)
@@ -599,8 +651,8 @@ module RedstoneBot
   end
   
   class Packet::Thunderbolt < Packet
-    packet_id 0x47
-    attr_id :eid, :x, :y, :z
+    packet_type 0x47
+    attr_accessor :eid, :x, :y, :z
     
     def receive_data(socket)
       @eid = socket.read_int
@@ -612,7 +664,7 @@ module RedstoneBot
   end
   
   class Packet::SetSlot < Packet
-    packet_id 0x67
+    packet_type 0x67
     attr_reader :window_id, :slot, :slot_data
     
     def receive_data(socket)
@@ -623,7 +675,7 @@ module RedstoneBot
   end
   
   class Packet::WindowItems < Packet
-    packet_id 0x68
+    packet_type 0x68
     attr_reader :window_id, :count, :slots_data
     
     def receive_data(socket)
@@ -636,7 +688,7 @@ module RedstoneBot
   end
       
   class Packet::UpdateSign < Packet
-    packet_id 0x82
+    packet_type 0x82
     attr_reader :x, :y, :z
     attr_reader :text
     
@@ -649,7 +701,7 @@ module RedstoneBot
   end
   
   class Packet::UpdateTileEntity < Packet
-    packet_id 0x84
+    packet_type 0x84
     attr_reader :x, :y, :z
     attr_reader :action, :custom1, :custom2, :custom3
     
@@ -666,7 +718,7 @@ module RedstoneBot
   end
   
   class Packet::IncrementStatistic < Packet
-    packet_id 0xC8
+    packet_type 0xC8
     attr_reader :statistic_id, :amount
     
     def receive_data(socket)
@@ -676,7 +728,7 @@ module RedstoneBot
   end
   
   class Packet::PlayerListItem < Packet
-    packet_id 0xC9
+    packet_type 0xC9
     attr_reader :player_name, :online, :ping
     
     def receive_data(socket)
@@ -702,9 +754,8 @@ module RedstoneBot
     end
   end
   
-  class Packet::Disconnect
+  class Packet::Disconnect < Packet
     packet_type 0xFF
-    
     attr_reader :reason
     
     def receive_data(socket)
