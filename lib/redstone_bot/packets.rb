@@ -78,7 +78,7 @@ module RedstoneBot
       @id = socket.read_int
     end
     
-    def encode_data(socket)
+    def encode_data
       int(@id)
     end
   end
@@ -138,7 +138,6 @@ module RedstoneBot
     end
   end
   
-  # TODO: extract meaningful data from the chat string and make many subclasses of ChatMessage
   class Packet::ChatMessage < Packet
     packet_type 0x03
     attr_reader :data
@@ -149,6 +148,11 @@ module RedstoneBot
     
     def encode_data
       string(data)
+    end
+    
+    def receive_data(socket)
+      # TODO: extract meaningful data from the chat string and make many subclasses of ChatMessage
+      @data = socket.read_string
     end
   end
   
@@ -254,7 +258,6 @@ module RedstoneBot
     end
     
     def encode_data
-      puts self.inspect
       double(x) + double(y) + double(stance) + double(z) +
       float(yaw) + float(pitch) + bool(on_ground)
     end
@@ -523,7 +526,7 @@ module RedstoneBot
     
     def receive_data(socket)
       @eid = socket.read_int
-      @metadata = socekt.read_metadata
+      @metadata = socket.read_metadata
     end
   end
   
@@ -635,7 +638,7 @@ module RedstoneBot
       @effect_id = socket.read_int
       @x = socket.read_int
       @y = socket.read_byte
-      @z = socekt.read_int
+      @z = socket.read_int
       @data = socket.read_int
     end
   end
@@ -713,7 +716,6 @@ module RedstoneBot
       @custom1 = socket.read_int
       @custom2 = socket.read_int
       @custom3 = socket.read_int
-      @custom4 = socket.read_int
     end
   end
   

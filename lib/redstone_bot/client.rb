@@ -60,7 +60,7 @@ module RedstoneBot
         begin
           while true
             packet = receive_packet
-            puts packet.inspect   # tmphax
+            #puts packet.inspect   # tmphax
             notify_listeners packet
           end
         rescue UnknownPacketError => e
@@ -72,7 +72,7 @@ module RedstoneBot
       
       # Send keepalives
       regularly(1) do
-        send_packet Packet::KeepAlive
+        send_packet Packet::KeepAlive.new
       end
       
     end
