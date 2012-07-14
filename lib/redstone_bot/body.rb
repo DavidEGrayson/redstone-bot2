@@ -7,6 +7,8 @@ module RedstoneBot
           when Packet::PlayerPositionAndLook
             @position, @look = p.position, p.look
             @regular_update_thread ||= start_regular_update_thread
+          when Packet::Respawn
+            raise "TODO: handle respawn plz"
         end
       end
     end

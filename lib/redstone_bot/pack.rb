@@ -1,5 +1,9 @@
 module RedstoneBot
   module DataReader
+    def read_bool
+      read_byte != 0
+    end
+  
     def read_byte
       read(1).unpack('C')[0]   # TODO: just do read(1).ord
     end

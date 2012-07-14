@@ -49,7 +49,7 @@ module RedstoneBot
     end
     
     def receive_data(socket)
-      raise "receive_data instance method or class method must be implemented in #{self.name}"
+      raise "receive_data instance method or class method must be implemented in #{self.class.name}"
     end
     
     # Only called on a subclass
@@ -66,9 +66,13 @@ module RedstoneBot
     end
   end
 
+  class Packet::KeepAlive < Packet
+    packet_type 0x00
+  end
+  
   class Packet::LoginRequest < Packet
     packet_type 0x01
-    attr_reader :entity_id
+    attr_reader :eid
     attr_reader :username
     attr_reader :level_type  # "default" => :default, "SUPERFLAT" => :superflat
     attr_reader :server_mode    # 0 => :survival, 1 => :creative
@@ -89,7 +93,7 @@ module RedstoneBot
     end
     
     def receive_data(socket)
-      @entity_id = socket.read_int
+      @eid = socket.read_int
       @level_type = socket.read_string
       socket.read_string
       @game_mode = socket.read_int
@@ -138,6 +142,25 @@ module RedstoneBot
   class Packet::TimeUpdate < Packet
     packet_type 0x04
     attr_reader :ticks
+    
+    def receive_data(socket)
+      @ticks = socket.read_long
+    end
+  end
+  
+  class Packet::EntityEquipment < Packet
+    packet_type 0x05
+    attr_reader :eid
+    attr_reader :slot
+    attr_reader :item_id
+    attr_reader :damage
+    
+    def receive_data(socket)
+      @eid = socket.read_int
+      @slot = read_short
+      @item_id = read_short
+      @damage = read_short
+    end
   end
   
   class Packet::SpawnPosition < Packet
@@ -151,8 +174,542 @@ module RedstoneBot
     end
   end
   
+  class Packet::UpdateHealth < Packet
+    packet_type 0x08
+    attr_reader :health
+    attr_reader :food
+    attr_reader :food_saturation
+    
+    def receive_data(socket)
+      @health = socket.read_short
+      @food = socket.read_short
+      @food_saturation = socket.read_float
+    end
+  end
+  
+  class Packet::Respawn < Packet
+    packet_type 0x09
+    attr_reader :dimension
+    attr_reader :difficulty
+    attr_reader :game_mode
+    attr_reader :world_height
+    attr_reader :level_type
+    
+    def receive_data(socket)
+      @dimension = socket.read_int
+      @difficulty = socket.read_byte
+      @game_mode = socket.read_byte
+      @world_height = socket.read_short
+      @level_type = socket.read_string
+    end
+  end
+  
   class Packet::PlayerPositionAndLook < Packet
     packet_type 0x0D
+  end
+  
+  class Packet::UseBed < Packet
+    packet_type 0x11
+    attr_reader :eid
+    attr_reader :x, :y, :z
+    
+    def receive_data(socket)
+      @eid = socket.read_int
+      socket.read_byte
+      @x = socket.read_int
+      @y = socket.read_int
+      @z = socket.read_int
+    end
+  end
+  
+  class Packet::Animation < Packet
+    packet_type 0x12
+    attr_reader :eid
+    attr_reader :animation
+  
+    def receive_data(socket)
+      @eid = socket.read_int
+      @animation = socket.read_byte
+    end
+  end
+  
+  class Packet::NamedEntitySpawn < Packet
+    packet_type 0x14
+    attr_reader :eid
+    attr_reader :player_name
+    attr_reader :x, :y, :z
+    attr_reader :rotation, :pitch
+    attr_reader :current_item
+    
+    def receive_data(socket)
+      @eid = socket.read_int
+      @player_name = socket.read_string
+      @x = socket.read_int
+      @y = socket.read_int
+      @z = socket.read_int
+      @rotation = socket.read_byte
+      @pitch = socket.read_byte
+      @current_item = socket.read_short
+    end
+  end
+  
+  class Packet::PickupSpawn < Packet
+    packet_type 0x15
+    attr_reader :eid
+    attr_reader :item
+    attr_reader :count
+    attr_reader :damage
+    attr_reader :x, :y, :z
+    attr_reader :rotation, :pitch, :roll
+    
+    def receive_data(socket)
+      @eid = socket.read_int
+      @item = socket.read_short
+      @count = socket.read_byte
+      @damage = socket.read_short
+      @x = socket.read_int
+      @y = socket.read_int
+      @z = socket.read_int
+      @rotation = socket.read_byte
+      @pitch = socket.read_byte
+      @roll = socket.read_byte
+    end
+  end
+  
+  class Packet::CollectItem < Packet
+    packet_type 0x16
+    attr_reader :collected_eid
+    attr_reader :collector_eid
+    
+    def receive_data(socket)
+      @collected_eid = socket.read_int
+      @collector_eid = socket.read_int 
+    end
+  end
+  
+  class Packet::AddObject < Packet  # includes vehicles
+    packet_type 0x17
+    attr_reader :eid
+    attr_reader :type
+    attr_reader :x, :y, :z
+    attr_reader :fireball_thrower_eid
+    attr_reader :fireball_speed_x, :fireball_speed_y, :fireball_speed_z
+  
+    def receive_data(socket)
+      @eid = socket.read_int
+      @type = socket.read_byte
+      @x = socket.read_int
+      @y = socket.read_int
+      @z = socket.read_int
+      @fireball_thrower_eid = socket.read_int
+      if @fireball_thrower_eid != 0
+        @fireball_speed_x = socket.read_short
+        @fireball_speed_y = socket.read_short
+        @fireball_speed_z = socket.read_short
+      end
+    end
+  end
+  
+  def Packet::MobSpawn < Packet
+    packet_type 0x18
+    attr_reader :eid
+    attr_reader :type
+    attr_reader :x, :y, :z
+    attr_reader :yaw, :pitch, :head_yaw
+    attr_reader :metadata
+    
+    def receive_data(socket)
+      @eid = socket.read_int
+      @type = socket.read_byte
+      @x = socket.read_int
+      @y = socket.read_int
+      @z = socket.read_int
+      @yaw = socket.read_byte
+      @pitch = socket.read_byte
+      @head_yaw = socket.read_byte
+      @metadata = socket.read_metadata
+    end
+  end
+  
+  class Packet::Painting < Packet
+    packet_type 0x19
+    attr_reader :eid
+    attr_reader :title
+    attr_reader :x, :y, :z
+    attr_reader :direction
+    
+    def receive_data(socket)
+      @eid = socket.read_int
+      @title = socket.read_string
+      @x = socket.read_int
+      @y = socket.read_int
+      @z = socket.read_int
+      @direction = socket.read_int
+    end
+  end
+  
+  class Packet::ExperienceOrb < Packet
+    packet_type 0x1A
+    attr_reader :eid
+    attr_reader :x, :y, :z
+    attr_reader :count
+    
+    def receive_data(socket)
+      @eid = socket.read_int
+      @x = socket.read_int
+      @y = socket.read_int
+      @z = socket.read_int
+      @count = socket.read_short
+    end
+  end
+  
+  class Packet::EntityVelocity < Packet
+    packet_type 0x1C
+    attr_reader :eid
+    attr_reader :vx, :vy, :vz
+    
+    def receive_data(socket)
+      @eid = socket.read_int
+      @vx = socket.read_int
+      @vy = socket.read_int
+      @vz = socket.read_int      
+    end
+  end
+  
+  class Packet::DestroyEntity < Packet
+    packet_type 0x1D
+    attr_reader :eid
+    
+    def receive_data(socket)
+      @eid = socket.read_int
+    end
+  end
+  
+  class Packet::EntityRelativeMove < Packet
+    packet_type 0x1F
+    attr_reader :eid
+    attr_reader :dx, :dy, :dz
+    
+    def receive_data(socket)
+      @eid = socket.read_int
+      @dx = socket.read_byte
+      @dy = socket.read_byte
+      @dz = socket.read_byte
+    end
+  end
+  
+  class Packet::EntityLook < Packet
+    packet_type 0x20
+    attr_reader :eid
+    attr_reader :yaw, :pitch
+    
+    def receive_data(socket)
+      @eid = socket.read_int
+      @yaw = socket.read_byte
+      @pitch = socket.read_byte
+    end
+  end
+  
+  class Packet::EntityLookAndRelativeMove < Packet
+    packet_type 0x21
+    attr_reader :eid
+    attr_reader :dx, :dy, :dz
+    attr_reader :yaw, :pitch
+    
+    def receive_data(socket)
+      @eid = socket.read_int
+      @dx = socket.read_byte
+      @dy = socket.read_byte
+      @dz = socket.read_byte
+      @yaw = socket.read_byte
+      @pitch = socket.read_byte
+    end
+  end
+  
+  class Packet::EntityTeleport < Packet
+    packet_type 0x22
+    attr_reader :eid
+    attr_reader :x, :y, :z
+    attr_reader :yaw, :pitch
+    
+    def receive_data(socket)
+      @eid = socket.read_int
+      @x = socket.read_int
+      @y = socket.read_int
+      @z = socket.read_int
+      @yaw = socket.read_byte
+      @pitch = socket.read_byte
+    end
+  end
+  
+  class Packet::EntityHeadLook < Packet
+    packet_type 0x23
+    attr_reader :eid
+    attr_reader :head_yaw
+    
+    def receive_data(socket)
+      @eid = socket.read_int
+      @head_yaw = socket.read_byte
+    end
+  end
+  
+  class Packet::EntityStatus < Packet
+    packet_type 0x26
+    attr_reader :eid
+    attr_reader :status
+    
+    def receive_data(socket)
+      @eid = socket.read_int
+      @status = socket.read_byte
+    end
+  end
+  
+  class Packet::EntityMetadata < Packet
+    packet_type 0x28
+    attr_reader :eid
+    attr_reader :metadata
+    
+    def receive_data(socket)
+      @eid = socket.read_int
+      @metadata = socekt.read_metadata
+    end
+  end
+  
+  class Packet::Experience < Packet
+    packet_id 0x2B
+    attr_reader :experience_bar, :level, :total_experience
+    
+    def receive_data(socket)
+      @experience_bar = socket.read_float
+      @level = socket.read_short
+      @total_experience = socket.read_short
+    end
+  end
+  
+  class Packet::PreChunk < Packet
+    packet_id 0x32
+    attr_reader :x, :z, :mode
+    
+    def receive_data(socket)
+      @x = socket.read_int
+      @z = socket.read_int
+      @mode = socket.read_byte
+    end
+  end
+  
+  class Packet::MapChunk < Packet
+    packet_id 0x33
+    attr_reader :x, :z
+    attr_reader :ground_up_contiguous
+    attr_reader :primary_bit_map, :add_bit_map
+    attr_reader :compressed_data
+    
+    def receive_data(socket)
+      @x = socket.read_int
+      @z = socket.read_int
+      @ground_up_contiguous = socket.read_byte
+      @primary_bit_map = socket.read_short
+      @add_bit_map = socket.read_short
+      compressed_size = socket.read_int
+      socket.read_int
+      @compressed_data = socket.read(compressed_size)
+    end
+  end
+  
+  class Packet::MultiBlockChange < Packet
+    packet_id 0x34
+    attr_reader :chunk_x, :chunk_z
+    attr_reader :count
+    attr_reader :data
+    
+    def receive_data(socket)
+      @chunk_x = socket.read_int
+      @chunk_z = socket.read_int
+      @count = socket.read_short
+      @data = socket.read(socket.read_int)
+    end
+  end
+  
+  class Packet::BlockChange < Packet
+    packet_id 0x35
+    attr_reader :x, :y, :z
+    attr_reader :block_type, :block_metadata
+    
+    def recieve_data(socket)
+      @x = socket.read_int
+      @y = socket.read_byte
+      @z = socket.read_int
+      @block_type = socket.read_byte
+      @block_metadata = socket.read_byte
+    end
+  end
+  
+  class Packet::BlockAction < Packet
+    packet_id 0x36
+    attr_reader :x, ;y, :z
+    #attr_reader :byte_1, :byte_2
+    
+    def receive_data(socket) 
+      @x = socket.read_int
+      @y = socket.read_byte
+      @z = socket.read_int
+      @byte_1 = socket.read_byte
+      @byte_2 = socket.read_byte
+    end
+  end
+  
+  class Packet::Explosion < Packet
+    packet_id 0x3C
+    attr_reader :x, :y, :z
+    attr_reader :radius_maybe, :records
+    
+    def receive_data(socket)
+      @x = socket.read_double
+      @y = socket.read_double
+      @z = socket.read_double
+      @radius_maybe = socket.read_float
+      count = socket.read_int
+      @records = @record_count.times.collect do
+        [socket.read_byte, socket.read_byte, socket.read_byte]
+      end
+    end
+  end
+  
+  class Packet::SoundOrParticleEffect < Packet
+    packet_id 0x3D
+    attr_reader :effect_id, :x, :y, :z, :data
+    
+    def receive_data(socket)
+      @effect_id = socket.read_int
+      @x = socket.read_int
+      @y = socket.read_byte
+      @z = socekt.read_int
+      @data = socket.read_int
+    end
+  end
+  
+  class Packet::NewOrInvalidState < Packet
+    packet_id 0x46
+    attr_reader :reason, :game_mode
+    
+    def receive_data(socket)
+      @reason = socket.read_byte
+      @game_mode = socket.read_byte
+    end
+  end
+  
+  class Packet::Thunderbolt < Packet
+    packet_id 0x47
+    attr_id :eid, :x, :y, :z
+    
+    def receive_data(socket)
+      @eid = socket.read_int
+      socket.read_byte
+      @x = socket.read_int
+      @y = socket.read_int
+      @z = socket.read_int
+    end
+  end
+  
+  class Packet::SetSlot < Packet
+    packet_id 0x67
+    attr_reader :window_id, :slot, :slot_data
+    
+    def receive_data(socket)
+      @window_id = socket.read_byte
+      @slot = socket.read_short
+      @slot_data = socket.read_slot
+    end
+  end
+  
+  class Packet::WindowItems < Packet
+    packet_id 0x68
+    attr_reader :window_id, :count, :slots_data
+    
+    def receive_data(socket)
+      @window_id = socket.read_byte
+      count = socket.read_short
+      @slots_data = count.times.collect do
+        socket.read_slot
+      end
+    end
+  end
+      
+  class Packet::UpdateSign < Packet
+    packet_id 0x82
+    attr_reader :x, :y, :z
+    attr_reader :text
+    
+    def receive_data(socket)
+      @x = socket.read_int
+      @y = socket.read_short
+      @z = socket.read_int
+      @text = 4.times.collect { socket.read_string }.join("\n")
+    end
+  end
+  
+  class Packet::UpdateTileEntity < Packet
+    packet_id 0x84
+    attr_reader :x, :y, :z
+    attr_reader :action, :custom1, :custom2, :custom3
+    
+    def receive_data(socket)
+      @x = socket.read_int
+      @y = socket.read_short
+      @z = socket.read_int
+      @action = socket.read_byte
+      @custom1 = socket.read_int
+      @custom2 = socket.read_int
+      @custom3 = socket.read_int
+      @custom4 = socket.read_int
+    end
+  end
+  
+  class Packet::IncrementStatistic < Packet
+    packet_id 0xC8
+    attr_reader :statistic_id, :amount
+    
+    def receive_data(socket)
+      @statistic_id = socket.read_int
+      @amount = socket.read_byte
+    end
+  end
+  
+  class Packet::PlayerListItem < Packet
+    packet_id 0xC9
+    attr_reader :player_name, :online, :ping
+    
+    def receive_data(socket)
+      @player_name = socket.read_string
+      @online = socket.read_byte
+      @ping = socket.read_short
+    end
+  end
+  
+  class Packet::PlayerAbilities < Packet
+    packet_type 0xCA
+    
+    attr_reader :invulernable     # speculation
+    attr_reader :flying
+    attr_reader :can_fly
+    attr_reader :instant_destroy  # speculation
+    
+    def receive_data(socket)
+      @invulnerable = socket.read_bool
+      @flying = socket.read_bool
+      @can_fly = socket.read_bool
+      @instant_destroy = socket.read_bool
+    end
+  end
+  
+  class Packet::Disconnect
+    packet_type 0xFF
+    
+    attr_reader :reason
+    
+    def receive_data(socket)
+      @reason = socket.read_string
+    end
   end
   
 end

@@ -23,6 +23,9 @@ module RedstoneBot
       @hostname = hostname
       @port = port
       @listeners = []
+      @connected = false
+      
+      listen { |packet| handle_packet(packet) }
     end
     
     # Called at setup time.
@@ -49,6 +52,7 @@ module RedstoneBot
       send_packet Packet::LoginRequest.new(username)
       @entity_id = receive_packet.entity_id
       
+      @connected = true
       notify_listeners :start
       
       # Receive packets
@@ -56,7 +60,7 @@ module RedstoneBot
         begin
           while true
             packet = receive_packet
-            puts packet.inspect
+            puts packet.inspect   # tmphax
             notify_listeners packet
           end
         rescue UnknownPacketError => e
@@ -83,6 +87,18 @@ module RedstoneBot
     
     def chat(message)
       send_packet Packet::ChatMessage.new(message) 
+    end
+    
+    def handle_packet(p)
+      case p
+      when Packet::Disconnect
+        puts "#{self} was disconnected by server: #{p.reason}"
+        @connected = false
+      end
+    end
+    
+    def connected?
+      @connected
     end
   end
 end
