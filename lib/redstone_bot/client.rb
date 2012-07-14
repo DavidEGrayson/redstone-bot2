@@ -11,7 +11,8 @@ module RedstoneBot
     attr_reader :username
     attr_reader :hostname
     attr_reader :port
-
+    attr_reader :entity_id
+    
     def initialize(username, hostname, port)
       @username = username
       @hostname = hostname
@@ -39,25 +40,29 @@ module RedstoneBot
     def start
       @mutex = Mutex.new    
       @socket = TCPSocket.open hostname, port
-      @socket.extend DataReader, DataEncoder
+      @socket.extend DataReader
       
       send_packet Packet::Handshake.new(username, hostname, port)
       receive_packet
       
       send_packet Packet::LoginRequest.new(username)
-      @eid = receive_packet.eid
+      @entity_id = receive_packet.entity_id
       
       notify_listeners :start
       Thread.new do
         while true
-          packet = Packet.receive(socket)
+          packet = receive_packet
           notify_listeners packet
         end
       end
     end
     
+    def receive_packet
+      Packet.receive(socket)
+    end
+    
     def send_packet(packet)
-      packet.write(@socket)
+      socket.write packet.encode
     end
   end
 end
