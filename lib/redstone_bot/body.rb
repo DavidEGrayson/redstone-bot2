@@ -1,8 +1,19 @@
 module RedstoneBot
   class Body
     def initialize(client)
+      @client = client
       client.listen do |p|
-        raise "body received #{p.inspect}"
+        case p
+          when Packet::PlayerPositionAndLook
+            @position, @look = p.position, p.look
+            @regular_update_thread ||= start_regular_update_thread
+        end
+      end
+    end
+    
+    def start_regular_update_thread
+      client.regularly(0.05) do
+        client.send_packet Packet::PlayerPositionAndLook.new(position, look)
       end
     end
   end

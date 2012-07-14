@@ -45,8 +45,12 @@ module RedstoneBot
     end
     
     # Only called on a subclass
-    def write(socket)
-      raise "receive_data must be implemented in #{self.name}"      
+    def encode
+      type_byte + encode_data
+    end
+      
+    def encode_data
+      raise "encode_data instance method must be implemented in #{self.class.name}"      
     end
     
     def type_byte
@@ -68,13 +72,12 @@ module RedstoneBot
       @username = username
     end
     
-    def encode
-      type_byte + 
-        int(ProtocolVersion) +
-        string(username) +
-        string("") +
-        int(0)*2 +
-        byte(0)*3
+    def encode_data
+      int(ProtocolVersion) +
+      string(username) +
+      string("") +
+      int(0)*2 +
+      byte(0)*3
     end
     
     def receive_data(socket)
@@ -100,8 +103,8 @@ module RedstoneBot
       @username, @hostname, @port = username, hostname, port
     end
     
-    def encode
-      type_byte + string("#{username};#{hostname}:#{port}")
+    def encode_data
+      string("#{username};#{hostname}:#{port}")
     end
     
     def receive_data(socket)
@@ -118,5 +121,11 @@ module RedstoneBot
   class Packet::TimeUpdate < Packet
     packet_type 0x04
     attr_reader :ticks
+  end
+  
+  class Packet::PlayerPositionAndLook < Packet
+    packet_type 0x0D
+    
+    
   end
 end

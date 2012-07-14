@@ -1,5 +1,6 @@
 require "redstone_bot/pack"
 require "redstone_bot/packets"
+require "redstone_bot/synchronizer"
 
 require 'socket'
 require 'io/wait'
@@ -7,6 +8,8 @@ require 'thread'
 
 module RedstoneBot
   class Client
+    include Synchronizer
+  
     attr_reader :socket
     attr_reader :username
     attr_reader :hostname
@@ -18,10 +21,6 @@ module RedstoneBot
       @hostname = hostname
       @port = port
       @listeners = []
-    end
-    
-    def synchronize(&block)
-      @mutex.synchronize(&block)
     end
     
     # Called at setup time.
@@ -49,12 +48,22 @@ module RedstoneBot
       @entity_id = receive_packet.entity_id
       
       notify_listeners :start
+      
+      # Receive packets
       Thread.new do
         while true
           packet = receive_packet
-          notify_listeners packet
+          synchronize do
+            notify_listeners packet
+          end
         end
       end
+      
+      # Send keepalives
+      regularly(1) do
+        send_packet Packet::KeepAlive
+      end
+      
     end
     
     def receive_packet
