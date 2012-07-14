@@ -49,7 +49,7 @@ module RedstoneBot
     end
     
     def receive_data(socket)
-      raise "receive_data instance method or class method must be implemented in #{self.class.name}"
+      raise "receive_data instance method or class method not implemented in #{self.class.name}"
     end
     
     # Only called on a subclass
@@ -58,7 +58,7 @@ module RedstoneBot
     end
       
     def encode_data
-      raise "encode_data instance method must be implemented in #{self.class.name}"      
+      raise "encode_data instance method not implemented in #{self.class.name}"      
     end
     
     def type_byte
@@ -590,7 +590,7 @@ module RedstoneBot
     attr_reader :x, :y, :z
     attr_reader :block_type, :block_metadata
     
-    def recieve_data(socket)
+    def receive_data(socket)
       @x = socket.read_int
       @y = socket.read_byte
       @z = socket.read_int
