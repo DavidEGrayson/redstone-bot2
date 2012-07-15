@@ -342,7 +342,7 @@ module RedstoneBot
     end
   end
   
-  class Packet::AddObject < Packet  # includes vehicles
+  class Packet::SpawnObject < Packet  # includes vehicles
     packet_type 0x17
     attr_reader :eid
     attr_reader :type
@@ -530,7 +530,7 @@ module RedstoneBot
     end
   end
   
-  class Packet::Experience < Packet
+  class Packet::SetExperience < Packet
     packet_type 0x2B
     attr_reader :experience_bar, :level, :total_experience
     
@@ -541,7 +541,7 @@ module RedstoneBot
     end
   end
   
-  class Packet::PreChunk < Packet
+  class Packet::ChunkAllocation < Packet
     packet_type 0x32
     attr_reader :x, :z, :mode
     
@@ -552,7 +552,7 @@ module RedstoneBot
     end
   end
   
-  class Packet::MapChunk < Packet
+  class Packet::ChunkData < Packet
     packet_type 0x33
     attr_reader :x, :z
     attr_reader :ground_up_contiguous
@@ -568,6 +568,17 @@ module RedstoneBot
       compressed_size = socket.read_int
       socket.read_int
       @compressed_data = socket.read(compressed_size)
+    end
+    
+    # Avoid showing all the data when we inspect this packet.
+    def inspect
+      tmp = @compressed_data
+      begin
+        @compressed_data = "#{tmp.size}..."
+        return super
+      ensure
+        @compressed_data = tmp
+      end
     end
   end
   
@@ -643,7 +654,7 @@ module RedstoneBot
     end
   end
   
-  class Packet::NewOrInvalidState < Packet
+  class Packet::ChangeGameState < Packet
     packet_type 0x46
     attr_reader :reason, :game_mode
     
@@ -677,7 +688,7 @@ module RedstoneBot
     end
   end
   
-  class Packet::WindowItems < Packet
+  class Packet::SetWindowItems < Packet
     packet_type 0x68
     attr_reader :window_id, :count, :slots_data
     

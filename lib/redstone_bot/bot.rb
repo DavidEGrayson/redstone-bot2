@@ -25,6 +25,7 @@ module RedstoneBot
     def standard_setup
       @body = Body.new(@client)
       @entity_tracker = EntityTracker.new(@client, @body)
+      @chunk_tracker = ChunkTracker.new(@client)
     end
   end
 end
