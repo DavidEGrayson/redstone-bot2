@@ -13,6 +13,12 @@ module RedstoneBot
       @body = body
       
       client.listen do |p|
+        next unless p.respond_to? :eid
+      
+        if p.eid == 2412116
+          $stderr.puts p.inspect
+        end
+      
         case p
         when Packet::NamedEntitySpawn
           entities[p.eid] = Player.new p.eid, p.player_name

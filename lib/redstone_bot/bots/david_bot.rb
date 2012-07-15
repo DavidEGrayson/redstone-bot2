@@ -17,8 +17,6 @@ class RedstoneBot::Bots::DavidBot < RedstoneBot::Bot
     end
     
     @client.listen do |p|
-      case p
-      when 
     end
   end
 end
