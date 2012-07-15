@@ -288,12 +288,12 @@ module RedstoneBot
     end
   end
   
-  class Packet::NamedEntitySpawn < Packet
+  class Packet::SpawnNamedEntity < Packet
     packet_type 0x14
     attr_reader :eid
     attr_reader :player_name
     attr_reader :x, :y, :z
-    attr_reader :rotation, :pitch
+    attr_reader :yaw, :pitch
     attr_reader :current_item
     
     def receive_data(socket)
@@ -302,20 +302,20 @@ module RedstoneBot
       @x = socket.read_int
       @y = socket.read_int
       @z = socket.read_int
-      @rotation = socket.read_byte
-      @pitch = socket.read_byte
+      @yaw = socket.read_signed_byte
+      @pitch = socket.read_signed_byte
       @current_item = socket.read_short
     end
   end
   
-  class Packet::PickupSpawn < Packet
+  class Packet::SpawnDroppedItem < Packet
     packet_type 0x15
     attr_reader :eid
     attr_reader :item
     attr_reader :count
     attr_reader :damage
     attr_reader :x, :y, :z
-    attr_reader :rotation, :pitch, :roll
+    attr_reader :yaw, :pitch, :roll
     
     def receive_data(socket)
       @eid = socket.read_int
@@ -325,9 +325,9 @@ module RedstoneBot
       @x = socket.read_int
       @y = socket.read_int
       @z = socket.read_int
-      @rotation = socket.read_byte
-      @pitch = socket.read_byte
-      @roll = socket.read_byte
+      @yaw = socket.read_signed_byte
+      @pitch = socket.read_signed_byte
+      @roll = socket.read_signed_byte
     end
   end
   
@@ -365,7 +365,7 @@ module RedstoneBot
     end
   end
   
-  class Packet::MobSpawn < Packet
+  class Packet::SpawnMob < Packet
     packet_type 0x18
     attr_reader :eid
     attr_reader :type
@@ -379,14 +379,14 @@ module RedstoneBot
       @x = socket.read_int
       @y = socket.read_int
       @z = socket.read_int
-      @yaw = socket.read_byte
-      @pitch = socket.read_byte
-      @head_yaw = socket.read_byte
+      @yaw = socket.read_signed_byte
+      @pitch = socket.read_signed_byte
+      @head_yaw = socket.read_signed_byte
       @metadata = socket.read_metadata
     end
   end
   
-  class Packet::Painting < Packet
+  class Packet::SpawnPainting < Packet
     packet_type 0x19
     attr_reader :eid
     attr_reader :title
@@ -447,9 +447,9 @@ module RedstoneBot
     
     def receive_data(socket)
       @eid = socket.read_int
-      @dx = socket.read_byte
-      @dy = socket.read_byte
-      @dz = socket.read_byte
+      @dx = socket.read_signed_byte
+      @dy = socket.read_signed_byte
+      @dz = socket.read_signed_byte
     end
   end
   
@@ -460,8 +460,8 @@ module RedstoneBot
     
     def receive_data(socket)
       @eid = socket.read_int
-      @yaw = socket.read_byte
-      @pitch = socket.read_byte
+      @yaw = socket.read_signed_byte
+      @pitch = socket.read_signed_byte
     end
   end
   
@@ -473,11 +473,11 @@ module RedstoneBot
     
     def receive_data(socket)
       @eid = socket.read_int
-      @dx = socket.read_byte
-      @dy = socket.read_byte
-      @dz = socket.read_byte
-      @yaw = socket.read_byte
-      @pitch = socket.read_byte
+      @dx = socket.read_signed_byte
+      @dy = socket.read_signed_byte
+      @dz = socket.read_signed_byte
+      @yaw = socket.read_signed_byte
+      @pitch = socket.read_signed_byte
     end
   end
   
@@ -492,8 +492,8 @@ module RedstoneBot
       @x = socket.read_int
       @y = socket.read_int
       @z = socket.read_int
-      @yaw = socket.read_byte
-      @pitch = socket.read_byte
+      @yaw = socket.read_signed_byte
+      @pitch = socket.read_signed_byte
     end
   end
   
@@ -504,7 +504,7 @@ module RedstoneBot
     
     def receive_data(socket)
       @eid = socket.read_int
-      @head_yaw = socket.read_byte
+      @head_yaw = socket.read_signed_byte
     end
   end
   
@@ -625,7 +625,7 @@ module RedstoneBot
       @radius_maybe = socket.read_float
       count = socket.read_int
       @records = @record_count.times.collect do
-        [socket.read_byte, socket.read_byte, socket.read_byte]
+        [socket.read_signed_byte, socket.read_signed_byte, socket.read_signed_byte]
       end
     end
   end
@@ -725,7 +725,7 @@ module RedstoneBot
     
     def receive_data(socket)
       @statistic_id = socket.read_int
-      @amount = socket.read_byte
+      @amount = socket.read_signed_byte
     end
   end
   

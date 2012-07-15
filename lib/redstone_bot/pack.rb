@@ -7,6 +7,10 @@ module RedstoneBot
     def read_byte
       read(1).unpack('C')[0]   # TODO: just do read(1).ord
     end
+    
+    def read_signed_byte
+      read(1).unpack('c')[0]
+    end
 
     def read_short
       read(2).unpack('s>')[0]
@@ -83,11 +87,11 @@ module RedstoneBot
   end
   
   module DataEncoder
-    def byte(b)
+    def signed_byte(b)
       [b].pack('c')
     end
 
-    def unsigned_byte(b)
+    def byte(b)
       [b].pack('C')
     end
 
@@ -96,7 +100,7 @@ module RedstoneBot
     end
 
     def bool(b)
-      unsigned_byte(b ? 1 : 0)
+      byte(b ? 1 : 0)
     end
 
     def int(i)

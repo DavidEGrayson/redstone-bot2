@@ -15,15 +15,11 @@ module RedstoneBot
       client.listen do |p|
         next unless p.respond_to? :eid
       
-        if p.eid == 2412116
-          $stderr.puts p.inspect
-        end
-      
         case p
-        when Packet::NamedEntitySpawn
+        when Packet::SpawnNamedEntity
           entities[p.eid] = Player.new p.eid, p.player_name
           update_entity_position_absolute p
-        when Packet::MobSpawn
+        when Packet::SpawnMob
           entities[p.eid] = Mob.create p.eid, p.type
           update_entity_position_absolute p
         when Packet::EntityTeleport
