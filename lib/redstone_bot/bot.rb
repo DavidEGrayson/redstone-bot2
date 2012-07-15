@@ -24,6 +24,7 @@ module RedstoneBot
     # Can be called by subclasses
     def standard_setup
       @body = Body.new(@client)
+      @entity_tracker = EntityTracker.new(@client, @body)
     end
   end
 end
