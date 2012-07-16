@@ -142,12 +142,17 @@ module RedstoneBot
     packet_type 0x03
     attr_reader :message
     
+    # Source: http://www.wiki.vg/Chat except I left out the funny characters
+    # because I'd have to think a little bit more about encodings to make it work
+    AllowedChatChars = '!\"#$%&\'`()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_abcdefghijklmnopqrstuvwxyz{|}~| '.split('')
+    
     def initialize(message)
       @message = message
     end
     
     def encode_data
-      string(message)
+      safe_str = message.chars.select { |c| AllowedChatChars.include?(c) }[0,100].join
+      string(safe_str)
     end
     
     def self.receive_data(socket)

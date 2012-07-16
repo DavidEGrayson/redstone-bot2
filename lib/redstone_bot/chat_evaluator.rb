@@ -58,7 +58,6 @@ module RedstoneBot
     
     protected
     def chat(message)
-      puts "ok lets chat #{message}"
       @client.chat(message)
     end
   end
