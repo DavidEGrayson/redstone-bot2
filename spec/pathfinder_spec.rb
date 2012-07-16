@@ -15,7 +15,7 @@ end
 
 describe RedstoneBot::Pathfinder do
   let(:pathfinder) do
-    p = RedstoneBot::Pathfinder.new($test_map)
+    p = RedstoneBot::Pathfinder.new(TestMap.new)
     p.start = [1,71,1]
     p.bounds = [0..16, 68..78, 0..16]
     p.goal = [5, 71, 8]
@@ -40,9 +40,20 @@ describe RedstoneBot::Pathfinder do
     pathfinder.is_goal?([5, 71, 8]).should be true
   end
   
-  it "can calculate costs" do
-    pathfinder.cost([1,71,1], [1,71,2]).should be_within(0.1).of(1)
-    pathfinder.heuristic_cost_estimate([1,17,1], [2,17,2]).should be_within(0.1).of(1.41421356)
+  it "can calculate costs between neighboring points" do
+    pathfinder.cost([1,71,1], [1,71,2]).should be_within(0.01).of(1)
+  end
+  
+  it "can estimate costs between far points" do
+    pathfinder.heuristic_cost_estimate([1,71,1], [2,71,2]).should be_within(0.01).of(1.41421356)
+  end
+  
+  it "can find the neighbors of a point on a flat plane" do
+    pathfinder.neighbors([1,71,1]).sort.should == [
+                  [1, 71, 2], 
+      [0, 71, 1], [1, 72, 1], [2, 71, 1],
+                  [1, 71, 0],
+      ].sort
   end
   
 end

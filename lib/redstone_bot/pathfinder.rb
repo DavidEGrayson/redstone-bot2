@@ -23,7 +23,7 @@ module RedstoneBot
     end
     
     def cost(from_coords, to_coords)
-      # TODO: add a little something here to discourage flying and jumping
+      # TODO: add a little something here to discourage flying and jumping and going through 1-tall holes
       distance from_coords, to_coords      
     end
     
@@ -34,5 +34,14 @@ module RedstoneBot
     def distance(a, b)
       (Vector[*a] - Vector[*b]).magnitude
     end
+    
+    def neighbors(coords)
+      x,y,z = coords
+      candidates = [[x-1, y, z], [x+1, y, z], [x, y-1, z], [x, y+1, z], [x, y, z-1], [x, y, z+1]]
+      candidates.select do |n|
+        #puts "#{n} #{@chunk_tracker.block_type(n)}"
+        !@chunk_tracker.block_type(n).solid?
+      end
+    end    
   end
 end
