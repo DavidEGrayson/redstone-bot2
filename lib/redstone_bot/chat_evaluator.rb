@@ -5,12 +5,26 @@ module RedstoneBot
   #   "eval " + string
   #   EvaluatesRuby.instance_method(:handle_chat).bind(self).call(message)
   class ChatEvaluator
-    def initialize(client)
+    attr_accessor :only_for_username
+    attr_accessor :permission_denied_message
+  
+    def initialize(context, client)
+      @context = context
       @client = client
+      @permission_denied_message = "I'm sorry %s, but I cannot do that."
+    
       client.listen do |p|
-        if p.is_a?(UserChatMessage) && message.contents =~ /^eval (.+)/
-          do_eval $1
+        next unless p.is_a?(Packet::UserChatMessage)
+
+        next unless p.contents =~ /^eval (.+)/
+        str = $1
+
+        if only_for_username && p.username != only_for_username
+          @client.chat @permission_denied_message % [p.username]
+          next
         end
+        
+        do_eval str
       end
     end
   
@@ -44,6 +58,7 @@ module RedstoneBot
     
     protected
     def chat(message)
+      puts "ok lets chat #{message}"
       @client.chat(message)
     end
   end
