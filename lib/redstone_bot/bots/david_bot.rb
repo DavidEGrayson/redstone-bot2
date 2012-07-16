@@ -14,6 +14,8 @@ module RedstoneBot
       
       @client.listen do |p|
         case p
+        when Packet::ChatMessage
+          puts p
         when Packet::Disconnect
           exit 2
         end
