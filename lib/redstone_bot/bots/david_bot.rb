@@ -1,11 +1,13 @@
 require "redstone_bot/bot"
 require "redstone_bot/chat_evaluator"
+require 'forwardable'
 
 module RedstoneBot
   module Bots; end
 
   class Bots::DavidBot < RedstoneBot::Bot
-  
+    extend Forwardable
+    
     def setup
       standard_setup
       
@@ -26,6 +28,7 @@ module RedstoneBot
       end
       
     end
-    
+
+    def_delegator :@chunk_tracker, :block_type, :bt
   end
 end

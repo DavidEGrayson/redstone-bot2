@@ -30,11 +30,13 @@ module RedstoneBot
   
     def do_eval(string)
       result = nil
+      exception = nil
       thread = Thread.new do
         $SAFE = 4
         result = begin
           (@context || self).instance_eval string
         rescue Exception => e
+          exception = e
           e.message
         end
       end
@@ -43,6 +45,10 @@ module RedstoneBot
         result = ":("
       end
 
+      if exception
+        $stderr.puts exception.message, exception.backtrace
+      end
+      
       begin
         case result
           when String then chat result
@@ -50,7 +56,7 @@ module RedstoneBot
           else chat result.inspect
           end
       rescue SecurityError => e
-        chat e.message 
+        chat e.message
       end
 
       GC.enable

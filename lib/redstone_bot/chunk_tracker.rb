@@ -73,7 +73,7 @@ module RedstoneBot
     # coords is an array of integers [x,y,z] in the standard world coordinate system.
     # No bounds checking is done here.
     def block_type(coords)
-      section_num, section_y = coords[1]
+      section_num, section_y = coords[1].divmod 16
       section_x = coords[0] % 16
       section_z = coords[2] % 16
       
