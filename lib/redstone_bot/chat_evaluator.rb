@@ -7,11 +7,13 @@ module RedstoneBot
   class ChatEvaluator
     attr_accessor :only_for_username
     attr_accessor :permission_denied_message
+    attr_accessor :safe_level
   
     def initialize(context, client)
       @context = context
       @client = client
       @permission_denied_message = "I'm sorry %s, but I cannot do that."
+      @safe_level = 4
     
       client.listen do |p|
         next unless p.is_a?(Packet::UserChatMessage)
@@ -32,7 +34,7 @@ module RedstoneBot
       result = nil
       exception = nil
       thread = Thread.new do
-        $SAFE = 4
+        $SAFE = @safe_level
         result = begin
           (@context || self).instance_eval string
         rescue Exception => e

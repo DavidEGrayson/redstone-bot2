@@ -77,7 +77,11 @@ module RedstoneBot
       section_x = coords[0] % 16
       section_z = coords[2] % 16
       
-      @block_type[section_num][256*section_y + 16*section_z + section_x]
+      offset = 256*section_y + 16*section_z + section_x
+      
+      #puts "tmphax #{section_num},#{section_y} #{section_x} #{section_z}"
+      
+      @block_type[section_num][offset].ord
     end
   end
   
