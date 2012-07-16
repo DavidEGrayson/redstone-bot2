@@ -19,7 +19,6 @@ module RedstoneBot
       end
       
       @pathfinder = Pathfinder.new(@chunk_tracker)
-      @pathfinder.bounds = [94..122, 69..78, 233..261]
       
       @client.listen do |p|
         case p
@@ -42,6 +41,7 @@ module RedstoneBot
 
     def tmphax_find_path
       @pathfinder.start = @body.position.to_a.collect(&:to_i)
+      @pathfinder.bounds = [94..122, 69..78, 233..261]
       @pathfinder.goal = [104, 72, 240]
       puts "Finding path from #{@pathfinder.start} to #{@pathfinder.goal}..."
       result = @pathfinder.find_path
