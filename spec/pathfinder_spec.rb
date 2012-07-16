@@ -26,11 +26,6 @@ describe RedstoneBot::Pathfinder do
     RedstoneBot::Pathfinder.should be_a_kind_of Class
   end
   
-  it "can find paths" do
-    result = pathfinder.find_path
-    # TODO: check the result
-  end
-  
   it "knows the start point" do
     pathfinder.start.should == [1,71,1]
   end
@@ -45,7 +40,7 @@ describe RedstoneBot::Pathfinder do
   end
   
   it "can estimate costs between far points" do
-    pathfinder.heuristic_cost_estimate([1,71,1], [2,71,2]).should be_within(0.01).of(1.41421356)
+    pathfinder.heuristic_cost_estimate([4,71,7]).should be_within(0.01).of(1.41421356)
   end
   
   it "can find the neighbors of a point on a flat plane" do
@@ -54,6 +49,17 @@ describe RedstoneBot::Pathfinder do
       [0, 71, 1], [1, 72, 1], [2, 71, 1],
                   [1, 71, 0],
       ].sort
+  end
+  
+    
+  it "can find paths" do
+    next
+    path = pathfinder.find_path
+    path.first.should == pathfinder.start
+    path.each_cons(2) do |a, b|
+      pathfinder.distance(a, b).should < 2
+    end
+    path.last.should == pathfinder.goal
   end
   
 end

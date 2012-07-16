@@ -1,7 +1,10 @@
 require 'matrix'
+require "redstone_bot/a_star"
 
 module RedstoneBot
   class Pathfinder
+    include AStar
+  
     attr_reader :chunk_tracker
     
     # triplets of integers representing [x,y,z] coords
@@ -15,7 +18,7 @@ module RedstoneBot
     end
     
     def find_path
-      "dunno"
+      run_a_star
     end
     
     def is_goal?(coords)
@@ -27,8 +30,8 @@ module RedstoneBot
       distance from_coords, to_coords      
     end
     
-    def heuristic_cost_estimate(from_coords, to_coords)
-      distance from_coords, to_coords
+    def heuristic_cost_estimate(from_coords)
+      distance from_coords, goal
     end
     
     def distance(a, b)
@@ -39,8 +42,11 @@ module RedstoneBot
       x,y,z = coords
       candidates = [[x-1, y, z], [x+1, y, z], [x, y-1, z], [x, y+1, z], [x, y, z-1], [x, y, z+1]]
       candidates.select do |n|
+        # TODO: reject points that are out of bounds
+
         #puts "#{n} #{@chunk_tracker.block_type(n)}"
         !@chunk_tracker.block_type(n).solid?
+        
       end
     end    
   end
