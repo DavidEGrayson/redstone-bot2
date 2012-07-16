@@ -18,7 +18,7 @@ module RedstoneBot
         @body.look_at @entity_tracker.closest_entity
       end
 
-      waypoint = [104, 70, 238]
+      waypoint = [99, 70, 237]
       @body.on_position_update do
         move_to(waypoint)
       end
@@ -48,7 +48,7 @@ module RedstoneBot
     def tmphax_find_path
       @pathfinder.start = @body.position.to_a.collect(&:to_i)
       @pathfinder.bounds = [94..122, 69..78, 233..261]
-      @pathfinder.goal = [104, 72, 240]
+      @pathfinder.goal = [104, 73, 240]
       puts "Finding path from #{@pathfinder.start} to #{@pathfinder.goal}..."
       result = @pathfinder.find_path
       puts "t: " + result.inspect
@@ -63,7 +63,7 @@ module RedstoneBot
       waypoint = Vector[*waypoint]
       dir = waypoint - @body.position
       d = dir.normalize*speed*@body.update_period
-      puts "%7.4f %7.4f %7.4f" % [d[0], d[1], d[2]]
+      #puts "%7.4f %7.4f %7.4f" % [d[0], d[1], d[2]]
       @body.position += d
       @body.stance = @body.position[1] + 1
       @body.on_ground = true #false      

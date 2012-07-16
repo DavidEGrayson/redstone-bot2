@@ -19,7 +19,7 @@ module RedstoneBot
       client.listen do |p|
         case p
           when Packet::PlayerPositionAndLook
-            puts "rx pos&look: %7.4f %7.4f %7.4f" % [p.x, p.y, p.z]
+            #puts "rx pos&look: %7.4f %7.4f %7.4f" % [p.x, p.y, p.z]
             @position = Vector[p.x, p.y, p.z]
             @stance = p.stance
             @look = Look.new(p.yaw, p.pitch)
@@ -37,16 +37,11 @@ module RedstoneBot
     end
     
     def start_regular_update_thread
-      Thread.new do
-        while true
-          sleep @update_period
-          @client.synchronize do
-            @position_updaters.each do |p|
-              p.call
-            end
-            send_update
-          end
+      @client.regularly(@update_period) do
+        @position_updaters.each do |p|
+          p.call
         end
+        send_update
       end
     end
     
