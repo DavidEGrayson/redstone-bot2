@@ -15,17 +15,23 @@ module RedstoneBot
       @ce = ChatEvaluator.new(self, @client)
       
       @body.on_position_update do
-        @body.look_at @entity_tracker.closest_entity      
+        @body.look_at @entity_tracker.closest_entity
       end
+
+      waypoint = [104, 70, 238]
+      @body.on_position_update do
+        move_to(waypoint)
+      end
+
       
       @pathfinder = Pathfinder.new(@chunk_tracker)
       
       @client.listen do |p|
         case p
         when :start
-          @client.later(5) do
-            tmphax_find_path
-          end
+          #@client.later(5) do
+          #  tmphax_find_path
+          #end
         when Packet::ChatMessage
           if p.message == "<Elavid> t"
             tmphax_find_path
@@ -50,6 +56,17 @@ module RedstoneBot
     
     def inspect
       to_s
+    end
+    
+    def move_to(waypoint)
+      speed = 0.3
+      waypoint = Vector[*waypoint]
+      dir = waypoint - @body.position
+      d = dir.normalize*speed*@body.update_period
+      puts "%7.4f %7.4f %7.4f" % [d[0], d[1], d[2]]
+      @body.position += d
+      @body.stance = @body.position[1] + 1
+      @body.on_ground = true #false      
     end
     
     def_delegator :@chunk_tracker, :block_type, :block_type
