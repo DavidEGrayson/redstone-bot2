@@ -14,8 +14,8 @@ module AStar
     while !open_set.empty?
       current = open_set.min_by { |n| f_score[n] }
       
-      puts "current = #{current.inspect}"
-      sleep 1
+      #puts "current = #{current.inspect} d=#{heuristic_cost_estimate(current)} f=#{f_score[current]}"
+      #sleep 1
       
       if is_goal?(current)
         return reconstruct_path(came_from, current)
@@ -36,6 +36,8 @@ module AStar
           came_from[neighbor] = current
           g_score[neighbor] = tentative_g_score
           f_score[neighbor] = tentative_g_score + heuristic_cost_estimate(neighbor)
+          
+          #puts " n #{neighbor} #{g_score[neighbor]}"
         end
       end
     end

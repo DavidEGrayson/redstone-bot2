@@ -51,15 +51,15 @@ describe RedstoneBot::Pathfinder do
       ].sort
   end
   
-    
   it "can find paths" do
-    next
     path = pathfinder.find_path
     path.first.should == pathfinder.start
     path.each_cons(2) do |a, b|
       pathfinder.distance(a, b).should < 2
     end
     path.last.should == pathfinder.goal
+    path.size.should == 12
+    # path.each { |n| n.inspect }
   end
   
 end
