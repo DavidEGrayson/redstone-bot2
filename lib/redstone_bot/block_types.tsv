@@ -1,0 +1,137 @@
+0	Air	
+1	Stone	solid
+2	GrassBlock	solid
+3	Dirt	solid
+4	Cobblestone	solid
+5	WoodenPlanks	solid
+6	Saplings	solid
+7	Bedrock	solid
+8	Water	fluid
+9	StationaryWater	solid
+10	Lava	solid
+11	StationaryLava	solid
+12	Sand	solid
+13	Gravel	solid
+14	GoldOre	solid
+15	IronOre	solid
+16	CoalOre	solid
+17	Wooden	solid
+18	Leaves	solid
+19	Sponge	solid
+20	Glass	solid
+21	LapisOre	solid
+22	LapisBlock	solid
+23	Dispenser	solid
+24	Sandstone	solid
+25	NoteBlock	solid
+26	Bed	solid
+27	PoweredRail	
+28	DetectorRail	
+29	StickyPiston	solid
+30	Cobweb	
+31	TallGrass	
+32	DeadBush	
+33	Piston	solid
+34	PistonExtension	solid
+35	Wool	solid
+36	BlockMovedByPiston	solid
+37	Dandelion	
+38	Rose	
+39	BrownMushroom	
+40	RedMushroom	
+41	GoldBlock	solid
+42	IronBlock	solid
+43	DoubleSlabs	solid
+44	Slabs	solid
+45	Bricks	solid
+46	TNT	solid
+47	Bookshelf	solid
+48	MossStone	solid
+49	Obsidian	solid
+50	Torch	
+51	Fire	
+52	MonsterSpawner	solid
+53	OakWoodStairs	solid
+54	Chest	solid
+55	RedstoneWire	
+56	DiamondOre	solid
+57	DiamondBlock	solid
+58	CraftingTable	solid
+59	Wheat	
+60	Farmland	
+61	Furnace	solid
+62	BurningFurnace	solid
+63	SignPost	
+64	WoodenDoor	solid
+65	Ladders	solid
+66	Rails	solid
+67	CobblestoneStairs	solid
+68	WallSign	
+69	Lever	
+70	StonePressurePlate	
+71	IronDoor	solid
+72	WoodenPressurePlate	
+73	RedstoneOre	solid
+74	GlowingRedstoneOre	solid
+75	RedstoneTorchOff	
+76	RedstoneTorchOn	
+77	StoneButton	
+78	Snow	
+79	Ice	solid
+80	SnowBlock	solid
+81	Cactus	solid
+82	Clay	solid
+83	SugarCane	solid
+84	Jukebox	solid
+85	Fence	solid
+86	Pumpkin	solid
+87	Netherrack	solid
+88	SoulSand	solid
+89	GlowstoneBlock	solid
+90	Portal	
+91	JackOLantern	solid
+92	Cake	solid
+93	RedstoneRepeaterOff	solid
+94	RedstoneRepeaterOn	solid
+95	LockedChest	solid
+96	Trapdoor	solid
+97	MonsterEgg	solid
+98	StoneBricks	solid
+99	HugeBrownMushroom	solid
+100	HugeRedMushroom	solid
+101	IronBars	solid
+102	GlassPane	solid
+103	Melon	solid
+104	PumpkinStem	
+105	MelonStem	
+106	Vines	
+107	FenceGate	solid
+108	BrickStairs	solid
+109	StoneBrickStairs	solid
+110	Mycelium	solid
+111	LilyPad	solid
+112	NetherBrick	solid
+113	NetherBrickFence	solid
+114	NetherBrickStairs	solid
+115	NetherWart	
+116	EnchantmentTable	solid
+117	BrewingStand	solid
+118	Cauldron	solid
+119	EndPortal	
+120	EndPortalFrame	solid
+121	EndStone	solid
+122	DragonEgg	solid
+123	RedstoneLampOff	solid
+124	RedstoneLampOn	solid
+125	WoodenDoubleSlab	solid
+126	WoodenSlab	solid
+127	CocoaPlant	
+128	SandstoneStairs	solid
+129	EmeraldOre	solid
+130	EnderChest	
+131	TripwireHook	solid
+132	Tripwire	
+133	EmeraldBlock	solid
+134	SpruceWoodStairs	solid
+135	BirchWoodStairs	solid
+136	JungleWoodStairs	solid

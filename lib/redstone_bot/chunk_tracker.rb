@@ -1,5 +1,6 @@
 require 'zlib'
 require 'stringio'
+require "redstone_bot/block_types"
 
 module RedstoneBot
   attr_reader :chunks
@@ -72,7 +73,7 @@ module RedstoneBot
     
     # coords is an array of integers [x,y,z] in the standard world coordinate system.
     # No bounds checking is done here.
-    def block_type(coords)
+    def block_type_id(coords)
       section_num, section_y = coords[1].divmod 16
       section_x = coords[0] % 16
       section_z = coords[2] % 16      
@@ -110,7 +111,7 @@ module RedstoneBot
     def block_type(coords)
       chunk_coords = [coords[0].to_i/16*16, coords[2].to_i/16*16]
       chunk = @chunks[chunk_coords]
-      chunk && chunk.block_type(coords)
+      chunk && BlockType.from_id(chunk.block_type_id(coords))
     end
 
     protected
