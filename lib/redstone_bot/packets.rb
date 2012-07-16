@@ -338,6 +338,10 @@ module RedstoneBot
       double(x) + double(y) + double(stance) + double(z) +
       float(yaw) + float(pitch) + bool(on_ground)
     end
+    
+    def to_s
+      "pos: %7.4f %7.4f %7.4f dy=%7.4f g=%d y=%7.4f p=%7.4f" % ([x, y, z, stance - y, on_ground ? 1 : 0, yaw, pitch])
+    end
   end
   
   class Packet::UseBed < Packet

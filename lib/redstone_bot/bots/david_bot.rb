@@ -18,7 +18,7 @@ module RedstoneBot
         @body.look_at @entity_tracker.closest_entity
       end
 
-      waypoint = [99, 70, 237]
+      waypoint = [109, 71, 237]
       @body.on_position_update do
         move_to(waypoint)
       end
@@ -59,9 +59,14 @@ module RedstoneBot
     end
     
     def move_to(waypoint)
-      speed = 0.3
+      speed = 1
       waypoint = Vector[*waypoint]
       dir = waypoint - @body.position
+      if dir.norm < 0.2
+        puts "success"
+        return
+      end
+      
       d = dir.normalize*speed*@body.update_period
       #puts "%7.4f %7.4f %7.4f" % [d[0], d[1], d[2]]
       @body.position += d

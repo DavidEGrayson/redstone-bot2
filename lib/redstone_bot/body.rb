@@ -19,7 +19,7 @@ module RedstoneBot
       client.listen do |p|
         case p
           when Packet::PlayerPositionAndLook
-            #puts "rx pos&look: %7.4f %7.4f %7.4f" % [p.x, p.y, p.z]
+            puts "RX#{p}"
             @position = Vector[p.x, p.y, p.z]
             @stance = p.stance
             @look = Look.new(p.yaw, p.pitch)
@@ -62,10 +62,11 @@ module RedstoneBot
     
     protected  
     def send_update
-      #puts "tx pos: %7.4f %7.4f %7.4f dy=%7.4f g=%d" % (position.to_a + [stance - position[1], on_ground? ? 1 : 0])
-      @client.send_packet Packet::PlayerPositionAndLook.new(
+      packet = Packet::PlayerPositionAndLook.new(
               position[0], position[1], position[2],
               stance, look.yaw, look.pitch, on_ground)
+      @client.send_packet packet
+      puts "tx#{packet.to_s}"
     end
   end
 end
