@@ -33,7 +33,7 @@ module RedstoneBot
       thread = Thread.new do
         $SAFE = 4
         result = begin
-          eval string
+          (@context || self).instance_eval string
         rescue Exception => e
           e.message
         end
