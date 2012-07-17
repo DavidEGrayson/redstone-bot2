@@ -20,7 +20,7 @@ module RedstoneBot
       client.listen do |p|
         case p
           when Packet::PlayerPositionAndLook
-            puts "rx#{p}" if debug
+            puts "RX! #{p}"
             @position = Vector[p.x, p.y, p.z]
             @stance = p.stance
             @look = Look.new(p.yaw, p.pitch)
