@@ -51,6 +51,10 @@ module RedstoneBot
       end
       nil
     end
+    
+    def player(name)
+      entities.values.find { |entity| entity.name == name and entity.class == Player }
+    end
 
     protected  
     def update_entity_position_absolute(p)

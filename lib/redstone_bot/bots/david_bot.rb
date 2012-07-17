@@ -19,9 +19,10 @@ module RedstoneBot
       end
 
       waypoint = [99, 70, 230]
+      @body.debug = true
       @body.on_position_update do
-        #move_to(waypoint)
         fall
+        move_to(waypoint)
       end
 
       
@@ -34,10 +35,15 @@ module RedstoneBot
           #  tmphax_find_path
           #end
         when Packet::ChatMessage
-          waypoint[2] += 1 if p.message == "<RyanTM> n"
-          waypoint[2] -= 1 if p.message == "<RyanTM> s"
+          waypoint[2] -= 1 if p.message == "<RyanTM> n"
+          waypoint[2] += 1 if p.message == "<RyanTM> s"
           waypoint[0] += 1 if p.message == "<RyanTM> e"
           waypoint[0] -= 1 if p.message == "<RyanTM> w"
+          if p.message == "<RyanTM> h"
+            me = @entity_tracker.player("RyanTM")
+            puts me.inspect
+            waypoint = me.position.to_a
+          end
           puts p.inspect
         when Packet::Disconnect
           exit 2
@@ -59,29 +65,34 @@ module RedstoneBot
       to_s
     end
     
-    def find_ground(chunk_tracker, position)
-      x,y,z = position.to_a
-      puts position.inspect
+    def find_ground
+      x,y,z = @body.position.to_a
       y.ceil.downto(0).each do |_|
-        if (chunk_tracker.block_type([x,_,z]).solid?)
+        puts "#{x} #{_} #{z} #{@chunk_tracker.block_type([x,_,z])}"
+        if (@chunk_tracker.block_type([x.to_i,_,z.to_i]).solid?)
           return _+1
         end
       end 
     end
 	
     def fall
-      ground = find_ground(@chunk_tracker,@body.position)
+      ground = find_ground
       puts "GROUND: #{ground}"
-      if (@body.position[1] != ground)
-        @body.position += Vector[0,0.5,0]
+      if (@body.position[1] > ground)
+        @body.position -= Vector[0,0.5,0]
+        @body.stance = @body.position[1] + 1.62
+      end
+      if ((@body.position[1] - ground).abs < 0.5)
+        @body.position = Vector[@body.position[0],ground,@body.position[2]]
         @body.stance = @body.position[1] + 1.62
       end
     end
 	
     def move_to(waypoint)
-      speed = 0.5
-      waypoint = Vector[*waypoint]
+      speed = 10
+      waypoint = Vector[*waypoint] 
       dir = waypoint - @body.position
+      dir = Vector[dir[0],0,dir[2]]
       if dir.norm < 0.2
         puts "success"
         return
