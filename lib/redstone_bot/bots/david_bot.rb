@@ -15,21 +15,18 @@ module RedstoneBot
       #@body.debug = true
       
       @ce = ChatEvaluator.new(self, @client)
-      
-      @body.on_position_update do
-        @body.look_at @entity_tracker.closest_entity
-      end
 
       @waypoint = nil
       @body.on_position_update do
         if @waypoint
           move_to_waypoint
+          @body.look_at @waypoint
         else
           fall
+          @body.look_at @entity_tracker.closest_entity
         end
         @body.stance = @body.position[1] + 1.62   # TODO: let @body handle setting stance correctly
       end
-
       
       @pathfinder = Pathfinder.new(@chunk_tracker)
       
@@ -37,6 +34,14 @@ module RedstoneBot
         case p
         when Packet::UserChatMessage
           case p.contents
+            when /where (.+)/ then
+              name = $1
+              player = @entity_tracker.player(name)
+              if player
+                chat "dat guy at #{player.position}"
+              else
+                chat "dunno who dat '#{name}' is"
+              end
             when "stop" then @waypoint = nil
             when "n", "z-" then @waypoint = [@body.position[0], @body.position[1], @body.position[2] - 1]
             when "s", "z+" then @waypoint = [@body.position[0], @body.position[1], @body.position[2] + 1]
@@ -76,11 +81,11 @@ module RedstoneBot
     
     def find_ground
       x,y,z = @body.position.to_a
-      y.ceil.downto(0).each do |_|
+      y.ceil.downto(0).each do |test_y|
         #puts "#{x} #{_} #{z} #{@chunk_tracker.block_type([x,_,z])}"
         #TODO: .to_i on x and z might be wrong here
-        if (@chunk_tracker.block_type([x.to_i,_,z.to_i]).solid?)
-          return _+1
+        if (@chunk_tracker.block_type([x.to_i, test_y, z.to_i]).solid?)
+          return test_y+1
         end
       end 
     end
