@@ -37,17 +37,19 @@ module RedstoneBot
         case p
         when Packet::UserChatMessage
           case p.contents
+            when "stop" then @waypoint = nil
             when "n", "z-" then @waypoint = [@body.position[0], @body.position[1], @body.position[2] - 1]
             when "s", "z+" then @waypoint = [@body.position[0], @body.position[1], @body.position[2] + 1]
             when "e", "x+" then @waypoint = [@body.position[0] + 1, @body.position[1], @body.position[2]]
             when "w", "x-" then @waypoint = [@body.position[0] - 1, @body.position[1], @body.position[2]]
+            when "j" then @waypoint = [@body.position[0], @body.position[1]+5, @body.position[2]]
             when "h"
               player = @entity_tracker.player(p.username)
               if player
                 chat "coming!"
                 @waypoint = player.position.to_a
               else
-                chat "dunno where u are"
+                chat "dunno where U r"
               end
             end
         when Packet::Disconnect
@@ -98,7 +100,6 @@ module RedstoneBot
       speed = 10
       waypoint_vector = Vector[*@waypoint] 
       dir = waypoint_vector - @body.position
-      dir = Vector[dir[0],0,dir[2]]
       if dir.norm < 0.2
         @waypoint = nil  # reached it
         return
