@@ -69,6 +69,7 @@ module RedstoneBot
       x,y,z = @body.position.to_a
       y.ceil.downto(0).each do |_|
         puts "#{x} #{_} #{z} #{@chunk_tracker.block_type([x,_,z])}"
+        #TODO: .to_i on x and z might be wrong here
         if (@chunk_tracker.block_type([x.to_i,_,z.to_i]).solid?)
           return _+1
         end
