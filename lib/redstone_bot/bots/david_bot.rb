@@ -43,11 +43,11 @@ module RedstoneBot
                 chat "dunno who dat '#{name}' is"
               end
             when "stop" then @waypoint = nil
-            when "n", "z-" then @waypoint = Coords[@body.position[0], @body.position[1], @body.position[2] - 1]
-            when "s", "z+" then @waypoint = Coords[@body.position[0], @body.position[1], @body.position[2] + 1]
-            when "e", "x+" then @waypoint = Coords[@body.position[0] + 1, @body.position[1], @body.position[2]]
-            when "w", "x-" then @waypoint = Coords[@body.position[0] - 1, @body.position[1], @body.position[2]]
-            when "j" then @waypoint = Coords[@body.position[0], @body.position[1]+5, @body.position[2]]
+            when "n", "z-" then @waypoint = @body.position - Coords::Z
+            when "s", "z+" then @waypoint = @body.position + Coords::Z
+            when "e", "x+" then @waypoint = @body.position + Coords::X
+            when "w", "x-" then @waypoint = @body.position - Coords::X
+            when "j" then @waypoint = @body.position + Coords::Y * 20
             when "h"
               player = @entity_tracker.player(p.username)
               if player
