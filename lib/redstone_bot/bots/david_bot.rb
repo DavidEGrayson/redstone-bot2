@@ -18,9 +18,10 @@ module RedstoneBot
         @body.look_at @entity_tracker.closest_entity
       end
 
-      waypoint = [99, 70, 237]
+      waypoint = [99, 70, 230]
       @body.on_position_update do
-        move_to(waypoint)
+        #move_to(waypoint)
+        fall
       end
 
       
@@ -33,11 +34,11 @@ module RedstoneBot
           #  tmphax_find_path
           #end
         when Packet::ChatMessage
-          if p.message == "<Elavid> t"
-            tmphax_find_path
-          end
-        
-          puts p
+          waypoint[2] += 1 if p.message == "<RyanTM> n"
+          waypoint[2] -= 1 if p.message == "<RyanTM> s"
+          waypoint[0] += 1 if p.message == "<RyanTM> e"
+          waypoint[0] -= 1 if p.message == "<RyanTM> w"
+          puts p.inspect
         when Packet::Disconnect
           exit 2
         end
@@ -58,15 +59,34 @@ module RedstoneBot
       to_s
     end
     
+    def find_ground(chunk_tracker, position)
+      x,y,z = position.to_a
+      puts position.inspect
+      y.ceil.downto(0).each do |_|
+        if (chunk_tracker.block_type([x,_,z]).solid?)
+          return _+1
+        end
+      end 
+    end
+	
+    def fall
+      ground = find_ground(@chunk_tracker,@body.position)
+      puts "GROUND: #{ground}"
+      if (@body.position[1] != ground)
+        @body.position += Vector[0,0.5,0]
+        @body.stance = @body.position[1] + 1.62
+      end
+    end
+	
     def move_to(waypoint)
-      speed = 0.3
+      speed = 0.5
       waypoint = Vector[*waypoint]
       dir = waypoint - @body.position
       d = dir.normalize*speed*@body.update_period
       #puts "%7.4f %7.4f %7.4f" % [d[0], d[1], d[2]]
       @body.position += d
       @body.stance = @body.position[1] + 1
-      @body.on_ground = true #false      
+      #@body.on_ground = true #false      
     end
     
     def_delegator :@chunk_tracker, :block_type, :block_type
