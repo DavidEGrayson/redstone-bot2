@@ -7,6 +7,7 @@ module RedstoneBot
   class Body
     attr_accessor :position, :look, :on_ground, :stance
     attr_accessor :update_period
+    attr_accessor :debug
     
     def on_ground?
       @on_ground
@@ -19,7 +20,7 @@ module RedstoneBot
       client.listen do |p|
         case p
           when Packet::PlayerPositionAndLook
-            puts "RX#{p}"
+            puts "rx#{p}" if debug
             @position = Vector[p.x, p.y, p.z]
             @stance = p.stance
             @look = Look.new(p.yaw, p.pitch)
@@ -66,7 +67,7 @@ module RedstoneBot
               position[0], position[1], position[2],
               stance, look.yaw, look.pitch, on_ground)
       @client.send_packet packet
-      puts "tx#{packet.to_s}"
+      puts "tx#{packet.to_s}" if debug
     end
   end
 end
