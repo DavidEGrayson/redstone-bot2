@@ -82,6 +82,11 @@ module RedstoneBot
       speed = 0.5
       waypoint = Vector[*waypoint]
       dir = waypoint - @body.position
+      if dir.norm < 0.2
+        puts "success"
+        return
+      end
+      
       d = dir.normalize*speed*@body.update_period
       #puts "%7.4f %7.4f %7.4f" % [d[0], d[1], d[2]]
       @body.position += d
