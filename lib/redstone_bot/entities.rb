@@ -1,8 +1,8 @@
-require 'matrix'
+require_relative 'coords'
 
 class Entity
   attr_accessor :id
-	attr_accessor :position  # Vector of floats
+	attr_accessor :position  # Coords object with floats
 	attr_accessor :name      # nil for non-players
 
 	# :passive, :neutral, :hostile, :utility

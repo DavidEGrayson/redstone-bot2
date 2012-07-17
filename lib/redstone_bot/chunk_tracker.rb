@@ -2,31 +2,7 @@ require 'zlib'
 require 'stringio'
 require "redstone_bot/block_types"
 
-module RedstoneBot
-  attr_reader :chunks
-
-  class Block
-    attr_reader :chunk
-    attr_reader :coords   # array of integers [x,y,z]    
-    
-    def initialize(chunk,coords)
-      @coords = coords
-      @chunk = chunk
-    end
-    
-    def x
-      @coords[0]
-    end
-    
-    def y
-      @coords[1]
-    end
-    
-    def z
-      @coords[2]
-    end
-  end
-  
+module RedstoneBot 
   class Chunk
     Size = [16, 256, 16]  # x,y,z size of each chunk
     
@@ -107,9 +83,11 @@ module RedstoneBot
       end
     end
     
-    # coords is an array of integers [x,y,z] in the standard world coordinate system
+    # coords is a RedstoneBot::Coords object or an array of numbers
     def block_type(coords)
-      chunk_coords = [coords[0].to_i/16*16, coords[2].to_i/16*16]
+      coords = coords.collect &:floor   # make array of ints
+      # TODO: see if calling floor here is really the right thing to do.  What is the correspondend between integer coords and float coords?
+      chunk_coords = [coords[0]/16*16, coords[2]/16*16]
       chunk = @chunks[chunk_coords]
       chunk && BlockType.from_id(chunk.block_type_id(coords))
     end

@@ -33,8 +33,20 @@ module RedstoneBot
     alias :magnitude :abs
     alias :norm :abs
     
+    def normalize
+      self/norm
+    end
+    
     def to_s
       "(%7.4f,%7.4f,%7.4f)" % [x, y, z]
-    end   
+    end
+
+    X = Coords[1,0,0]
+    Y = Coords[0,1,0]
+    Z = Coords[0,0,1]    
+    North = Coords[0,0,-1]
+    South = Coords[0,0,1]
+    East = Coords[1,0,0]
+    West = Coords[-1,0,0]
   end
 end

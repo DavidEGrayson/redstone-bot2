@@ -5,7 +5,7 @@ module RedstoneBot
     attr_reader :entities
 
     # body should be an object that responds to .position and returns
-    # a vector of numbers representing the player's position.
+    # a RedstoneBot::Coords representing the player's position.
     # A good choice is RedstoneBot::Body
     # This allows us to do things like find the closest entity.  It is optional.
     def initialize(client, body=nil)
@@ -59,15 +59,16 @@ module RedstoneBot
     protected  
     def update_entity_position_absolute(p)
       return unless entities.has_key?(p.eid)
-      entities[p.eid].position = Vector[p.x, p.y, p.z]/32.0
+      entities[p.eid].position = Coords[p.x, p.y, p.z]/32.0
     end
 
     def update_entity_position_relative(p)
       return unless entities.has_key?(p.eid)
-      entities[p.eid].position += Vector[p.dx, p.dy, p.dz]/32.0
+      entities[p.eid].position += Coords[p.dx, p.dy, p.dz]/32.0
     end
     
     def player_position
+      raise 'tmphax hell' if !@body.position.is_a?(Coords)
       @body.position
     end
   end

@@ -42,7 +42,11 @@ describe RedstoneBot::Coords do
   end
   
   it "can be divided by a scalar" do
-    (described_class[3.0, 6.0, 9.0]/3).should be_within(0.01).of(described_class[1,2,3])
+    (described_class[3.0, 6.0, 10]/3).should be_within(0.01).of(described_class[1,2,3.3333])
+  end
+  
+  it "can be normalized" do
+    (described_class[2.0, 2.0, 2.0]).normalize.should be_within(0.01).of(described_class[0.57735, 0.57735, 0.57735])
   end
   
   it "is component-wise mutable" do
@@ -53,5 +57,5 @@ describe RedstoneBot::Coords do
     c[1].should == 44
     c[2] -= 1
     c[2].should == 199
-  end
+  end  
 end

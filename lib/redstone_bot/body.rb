@@ -1,4 +1,4 @@
-require 'matrix'
+require_relative 'coords'
 
 module RedstoneBot
   class Look < Struct.new(:yaw, :pitch)
@@ -21,7 +21,7 @@ module RedstoneBot
         case p
           when Packet::PlayerPositionAndLook
             puts "RX! #{p}"
-            @position = Vector[p.x, p.y, p.z]
+            @position = Coords[p.x, p.y, p.z]
             @stance = p.stance
             @look = Look.new(p.yaw, p.pitch)
             @on_ground = p.on_ground
@@ -64,7 +64,7 @@ module RedstoneBot
     protected  
     def send_update
       packet = Packet::PlayerPositionAndLook.new(
-              position[0], position[1], position[2],
+              position.x, position.y, position.z,
               stance, look.yaw, look.pitch, on_ground)
       @client.send_packet packet
       puts "tx#{packet.to_s}" if debug

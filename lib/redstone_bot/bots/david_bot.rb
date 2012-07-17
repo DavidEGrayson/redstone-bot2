@@ -19,8 +19,8 @@ module RedstoneBot
       @waypoint = nil
       @body.on_position_update do
         if @waypoint
-          move_to_waypoint
           @body.look_at @waypoint
+          move_to_waypoint
         else
           fall
           @body.look_at @entity_tracker.closest_entity
@@ -43,16 +43,16 @@ module RedstoneBot
                 chat "dunno who dat '#{name}' is"
               end
             when "stop" then @waypoint = nil
-            when "n", "z-" then @waypoint = [@body.position[0], @body.position[1], @body.position[2] - 1]
-            when "s", "z+" then @waypoint = [@body.position[0], @body.position[1], @body.position[2] + 1]
-            when "e", "x+" then @waypoint = [@body.position[0] + 1, @body.position[1], @body.position[2]]
-            when "w", "x-" then @waypoint = [@body.position[0] - 1, @body.position[1], @body.position[2]]
-            when "j" then @waypoint = [@body.position[0], @body.position[1]+5, @body.position[2]]
+            when "n", "z-" then @waypoint = Coords[@body.position[0], @body.position[1], @body.position[2] - 1]
+            when "s", "z+" then @waypoint = Coords[@body.position[0], @body.position[1], @body.position[2] + 1]
+            when "e", "x+" then @waypoint = Coords[@body.position[0] + 1, @body.position[1], @body.position[2]]
+            when "w", "x-" then @waypoint = Coords[@body.position[0] - 1, @body.position[1], @body.position[2]]
+            when "j" then @waypoint = Coords[@body.position[0], @body.position[1]+5, @body.position[2]]
             when "h"
               player = @entity_tracker.player(p.username)
               if player
                 chat "coming!"
-                @waypoint = player.position.to_a
+                @waypoint = player.position
               else
                 chat "dunno where U r"
               end
@@ -94,16 +94,16 @@ module RedstoneBot
       ground = find_ground
       #puts "GROUND: #{ground}"
       if (@body.position[1] > ground)
-        @body.position -= Vector[0,0.5,0]
+        @body.position -= Coords[0,0.5,0]
       end
       if ((@body.position[1] - ground).abs < 0.5)
-        @body.position = Vector[@body.position[0],ground,@body.position[2]]
+        @body.position = Coords[@body.position[0],ground,@body.position[2]]
       end
     end
 	
     def move_to_waypoint
       speed = 10
-      waypoint_vector = Vector[*@waypoint] 
+      waypoint_vector = Coords[*@waypoint] 
       dir = waypoint_vector - @body.position
       if dir.norm < 0.2
         @waypoint = nil  # reached it
