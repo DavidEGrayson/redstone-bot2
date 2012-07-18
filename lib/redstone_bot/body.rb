@@ -5,7 +5,7 @@ module RedstoneBot
   end
 
   class Body
-    attr_accessor :position, :look, :on_ground, :stance
+    attr_accessor :position, :look, :on_ground, :stance, :health
     attr_accessor :update_period
     attr_accessor :debug
     
@@ -13,6 +13,10 @@ module RedstoneBot
       @on_ground
     end
     
+    def dead?
+      @health <= 0
+    end
+  
     def initialize(client)
       @position_updaters = []
       @client = client
@@ -27,8 +31,12 @@ module RedstoneBot
             @on_ground = p.on_ground
             send_update
             @regular_update_thread ||= start_regular_update_thread
-          when Packet::Respawn
-            raise "TODO: handle respawn plz"
+          when Packet::UpdateHealth
+            @health = p.health
+            if @health <= 0
+              packet = Packet::Respawn.new
+              @client.send_packet packet
+            end
         end
       end
     end
@@ -47,6 +55,7 @@ module RedstoneBot
     end
     
     def look_at(target)
+      return if target.nil?
 		  @look = angle_to_look_at(target)
     end
 
