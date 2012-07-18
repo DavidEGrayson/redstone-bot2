@@ -78,9 +78,9 @@ module RedstoneBot
     end
     
     def start
-      # Log in to minecraft.net
+      # Log in to minecraft.net.  TODO: only do this is the server is in online mode
       login if @password
-    
+
       # Connect
       @socket = TCPSocket.open hostname, port
       @socket.extend DataReader
@@ -88,15 +88,18 @@ module RedstoneBot
       # Handshake
       send_packet Packet::Handshake.new(username, hostname, port)
       packet = receive_packet
-      case packet
-      when RedstoneBot::Packet::Handshake
-        @connection_hash = packet.connection_hash
-      else
-        puts "Unexpected packet when handshaking: #{p}"
-        exit
+      if !packet.is_a? RedstoneBot::Packet::Handshake
+        raise "Unexpected packet when handshaking: #{p}"
       end
+      @connection_hash = packet.connection_hash
 
-      login2 if @password && @connection_hash.to_s != ""      
+      if @connection_hash != ""
+        if !@password
+          raise "This is an online server: you must supply a password and log in to use it.."
+        end
+        login2
+      end
+      
 
       # Log in to server
       send_packet Packet::LoginRequest.new(username)
@@ -125,8 +128,7 @@ module RedstoneBot
             notify_listeners packet
           end
         rescue UnknownPacketError => e
-          # TODO: uncomment
-          #error_message = "WHAT'S 0x%02X PRECIOUSSS?" % [e.packet_type]
+          error_message = "WHAT'S 0x%02X PRECIOUSSS?" % [e.packet_type]
           #chat error_message
           abort error_message
         end
