@@ -4,6 +4,7 @@ require 'forwardable'
 require "redstone_bot/pathfinder"
 require "redstone_bot/waypoint"
 require "redstone_bot/jump"
+require "redstone_bot/multi_action"
 
 module RedstoneBot
   module Bots; end
@@ -58,11 +59,12 @@ module RedstoneBot
             when "e", "x+" then @current_action = Waypoint.new @body.position + Coords::X
             when "w", "x-" then @current_action = Waypoint.new @body.position - Coords::X
             when "j" then @current_action = Jump.new(20)
+            when "m" then miracle
             when "h"
               player = @entity_tracker.player(p.username)
               if player
                 chat "coming!"
-                @current_action = Waypoint.new player.position
+                @current_action = Waypoint.new player.position + Coords::Y*0.2
               else
                 chat "dunno where U r"
               end
@@ -76,6 +78,11 @@ module RedstoneBot
       
     end
 
+    # fly through the air
+    def miracle
+      @current_action = MultiAction.new Jump.new(10), Waypoint.new(Coords[114, 72, 237])
+    end
+    
     def tmphax_find_path
       @pathfinder.start = @body.position.to_a.collect(&:to_i)
       @pathfinder.bounds = [94..122, 69..78, 233..261]
@@ -110,7 +117,6 @@ module RedstoneBot
       end
     end
 
-    
     def_delegator :@chunk_tracker, :block_type, :block_type
     def_delegator :@client, :chat, :chat
   end
