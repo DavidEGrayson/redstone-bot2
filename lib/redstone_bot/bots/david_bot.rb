@@ -17,6 +17,8 @@ module RedstoneBot
       @ce = ChatEvaluator.new(self, @client)
 
       @waypoint = nil
+      @c = [Coords::X, Coords::Y, Coords::Z].cycle
+      
       @body.on_position_update do
         if @waypoint
           @body.look_at @waypoint
@@ -33,14 +35,20 @@ module RedstoneBot
       @client.listen do |p|
         case p
         when Packet::UserChatMessage
+          next if defined?(MASTER) && p.username != MASTER
+        
           case p.contents
             when /where (.+)/ then
               name = $1
-              player = @entity_tracker.player(name)
-              if player
-                chat "dat guy at #{player.position}"
+              if name == "u"
+                chat "I be at #{@body.position}"
               else
-                chat "dunno who dat '#{name}' is"
+                player = @entity_tracker.player(name)
+                if player
+                  chat "dat guy at #{player.position}"
+                else
+                  chat "dunno who dat '#{name}' is"
+                end
               end
             when "stop" then @waypoint = nil
             when "n", "z-" then @waypoint = @body.position - Coords::Z
@@ -92,7 +100,6 @@ module RedstoneBot
 	
     def fall
       ground = find_ground
-      #puts "GROUND: #{ground}"
       if (@body.position[1] > ground)
         @body.position -= Coords[0,0.5,0]
       end
@@ -104,16 +111,21 @@ module RedstoneBot
     def move_to_waypoint
       speed = 10
       waypoint_vector = Coords[*@waypoint] 
-      dir = waypoint_vector - @body.position
-      if dir.norm < 0.2
+      d = waypoint_vector - @body.position
+      if d.norm < 0.2
         @waypoint = nil  # reached it
         return
       end
       
-      d = dir.normalize*speed*@body.update_period
-      #puts "%7.4f %7.4f %7.4f" % [d[0], d[1], d[2]]
+      max_distance = speed*@body.update_period
+      if d.norm > max_distance
+        d = d.normalize*max_distance
+      end
+      
+      if @c
+        d = d.project_onto_unit_vector(@c.next)*3
+      end
       @body.position += d
-      #@body.on_ground = true #false      
     end
     
     def_delegator :@chunk_tracker, :block_type, :block_type
