@@ -55,7 +55,20 @@ describe RedstoneBot::Coords do
     c[0].should == 101
     c[1] += 4
     c[1].should == 44
-    c[2] -= 1
-    c[2].should == 199
-  end  
+    c.z -= 1
+    c.z.should == 199
+  end
+  
+  it "can calculate inner products" do
+    (described_class[2.0, 3.0, 4.0].inner_product described_class[0,1,0]).should be_within(0.01).of(3)
+  end
+  
+  it "can project a vector onto a unit vector" do
+    described_class[2, 3, 4].project_onto_unit_vector(described_class::Z).should == described_class[0,0,4]
+  end
+  
+  it "can project a vector onto a vector" do
+    described_class[2, 3, 4].project_onto_vector(described_class::Z*-3).should == described_class[0,0,4]
+  end
+
 end
