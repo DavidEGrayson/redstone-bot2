@@ -19,11 +19,19 @@ module RedstoneBot
     attr_accessor :tolerance
     
     def initialize(coords, speed=self.class.default_speed)
-      @done = false
+      @started = @done = false
       @coords = coords
       @speed = speed
       @tolerance = self.class.default_tolerance
       @axes = [Coords::X, Coords::Y, Coords::Z].cycle
+    end
+    
+    def started?
+      @started
+    end
+    
+    def start(body)
+      @started = true
     end
     
     def update_position(body)

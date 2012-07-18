@@ -16,6 +16,10 @@ module RedstoneBot
     def dead?
       @health <= 0
     end
+    
+    def bumped?
+      @bumped
+    end
   
     def initialize(client)
       @position_updaters = []
@@ -30,7 +34,11 @@ module RedstoneBot
             @look = Look.new(p.yaw, p.pitch)
             @on_ground = p.on_ground
             send_update
-            @regular_update_thread ||= start_regular_update_thread
+            if @regular_update_thread
+              @bumped = true
+            else
+              @regular_update_thread = start_regular_update_thread
+            end
           when Packet::UpdateHealth
             @health = p.health
             if @health <= 0
@@ -50,6 +58,7 @@ module RedstoneBot
         @position_updaters.each do |p|
           p.call
         end
+        @bumped = false
         send_update
       end
     end

@@ -3,6 +3,7 @@ require "redstone_bot/chat_evaluator"
 require 'forwardable'
 require "redstone_bot/pathfinder"
 require "redstone_bot/waypoint"
+require "redstone_bot/jump"
 
 module RedstoneBot
   module Bots; end
@@ -21,6 +22,7 @@ module RedstoneBot
       
       @body.on_position_update do
         if @current_action
+          @current_action.start(@body) unless @current_action.started?
           @current_action.update_position(@body)
           @current_action = nil if @current_action.done?
         else
@@ -55,7 +57,7 @@ module RedstoneBot
             when "s", "z+" then @current_action = Waypoint.new @body.position + Coords::Z
             when "e", "x+" then @current_action = Waypoint.new @body.position + Coords::X
             when "w", "x-" then @current_action = Waypoint.new @body.position - Coords::X
-            when "j" then @current_action = Waypoint.new @body.position + Coords::Y * 20
+            when "j" then @current_action = Jump.new(20)
             when "h"
               player = @entity_tracker.player(p.username)
               if player
