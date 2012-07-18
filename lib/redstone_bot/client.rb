@@ -5,6 +5,9 @@ require "redstone_bot/synchronizer"
 require 'socket'
 require 'io/wait'
 require 'thread'
+require 'net/https'
+require 'net/http'
+require 'uri'
 
 Thread.abort_on_exception = true
 
@@ -18,8 +21,9 @@ module RedstoneBot
     attr_reader :port
     attr_reader :eid
     
-    def initialize(username, hostname, port)
+    def initialize(username, password, hostname, port)
       @username = username
+      @password = password
       @hostname = hostname
       @port = port
       @listeners = []
@@ -41,7 +45,60 @@ module RedstoneBot
       end
     end
     
+    # http://www.wiki.vg/Authentication
+    def login
+      # Attempt 3
+      uri = URI.parse("https://login.minecraft.net/")
+      puts "port = #{uri.port}"
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+
+      request = Net::HTTP::Post.new(uri.request_uri)
+      request.content_type = 'application/x-www-form-urlencoded'
+      request.set_form_data('username' => username, 'password' => @password, 'version' => 999)
+
+      puts "requesting login..."
+      response = http.request(request)
+      puts "RESPONSE: "
+      puts response.body
+      puts response.status
+    
+      exit
+    
+      # Attempt 1
+      #uri = URI("https://minecraft.net")
+      #res = Net::HTTP.post_form(uri, 'user' => username, 'password' => @password, 'version' => 999)
+            
+      # Attempt 2
+      uri = URI('https://minecraft.net/')
+      puts "path = #{uri.path}"
+      req = Net::HTTP::Post.new('https://minecraft.net/')
+      req.use_ssl = true
+      req.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      req.set_form_data('username' => username, 'password' => @password, 'version' => 999)
+      #req.content_type = 'application/x-www-form-urlencoded'
+
+      res = Net::HTTP.start(uri.hostname, uri.port) do |http|
+        http.request(req)
+      end
+
+      case res
+      when Net::HTTPSuccess, Net::HTTPRedirection
+        puts "OK!"
+      else
+        puts "value = #{res.value}"
+      end
+      
+      puts "Received from #{uri.host}:"      
+      puts res.body
+      
+    end
+    
     def start
+      login if @password
+      exit # tmphax
+    
       @mutex = Mutex.new    
       @socket = TCPSocket.open hostname, port
       @socket.extend DataReader
