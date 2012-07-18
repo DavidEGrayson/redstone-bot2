@@ -17,12 +17,12 @@ module RedstoneBot
       
       @ce = ChatEvaluator.new(self, @client)
 
-      @waypoint = nil
+      @current_action = nil
       
       @body.on_position_update do
-        if @waypoint
-          @waypoint.update_position(@body)
-          @waypoint = nil if @waypoint.done?
+        if @current_action
+          @current_action.update_position(@body)
+          @current_action = nil if @current_action.done?
         else
           fall
           @body.look_at @entity_tracker.closest_entity
@@ -50,17 +50,17 @@ module RedstoneBot
                   chat "dunno who dat '#{name}' is"
                 end
               end
-            when "stop" then @waypoint = nil
-            when "n", "z-" then @waypoint = Waypoint.new @body.position - Coords::Z
-            when "s", "z+" then @waypoint = Waypoint.new @body.position + Coords::Z
-            when "e", "x+" then @waypoint = Waypoint.new @body.position + Coords::X
-            when "w", "x-" then @waypoint = Waypoint.new @body.position - Coords::X
-            when "j" then @waypoint = Waypoint.new @body.position + Coords::Y * 20
+            when "stop" then @current_action = nil
+            when "n", "z-" then @current_action = Waypoint.new @body.position - Coords::Z
+            when "s", "z+" then @current_action = Waypoint.new @body.position + Coords::Z
+            when "e", "x+" then @current_action = Waypoint.new @body.position + Coords::X
+            when "w", "x-" then @current_action = Waypoint.new @body.position - Coords::X
+            when "j" then @current_action = Waypoint.new @body.position + Coords::Y * 20
             when "h"
               player = @entity_tracker.player(p.username)
               if player
                 chat "coming!"
-                @waypoint = Waypoint.new player.position
+                @current_action = Waypoint.new player.position
               else
                 chat "dunno where U r"
               end
