@@ -50,7 +50,12 @@ module RedstoneBot
       receive_packet
       
       send_packet Packet::LoginRequest.new(username)
-      @eid = receive_packet.eid
+      received_packet = receive_packet
+      if received_packet.is_a? RedstoneBot::Packet::Disconnect
+        puts "Login refused with reason: #{received_packet.reason}"
+        exit
+      end
+      @eid = received_packet.eid
       
       @connected = true
       notify_listeners :start

@@ -289,12 +289,24 @@ module RedstoneBot
     attr_reader :world_height
     attr_reader :level_type
     
+    def initialize(dimension=0, difficulty=1, game_mode=0, world_height=256, level_type='DEFAULT')
+      @dimension = dimension
+      @difficulty = difficulty
+      @game_mode = game_mode
+      @world_height = world_height
+      @level_type = level_type
+    end
+    
     def receive_data(socket)
       @dimension = socket.read_int
       @difficulty = socket.read_byte
       @game_mode = socket.read_byte
       @world_height = socket.read_short
       @level_type = socket.read_string
+    end
+    
+    def encode_data
+      int(dimension) + byte(difficulty) + byte(game_mode) + short(world_height) + string(level_type)
     end
   end
   
