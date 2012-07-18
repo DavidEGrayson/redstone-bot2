@@ -56,7 +56,7 @@ module RedstoneBot
       postdata = "user=#{username}&password=#{@password}&version=<launcher version>"
       puts "postdata = #{postdata}"
       resp, data = http.post("/", postdata, 'Content-Type' => 'application/x-www-form-urlencoded')
-      puts resp, data
+      puts "1", resp, "2", data, "3", resp.body
       exit
       
       #http.verify_mode = OpenSSL::SSL::VERIFY_NONE
