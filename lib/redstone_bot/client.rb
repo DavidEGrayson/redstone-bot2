@@ -46,38 +46,36 @@ module RedstoneBot
     end
     
     # http://www.wiki.vg/Authentication
-    def login
+    def login   
       # Attempt 3
       uri = URI.parse("https://login.minecraft.net/")
       puts "port = #{uri.port}"
-      http = Net::HTTP.new(uri.host, uri.port)
+      http = Net::HTTP.new("login.minecraft.net", 443)
       http.use_ssl = true
       http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      postdata = "user=#{username}&password=#{@password}&version=<launcher version>"
+      puts "postdata = #{postdata}"
+      resp, data = http.post("/", postdata, 'Content-Type' => 'application/x-www-form-urlencoded')
+      puts resp, data
+      exit
+      
+      #http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
-      request = Net::HTTP::Post.new(uri.request_uri)
+      request = Net::HTTP::Post.new("login.minecraft.net", 443)
       request.content_type = 'application/x-www-form-urlencoded'
       request.set_form_data('username' => username, 'password' => @password, 'version' => 999)
 
       puts "requesting login..."
-      response = http.request(request)
+      http.post("https://login.minecraft.net/")
+      #response = http.request(request)
       puts "RESPONSE: "
       puts response.body
       puts response.status
     
-      exit
-    
       # Attempt 1
-      #uri = URI("https://minecraft.net")
+      #uri = URI("https://login.minecraft.net")
       #res = Net::HTTP.post_form(uri, 'user' => username, 'password' => @password, 'version' => 999)
             
-      # Attempt 2
-      uri = URI('https://minecraft.net/')
-      puts "path = #{uri.path}"
-      req = Net::HTTP::Post.new('https://minecraft.net/')
-      req.use_ssl = true
-      req.verify_mode = OpenSSL::SSL::VERIFY_NONE
-      req.set_form_data('username' => username, 'password' => @password, 'version' => 999)
-      #req.content_type = 'application/x-www-form-urlencoded'
 
       res = Net::HTTP.start(uri.hostname, uri.port) do |http|
         http.request(req)
