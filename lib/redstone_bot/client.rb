@@ -70,8 +70,6 @@ module RedstoneBot
       # http://session.minecraft.net/game/joinserver.jsp?user=<username>&sessionId=<session id>&serverId=<server hash>
       
       http = Net::HTTP.new('session.minecraft.net')
- 
-      # GET request -> so the host can set his cookies
       resp, data = http.get("/game/joinserver.jsp?user=#{username}&sessionId=#{@session_id}&serverId=#{@connection_hash}", {})
       cookie = resp.response['set-cookie']
       
@@ -127,8 +125,9 @@ module RedstoneBot
             notify_listeners packet
           end
         rescue UnknownPacketError => e
-          error_message = "WHAT'S 0x%02X PRECIOUSSS?" % [e.packet_type]
-          chat error_message
+          # TODO: uncomment
+          #error_message = "WHAT'S 0x%02X PRECIOUSSS?" % [e.packet_type]
+          #chat error_message
           abort error_message
         end
       end

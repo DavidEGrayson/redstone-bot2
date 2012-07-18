@@ -612,6 +612,17 @@ module RedstoneBot
     end
   end
   
+  class Packet::AttachEntity < Packet
+    packet_type 0x27
+    attr_reader :eid
+    attr_reader :vehicle_eid
+    
+    def receive_data(socket)
+      @eid = socket.read_int
+      @vehicle_eid = socket.read_int
+    end
+  end
+  
   class Packet::EntityMetadata < Packet
     packet_type 0x28
     attr_reader :eid
