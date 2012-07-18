@@ -28,6 +28,8 @@ module RedstoneBot
       @port = port
       @listeners = []
       @connected = false
+      @session_id = nil
+      @connection_hash = nil
       
       listen { |packet| handle_packet(packet) }
     end
@@ -45,74 +47,75 @@ module RedstoneBot
       end
     end
     
-    # http://www.wiki.vg/Authentication
     def login   
-      # Attempt 3
-      uri = URI.parse("https://login.minecraft.net/")
-      puts "port = #{uri.port}"
+      # http://www.wiki.vg/Authentication
       http = Net::HTTP.new("login.minecraft.net", 443)
       http.use_ssl = true
       http.verify_mode = OpenSSL::SSL::VERIFY_NONE
       postdata = "user=#{username}&password=#{@password}&version=13"
-      puts "postdata = #{postdata}"
-      resp, data = http.post("/", postdata, 'Content-Type' => 'application/x-www-form-urlencoded')
-      puts "1", resp, "2", data, "3", resp.body
-      exit
-      
-      #http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-
-      request = Net::HTTP::Post.new("login.minecraft.net", 443)
-      request.content_type = 'application/x-www-form-urlencoded'
-      request.set_form_data('username' => username, 'password' => @password, 'version' => 999)
-
-      puts "requesting login..."
-      http.post("https://login.minecraft.net/")
-      #response = http.request(request)
-      puts "RESPONSE: "
-      puts response.body
-      puts response.status
-    
-      # Attempt 1
-      #uri = URI("https://login.minecraft.net")
-      #res = Net::HTTP.post_form(uri, 'user' => username, 'password' => @password, 'version' => 999)
-            
-
-      res = Net::HTTP.start(uri.hostname, uri.port) do |http|
-        http.request(req)
-      end
-
-      case res
-      when Net::HTTPSuccess, Net::HTTPRedirection
-        puts "OK!"
+      response, data = http.post("/", postdata, 'Content-Type' => 'application/x-www-form-urlencoded')
+      body = response.body      
+      puts "body = #{body}"
+      _, _, case_correct_username, @session_id = body.split(":")
+     
+      if case_correct_username.upcase == @username.upcase
+        @username = case_correct_username
       else
-        puts "value = #{res.value}"
-      end
+        puts "I do not understand why server thinks your username is #{case_correct_username}"
+      end      
+    end
+    
+    def login2
+      puts "login2"
+      # http://session.minecraft.net/game/joinserver.jsp?user=<username>&sessionId=<session id>&serverId=<server hash>
       
-      puts "Received from #{uri.host}:"      
-      puts res.body
+      http = Net::HTTP.new('session.minecraft.net')
+ 
+      # GET request -> so the host can set his cookies
+      resp, data = http.get("/game/joinserver.jsp?user=#{username}&sessionId=#{@session_id}&serverId=#{@connection_hash}", {})
+      cookie = resp.response['set-cookie']
       
+      puts "1", resp, "2", data, "3", resp.body
+      puts "4", Net::HTTPOK===resp
     end
     
     def start
+      # Log in to minecraft.net
       login if @password
-      exit # tmphax
     
-      @mutex = Mutex.new    
+      # Connect
       @socket = TCPSocket.open hostname, port
       @socket.extend DataReader
       
+      # Handshake
       send_packet Packet::Handshake.new(username, hostname, port)
-      receive_packet
-      
-      send_packet Packet::LoginRequest.new(username)
-      received_packet = receive_packet
-      if received_packet.is_a? RedstoneBot::Packet::Disconnect
-        puts "Login refused with reason: #{received_packet.reason}"
+      packet = receive_packet
+      case packet
+      when RedstoneBot::Packet::Handshake
+        @connection_hash = packet.connection_hash
+      else
+        puts "Unexpected packet when handshaking: #{p}"
         exit
       end
-      @eid = received_packet.eid
+
+      login2 if @password && @connection_hash.to_s != ""      
+
+      # Log in to server
+      send_packet Packet::LoginRequest.new(username)
+      packet = receive_packet
+      case packet
+      when RedstoneBot::Packet::Disconnect
+        puts "Login refused with reason: #{packet.reason}"
+        exit
+      when RedstoneBot::Packet::LoginRequest
+        @eid = packet.eid
+      else
+        puts "Unexpected packet when logging in: #{p}"
+        exit
+      end
       
       @connected = true
+      @mutex = Mutex.new
       notify_listeners :start
       
       # Receive packets
