@@ -117,14 +117,12 @@ module RedstoneBot
         return
       end
       
-      max_distance = speed*@body.update_period
+      max_distance = speed*@body.update_period*3
       if d.norm > max_distance
         d = d.normalize*max_distance
       end
       
-      if @c
-        d = d.project_onto_unit_vector(@c.next)*3
-      end
+      d = d.project_onto_unit_vector(@c.next)
       @body.position += d
     end
     
