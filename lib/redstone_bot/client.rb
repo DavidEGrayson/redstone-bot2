@@ -53,7 +53,7 @@ module RedstoneBot
       http = Net::HTTP.new("login.minecraft.net", 443)
       http.use_ssl = true
       http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-      postdata = "user=#{username}&password=#{@password}&version=<launcher version>"
+      postdata = "user=#{username}&password=#{@password}&version=13"
       puts "postdata = #{postdata}"
       resp, data = http.post("/", postdata, 'Content-Type' => 'application/x-www-form-urlencoded')
       puts "1", resp, "2", data, "3", resp.body
