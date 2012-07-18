@@ -2,6 +2,7 @@ require "redstone_bot/bot"
 require "redstone_bot/chat_evaluator"
 require 'forwardable'
 require "redstone_bot/pathfinder"
+require "redstone_bot/waypoint"
 
 module RedstoneBot
   module Bots; end
@@ -17,12 +18,11 @@ module RedstoneBot
       @ce = ChatEvaluator.new(self, @client)
 
       @waypoint = nil
-      @c = [Coords::X, Coords::Y, Coords::Z].cycle
       
       @body.on_position_update do
         if @waypoint
-          @body.look_at @waypoint
-          move_to_waypoint
+          @waypoint.update_position(@body)
+          @waypoint = nil if @waypoint.done?
         else
           fall
           @body.look_at @entity_tracker.closest_entity
@@ -51,16 +51,16 @@ module RedstoneBot
                 end
               end
             when "stop" then @waypoint = nil
-            when "n", "z-" then @waypoint = @body.position - Coords::Z
-            when "s", "z+" then @waypoint = @body.position + Coords::Z
-            when "e", "x+" then @waypoint = @body.position + Coords::X
-            when "w", "x-" then @waypoint = @body.position - Coords::X
-            when "j" then @waypoint = @body.position + Coords::Y * 20
+            when "n", "z-" then @waypoint = Waypoint.new @body.position - Coords::Z
+            when "s", "z+" then @waypoint = Waypoint.new @body.position + Coords::Z
+            when "e", "x+" then @waypoint = Waypoint.new @body.position + Coords::X
+            when "w", "x-" then @waypoint = Waypoint.new @body.position - Coords::X
+            when "j" then @waypoint = Waypoint.new @body.position + Coords::Y * 20
             when "h"
               player = @entity_tracker.player(p.username)
               if player
                 chat "coming!"
-                @waypoint = player.position
+                @waypoint = Waypoint.new player.position
               else
                 chat "dunno where U r"
               end
@@ -107,24 +107,7 @@ module RedstoneBot
         @body.position = Coords[@body.position[0],ground,@body.position[2]]
       end
     end
-	
-    def move_to_waypoint
-      speed = 10
-      waypoint_vector = Coords[*@waypoint] 
-      d = waypoint_vector - @body.position
-      if d.norm < 0.2
-        @waypoint = nil  # reached it
-        return
-      end
-      
-      max_distance = speed*@body.update_period*3
-      if d.norm > max_distance
-        d = d.normalize*max_distance
-      end
-      
-      d = d.project_onto_unit_vector(@c.next)
-      @body.position += d
-    end
+
     
     def_delegator :@chunk_tracker, :block_type, :block_type
     def_delegator :@client, :chat, :chat
