@@ -37,16 +37,27 @@ module RedstoneBot
       self/norm
     end
     
+    def inner_product(coords)
+      x*coords.x + y*coords.y + z*coords.z
+    end
+    
+    def project_onto_unit_vector(coords)
+      coords * inner_product(coords)
+    end
+    
+    def project_onto_vector(coords)
+      project_onto_unit_vector coords.norm
+    end
+    
     def to_s
       "(%7.4f,%7.4f,%7.4f)" % [x, y, z]
     end
 
-    X = Coords[1,0,0]
-    Y = Coords[0,1,0]
-    Z = Coords[0,0,1]    
+    X = East = Coords[1,0,0]
+    Y = Up = Coords[0,1,0]
+    Z = South = Coords[0,0,1]
+    Down = Coords[0,-1,0]
     North = Coords[0,0,-1]
-    South = Coords[0,0,1]
-    East = Coords[1,0,0]
     West = Coords[-1,0,0]
   end
 end
