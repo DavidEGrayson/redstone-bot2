@@ -129,7 +129,7 @@ module RedstoneBot
           end
         rescue UnknownPacketError => e
           error_message = "WHAT'S 0x%02X PRECIOUSSS?" % [e.packet_type]
-          #chat error_message
+          chat error_message
           abort error_message
         end
       end
