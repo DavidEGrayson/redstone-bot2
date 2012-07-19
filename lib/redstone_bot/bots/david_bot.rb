@@ -60,7 +60,20 @@ module RedstoneBot
             when "e", "x+" then @current_action = Waypoint.new @body.position + Coords::X
             when "w", "x-" then @current_action = Waypoint.new @body.position - Coords::X
             when "j" then @current_action = Jump.new(20)
-            when "m" then miracle(114, 237)
+            when "m"
+              player = @entity_tracker.player(p.username)
+              if player
+                x, z = player.position.x, player.position.z
+                chat "coming to #{x}, #{z}!"
+                miracle x, z
+              else
+                chat "dunno where U r (chat m <X> <Z> to specify)"
+              end
+            when /m (\d+) (\d+)/
+              x = $1.to_i
+              z = $2.to_i
+              chat "coming to #{x}, #{z}!"
+              miracle x, z
             when "h"
               player = @entity_tracker.player(p.username)
               if player
