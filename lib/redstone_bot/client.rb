@@ -5,6 +5,9 @@ require "redstone_bot/synchronizer"
 require 'socket'
 require 'io/wait'
 require 'thread'
+require 'net/https'
+require 'net/http'
+require 'uri'
 
 Thread.abort_on_exception = true
 
@@ -18,12 +21,15 @@ module RedstoneBot
     attr_reader :port
     attr_reader :eid
     
-    def initialize(username, hostname, port)
+    def initialize(username, password, hostname, port)
       @username = username
+      @password = password
       @hostname = hostname
       @port = port
       @listeners = []
       @connected = false
+      @session_id = nil
+      @connection_hash = nil
       
       listen { |packet| handle_packet(packet) }
     end
@@ -41,23 +47,76 @@ module RedstoneBot
       end
     end
     
+    def login   
+      # http://www.wiki.vg/Authentication
+      http = Net::HTTP.new("login.minecraft.net", 443)
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      postdata = "user=#{username}&password=#{@password}&version=13"
+      response, data = http.post("/", postdata, 'Content-Type' => 'application/x-www-form-urlencoded')
+      body = response.body      
+      puts "body = #{body}"
+      _, _, case_correct_username, @session_id = body.split(":")
+     
+      if case_correct_username.upcase == @username.upcase
+        @username = case_correct_username
+      else
+        puts "I do not understand why server thinks your username is #{case_correct_username}"
+      end      
+    end
+    
+    def login2
+      puts "login2"
+      # http://session.minecraft.net/game/joinserver.jsp?user=<username>&sessionId=<session id>&serverId=<server hash>
+      
+      http = Net::HTTP.new('session.minecraft.net')
+      resp, data = http.get("/game/joinserver.jsp?user=#{username}&sessionId=#{@session_id}&serverId=#{@connection_hash}", {})
+      cookie = resp.response['set-cookie']
+      
+      puts "1", resp, "2", data, "3", resp.body
+      puts "4", Net::HTTPOK===resp
+    end
+    
     def start
-      @mutex = Mutex.new    
+      # Log in to minecraft.net.  TODO: only do this is the server is in online mode
+      login if @password
+
+      # Connect
       @socket = TCPSocket.open hostname, port
       @socket.extend DataReader
       
+      # Handshake
       send_packet Packet::Handshake.new(username, hostname, port)
-      receive_packet
+      packet = receive_packet
+      if !packet.is_a? RedstoneBot::Packet::Handshake
+        raise "Unexpected packet when handshaking: #{p}"
+      end
+      @connection_hash = packet.connection_hash
+
+      if @connection_hash != ""
+        if !@password
+          raise "This is an online server: you must supply a password and log in to use it.."
+        end
+        login2
+      end
       
+
+      # Log in to server
       send_packet Packet::LoginRequest.new(username)
-      received_packet = receive_packet
-      if received_packet.is_a? RedstoneBot::Packet::Disconnect
-        puts "Login refused with reason: #{received_packet.reason}"
+      packet = receive_packet
+      case packet
+      when RedstoneBot::Packet::Disconnect
+        puts "Login refused with reason: #{packet.reason}"
+        exit
+      when RedstoneBot::Packet::LoginRequest
+        @eid = packet.eid
+      else
+        puts "Unexpected packet when logging in: #{p}"
         exit
       end
-      @eid = received_packet.eid
       
       @connected = true
+      @mutex = Mutex.new
       notify_listeners :start
       
       # Receive packets

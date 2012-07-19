@@ -15,6 +15,7 @@ module RedstoneBot
     def setup
       standard_setup
       
+      @body.update_period = 0.01
       #@body.debug = true
       
       @ce = ChatEvaluator.new(self, @client)
@@ -59,7 +60,7 @@ module RedstoneBot
             when "e", "x+" then @current_action = Waypoint.new @body.position + Coords::X
             when "w", "x-" then @current_action = Waypoint.new @body.position - Coords::X
             when "j" then @current_action = Jump.new(20)
-            when "m" then miracle
+            when "m" then miracle(114, 237)
             when "h"
               player = @entity_tracker.player(p.username)
               if player
@@ -70,6 +71,7 @@ module RedstoneBot
               end
             end
         when Packet::Disconnect
+          puts "Fly time = #{Time.now-@start_fly}" if @start_fly
           exit 2
         end
         
@@ -79,8 +81,15 @@ module RedstoneBot
     end
 
     # fly through the air
-    def miracle
-      @current_action = MultiAction.new Jump.new(10), Waypoint.new(Coords[114, 72, 237])
+    def miracle(x, z)
+      @start_fly = Time.now
+      jump = Jump.new(200)
+      waypoint1 = Waypoint.new(Coords[@body.position.x, 290, @body.position.z])
+      waypoint2 = Waypoint.new(Coords[x, 260, z])
+      jump.speed = 500
+      waypoint1.speed = waypoint2.speed = 500
+
+      @current_action = MultiAction.new(jump, waypoint1, waypoint2) 
     end
     
     def tmphax_find_path
