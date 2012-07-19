@@ -105,13 +105,11 @@ module RedstoneBot
       packet = receive_packet
       case packet
       when RedstoneBot::Packet::Disconnect
-        puts "Login refused with reason: #{packet.reason}"
-        exit
+        raise "Login refused with reason: #{packet.reason}"
       when RedstoneBot::Packet::LoginRequest
         @eid = packet.eid
       else
-        puts "Unexpected packet when logging in: #{p}"
-        exit
+        raise "Unexpected packet when logging in: #{p}"
       end
 
       @connected = true
