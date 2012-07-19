@@ -69,7 +69,7 @@ module RedstoneBot
               else
                 chat "dunno where U r (chat m <X> <Z> to specify)"
               end
-            when /m (\d+) (\d+)/
+            when /m ([\-\d]+) ([\-\d]+)/
               x = $1.to_i
               z = $2.to_i
               chat "coming to #{x}, #{z}!"
