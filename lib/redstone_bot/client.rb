@@ -91,7 +91,7 @@ module RedstoneBot
       end
       @connection_hash = packet.connection_hash
 
-      if @connection_hash != ""
+      if @connection_hash != "-"
         if @password.to_s == ""
           raise "This is an online server: you must supply a password and log in to use it.."
         end
