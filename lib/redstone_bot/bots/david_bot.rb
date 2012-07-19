@@ -38,10 +38,6 @@ module RedstoneBot
       
       @client.listen do |p|
         case p
-        when :start
-          @client.later(1) do
-            miracle -70, -360
-          end
         when Packet::UserChatMessage
           next if defined?(MASTER) && p.username != MASTER
         
