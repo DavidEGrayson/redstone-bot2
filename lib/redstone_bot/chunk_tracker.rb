@@ -78,7 +78,12 @@ module RedstoneBot
           end
         when Packet::ChunkData
           coords = [p.x*16, p.z*16]
-          @chunks[coords].apply_change p
+          chunk = @chunks[coords]
+          if chunk
+            @chunks[coords].apply_change p
+          else
+            $stderr.puts "warning: received update for a chunk that is not loaded: #{coords.inspect}"
+          end
         end
       end
     end
