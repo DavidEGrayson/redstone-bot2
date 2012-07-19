@@ -106,8 +106,6 @@ module RedstoneBot
     end
     
     def find_ground
-      return 44 # tmphax
-    
       x,y,z = @body.position.to_a
       y.ceil.downto(0).each do |test_y|
         #puts "#{x} #{_} #{z} #{@chunk_tracker.block_type([x,_,z])}"
