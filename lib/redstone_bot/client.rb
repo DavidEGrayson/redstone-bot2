@@ -161,5 +161,9 @@ module RedstoneBot
     def connected?
       @connected
     end
+    
+    def time_string
+      Time.now.strftime("%M-%S-%L")
+    end
   end
 end
