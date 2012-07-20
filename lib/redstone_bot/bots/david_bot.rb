@@ -19,7 +19,8 @@ module RedstoneBot
       #@body.debug = true
       
       @ce = ChatEvaluator.new(self, @client)
-
+      @ce.master = MASTER if defined?(MASTER)
+      
       @current_action = nil
       
       @body.on_position_update do
@@ -38,10 +39,12 @@ module RedstoneBot
       
       @client.listen do |p|
         case p
-        when Packet::UserChatMessage
-          next if defined?(MASTER) && p.username != MASTER
-        
-          case p.contents
+        when Packet::ChatMessage
+          puts p
+
+          next if !p.player_chat? || (defined?(MASTER) && p.username != MASTER)
+
+          case p.chat
             when /where (.+)/ then
               name = $1
               if name == "u"
@@ -59,7 +62,7 @@ module RedstoneBot
             when "s", "z+" then @current_action = Waypoint.new @body.position + Coords::Z
             when "e", "x+" then @current_action = Waypoint.new @body.position + Coords::X
             when "w", "x-" then @current_action = Waypoint.new @body.position - Coords::X
-            when "j" then @current_action = Jump.new(20)
+            when "j" then @current_action = Jump.new(5)
             when "m"
               player = @entity_tracker.player(p.username)
               if player
@@ -69,7 +72,7 @@ module RedstoneBot
               else
                 chat "dunno where U r (chat m <X> <Z> to specify)"
               end
-            when /m ([\-\d]+) ([\-\d]+)/
+            when /m (\-?\d+) (\-?\d+)/
               x = $1.to_i
               z = $2.to_i
               chat "coming to #{x}, #{z}!"
@@ -86,9 +89,7 @@ module RedstoneBot
         when Packet::Disconnect
           puts "Fly time = #{Time.now-@start_fly}" if @start_fly
           exit 2
-        end
-        
-        puts p.inspect if p.is_a?(Packet::ChatMessage)
+        end        
       end 
       
     end

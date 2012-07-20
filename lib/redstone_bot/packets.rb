@@ -140,70 +140,57 @@ module RedstoneBot
   
   class Packet::ChatMessage < Packet
     packet_type 0x03
-    attr_reader :message
+    attr_reader :data, :death_type, :killer_name, :username, :chat
     
     # Source: http://www.wiki.vg/Chat except I left out the funny characters
     # because I'd have to think a little bit more about encodings to make it work
     AllowedChatChars = '!\"#$%&\'`()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_abcdefghijklmnopqrstuvwxyz{|}~| '.split('')
     
-    def initialize(message)
-      @message = message
+    def initialize(data)
+      @data = data      
+      init_player_chat_info or init_death_info
+    end
+       
+    def receive_data(socket)
+      initialize(socket.read_string)
     end
     
+    def safe_data
+      data.chars.select { |c| AllowedChatChars.include?(c) }[0,100].join
+    end
+       
     def encode_data
-      safe_str = message.chars.select { |c| AllowedChatChars.include?(c) }[0,100].join
-      string(safe_str)
+      string(safe_data)
+    end
+
+    def to_s
+		  "chat: #{self.class.strip_codes(data)}"
+    end
+
+    def death?
+      !!@death_type
     end
     
-    def self.receive_data(socket)
-      message = socket.read_string
-      case message
-        when /^<([^>]+)> (.*)/ then Packet::UserChatMessage.new(message, $1, $2)
-        when /^\u00A7([0-9a-f])(.*)/ then Packet::ColoredMessage.new(message, $1.to_i(16), $2)
-        else DeathMessage.new(message)
-			end
+    def player_chat?
+      !!@chat
     end
     
-    def to_s
-		  "generic chat: #{message.inspect}"
-    end
-  end
-  
-  class Packet::UserChatMessage < Packet::ChatMessage
-    attr_accessor :username, :contents
-
-    def initialize(message, username, contents)
-      @message = message
-      @username = username
-      @contents = contents
+    # Removes Minecraft color and formatting codes.
+    def self.strip_codes(str)
+      str.gsub /\u00A7[0-9a-z]/, ''
     end
 
-    def to_s
-      "chat: <#{username}> #{contents}"
+    protected
+    def init_player_chat_info
+      if data =~ /^<([^>]+)> (.*)/
+        @username, @chat = $1, $2
+        return true
+      end
+      return false
     end
-  end
-
-  class Packet::ColoredMessage < Packet::ChatMessage
-    attr_accessor :color_code, :contents
-
-    def initialize(message, color_code, contents)
-      @message = message
-      @color_code = color_code
-      @contents = contents
-    end
-
-    def to_s
-      "chat: #{contents}"
-    end
-  end
-
-  class Packet::DeathMessage < Packet::ChatMessage
-    attr_accessor :contents, :username, :death_type, :killer_name
-
-    def initialize(message)
-      @message = @contents = message
-
-      @death_type = case message
+    
+    def init_death_info
+      @death_type = case data
         when /^(.+) drowned$/ then :drowned
         when /^(.+) hit the ground too hard$/ then :hit_ground
         when /^(.+) was slain by (.+)$/ then :slain
@@ -223,16 +210,14 @@ module RedstoneBot
         when /^(.+) didn't have a chance$/ then :no_chance
         when /^([^\s]*)$/ then :unknown
         end
-
-      @username = $1
-      @killer_name = $2   # mob or player name
-    end
-
-    def to_s
-      "death: #{message}"
-    end
+      
+      if @death_type
+        @username = $1
+        @killer_name = $2   # mob or player name
+      end
+    end  
   end
-  
+    
   class Packet::TimeUpdate < Packet
     packet_type 0x04
     attr_reader :ticks
@@ -868,6 +853,17 @@ module RedstoneBot
       @flying = socket.read_bool
       @can_fly = socket.read_bool
       @instant_destroy = socket.read_bool
+    end
+  end
+  
+  class Packet::PluginMessage < Packet
+    packet_type 0xFA
+    attr_reader :channel, :data
+    
+    def receive_data(socket)
+      @channel = socket.read_string
+      length = socket.read_short
+      @data = socket.read(length)
     end
   end
   
