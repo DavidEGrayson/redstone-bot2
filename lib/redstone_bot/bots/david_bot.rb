@@ -1,10 +1,18 @@
+require 'forwardable'
+require 'fiber'
+
 require "redstone_bot/bot"
 require "redstone_bot/chat_evaluator"
-require 'forwardable'
 require "redstone_bot/pathfinder"
 require "redstone_bot/waypoint"
 require "redstone_bot/jump"
 require "redstone_bot/multi_action"
+
+class FiberWrapper
+  def initialize(meth)
+  
+  end
+end
 
 module RedstoneBot
   module Bots; end
@@ -28,6 +36,9 @@ module RedstoneBot
           @current_action.start(@body) unless @current_action.started?
           @current_action.update_position(@body)
           @current_action = nil if @current_action.done?
+        elsif @current_fiber
+          @current_fiber.resume @body
+          @current_fiber = nil if !@current_fiber.alive?
         else
           fall
           @body.look_at @entity_tracker.closest_entity
@@ -41,9 +52,7 @@ module RedstoneBot
         case p
         when Packet::ChatMessage
           puts p
-
           next if !p.player_chat? || (defined?(MASTER) && p.username != MASTER)
-
           case p.chat
             when /where (.+)/ then
               name = $1
@@ -85,7 +94,11 @@ module RedstoneBot
               else
                 chat "dunno where U r"
               end
-            end
+            when "f"
+              chat "OK got it"
+              @current_fiber = new_fiber :tmphax_fiber
+              puts @current_fiber.inspect
+            end              
         when Packet::Disconnect
           puts "Fly time = #{Time.now-@start_fly}" if @start_fly
           exit 2
@@ -94,6 +107,25 @@ module RedstoneBot
       
     end
 
+    def new_fiber(meth)
+      if meth.is_a? Symbol
+        meth = method(meth)
+      end
+    
+      Fiber.new { meth.call }
+    end
+    
+    def tmphax_fiber
+      10.times do
+        puts "#{@client.time_string} hey"
+        wait_for_next_position_update
+      end
+    end
+    
+    def wait_for_next_position_update
+      Fiber.yield
+    end
+    
     # fly through the air
     def miracle(x, z)
       @start_fly = Time.now
