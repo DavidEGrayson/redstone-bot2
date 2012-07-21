@@ -116,10 +116,9 @@ module RedstoneBot
     
       @start_fly = Time.now
       jump_to_height 276, opts
-      chat "I jumped to #{@body.position}"
-      #move_to Coords[@body.position.x, 290, @body.position.z], opts
       move_to Coords[x, 257, z], opts
-      fall :update_period => 0.01, :speed => 500
+      fall opts
+      chat "I be at #{@body.position} after #{Time.now - @start_fly} seconds."
     end
 
     def move_to(coords, opts={})
@@ -176,7 +175,7 @@ module RedstoneBot
       speed = opts[:speed] || 10
     
       while @body.position[1] <= y
-        puts @client.time_string + " jumping lup=#{@body.last_update_period}"
+        #puts @client.time_string + " jumping lup=#{@body.last_update_period}"
         wait_for_next_position_update(opts[:update_period])
         @body.position[1] += speed*@body.last_update_period
         if @body.bumped?
@@ -188,7 +187,7 @@ module RedstoneBot
 	
     def fall(opts={})
       puts "FALL NOW"
-      @body.debug = true # TMPHAX
+      #@body.debug = true # TMPHAX
       while true
         wait_for_next_position_update(opts[:update_period])
         break if fall_update(opts)
@@ -242,7 +241,7 @@ module RedstoneBot
     def fall_update(opts={})
       speed = opts[:speed] || 10
       
-      @body.debug = true
+      #@body.debug = true
     
       ground = find_ground
       
@@ -258,7 +257,7 @@ module RedstoneBot
       @body.position.y += dy
       
       if ((@body.position[1] - ground).abs < 0.2)
-        puts "on ground"
+        #puts "on ground"
         return true
       end
     end
