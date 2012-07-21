@@ -18,9 +18,6 @@ module RedstoneBot
     def setup
       standard_setup
       
-      @body.update_period = 0.05
-      #@body.debug = true
-      
       @ce = ChatEvaluator.new(self, @client)
       @ce.master = MASTER if defined?(MASTER)
       
@@ -91,12 +88,10 @@ module RedstoneBot
       
     end
     
-    def start_miracle_jump(x,z)
-      @body.start do
-        @start_fly = Time.now
-        miracle_jump x, z
-        chat "I be at #{@body.position} after #{Time.now - @start_fly} seconds."
-      end
+    def miracle_jump(x,z)
+      @start_fly = Time.now
+      super
+      chat "I be at #{@body.position} after #{Time.now - @start_fly} seconds."
     end
     
     def tmphax_find_path

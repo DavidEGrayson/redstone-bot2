@@ -3,6 +3,10 @@
 # Can be included into your bot as long as you have these things:
 # A 'body' method that returns the RedstoneBot::Body.
 # A 'chunk_tracker' method that returns a RedstoneBot::ChunkTracker.
+#
+# NOTE: David is not totally convinced that this should be a module instead
+# of a class.  Any class that calls these body-moving functions should be
+# built with the assumption that it could be either.
 module RedstoneBot
   module BodyMovers
     
@@ -12,6 +16,10 @@ module RedstoneBot
     
     def start_jump(*args)
       body.start { jump *args }
+    end
+    
+    def start_miracle_jump(*args)
+      body.start { miracle_jump *args }
     end
     
     def miracle_jump(x, z)
@@ -56,9 +64,9 @@ module RedstoneBot
     def jump_to_height(y, opts={})
       speed = opts[:speed] || 10
     
-      while body.position[1] <= y
+      while body.position.y <= y
         body.wait_for_next_position_update(opts[:update_period])
-        body.position[1] += speed*@body.last_update_period
+        body.position.y += speed*body.last_update_period
         if body.bumped?
           return false   # the head got bumped
         end
@@ -80,15 +88,13 @@ module RedstoneBot
       max_distance = speed * body.last_update_period
       
       dy = ground - body.position.y
-      if (dy < -max_distance)
-        dy = -max_distance
-      elsif (dy > max_distance)
-        dy = max_distance
+      if dy.abs > max_distance
+        dy = dy.to_f/dy.abs*max_distance
       end
       
       body.position.y += dy
       
-      if ((body.position.y - ground).abs < 0.2)
+      if (body.position.y - ground).abs < 0.2
         return true
       end
     end
