@@ -99,9 +99,7 @@ module RedstoneBot
                 chat "dunno where U r"
               end
             when "f"
-              chat "OK got it"
               @current_fiber = new_fiber :tmphax_fiber
-              puts @current_fiber.inspect
             end              
         when Packet::Disconnect
           puts "Fly time = #{Time.now-@start_fly}" if @start_fly
@@ -119,10 +117,29 @@ module RedstoneBot
     end
     
     def tmphax_fiber
-      10.times do
-        puts "#{@client.time_string} hey"
+      jump(5)
+      fall
+    end
+    
+    def jump(dy=5, opts={})
+      jump_to_height @body.position[1] + dy
+    end
+    
+    def jump_to_height(y, opts={})
+      speed = opts[:speed] || 10
+    
+      while @body.position[1] <= y
         wait_for_next_position_update
+        @body.position[1] += speed*@body.update_period
+        if @body.bumped?
+          puts "bumped my head!"
+          return false
+        end
       end
+    end
+    
+    def fall
+      raise "not implemented"
     end
     
     def wait_for_next_position_update
