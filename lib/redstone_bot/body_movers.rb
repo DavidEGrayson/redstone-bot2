@@ -57,7 +57,7 @@ module RedstoneBot
       
     end
     
-    def jump(dy=2, opts={})
+    def jump(dy=3, opts={})
       jump_to_height body.position.y + dy, opts
     end
     
@@ -109,6 +109,10 @@ module RedstoneBot
         end
       end
       nil
+    end
+    
+    def position
+      body.position
     end
     
   end
