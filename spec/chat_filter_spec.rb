@@ -12,7 +12,7 @@ class ChatMessage
 end
 
 def player_chat(username, chat)
-  p = RedstoneBot::Packet::ChatMessage.allocate
+  p = ChatMessage.allocate
   p.player_chat(username, chat)
   p
 end
@@ -31,6 +31,10 @@ class TestChatter
       l.call packet
     end
   end
+  
+  def username
+    "testbot"
+  end
 end
 
 describe RedstoneBot::ChatFilter do
@@ -41,14 +45,30 @@ describe RedstoneBot::ChatFilter do
     @filter.listen { |p| @receiver.packet p }
   end
 
-  it "should let through all Packet::ChatMessages by default" do
+  it "should pass all Packet::ChatMessages by default" do
     @receiver.should_receive :packet
     @chatter << player_chat("Elavid", "wazzup")
   end
   
-  it "should not let through objects other than Packet::ChatMessage" do
-    @chatter << "mehehe"
+  it "should reject objects other than Packet::ChatMessage" do
     @receiver.should_not_receive :packet
+    @chatter << RedstoneBot::Packet::KeepAlive.new
   end
+  
+  context "when rejecting messages from self" do
+    before do
+      @filter.reject_from_self
+    end
+  
+    it "rejects messages from self" do
+      @receiver.should_not_receive :packet
+      @chatter << player_chat(@chatter.username, "hey")
+    end
 
+    it "passes messages from others" do
+      @receiver.should_receive :packet
+      @chatter << player_chat("Elavid", "hey")
+    end
+  end
+  
 end

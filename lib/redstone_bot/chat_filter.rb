@@ -56,7 +56,7 @@ module RedstoneBot
       filter { |p| p.username == name }
     end
     
-    def reject_from_me
+    def reject_from_self
       filter { |p| p.username != username }
     end
 

@@ -13,14 +13,24 @@ module RedstoneBot
     extend Forwardable
     include BodyMovers
     
+    Aliases = {
+      "meq" => "m -2570 -2069",
+      "mpl" => "m 100 240",
+      }
+    
     attr_reader :body, :chunk_tracker
     
     def setup
       standard_setup
       
+      @chat_filter = ChatFilter.new(@client)
+      @chat_filter.only_player_chats
+      @chat_filter.reject_from_self      
+      @chat_filter.aliases Aliases
+      @chat_filer.only_from_user(MASTER) if defined?(MASTER)
       
-      @ce = ChatEvaluator.new(@client, self)      
-      @cm = ChatMover.new(@client, self, @entity_tracker)
+      @ce = ChatEvaluator.new(@client_filter, self)      
+      @cm = ChatMover.new(@client_filter, self, @entity_tracker)
       
       #@cm.aliases = {"meq" => "m -2570 -2069", "mpl" => "m 100 240"}
       #if defined?(MASTER)
