@@ -115,11 +115,11 @@ module RedstoneBot
       opts = { :update_period => 0.01, :speed => 500 }
     
       @start_fly = Time.now
-      jump 200, opts
+      jump_to_height 276, opts
       chat "I jumped to #{@body.position}"
       #move_to Coords[@body.position.x, 290, @body.position.z], opts
-      #move_to Coords[x, 260, z]
-      fall :update_period => 0.01, :speed => 50
+      #move_to Coords[x, 257, z]
+      fall :update_period => 0.01, :speed => 500
     end
 
     def new_fiber(meth, *args)
@@ -158,11 +158,11 @@ module RedstoneBot
       end
     end
 	
-    def fall(opts)
+    def fall(opts={})
       puts "FALL NOW"
       while true
         wait_for_next_position_update(opts[:update_period])
-        break if fall_update
+        break if fall_update(opts)
       end
       delay(0.2)
     end
@@ -210,12 +210,12 @@ module RedstoneBot
       to_s
     end
       
-    def fall_update
-      speed = 10
+    def fall_update(opts={})
+      speed = opts[:speed] || 10
     
       ground = find_ground
       if (@body.position[1] > ground)
-        @body.position.y -= speed*@body.update_period
+        @body.position.y -= speed*@body.last_update_period
       end
       if ((@body.position[1] - ground).abs < 0.5)
         @body.position.y = ground
