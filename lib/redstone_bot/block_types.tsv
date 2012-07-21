@@ -58,7 +58,7 @@
 57	DiamondBlock	solid
 58	CraftingTable	solid
 59	Wheat	
-60	Farmland	
+60	Farmland solid
 61	Furnace	solid
 62	BurningFurnace	solid
 63	SignPost	

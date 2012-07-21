@@ -18,6 +18,7 @@ module RedstoneBot
     Aliases = {
       "meq" => "m -2570 -2069",
       "mpl" => "m 100 240",
+      "mkn" => "m -211 785",
       }
     
     attr_reader :body, :chunk_tracker
@@ -34,11 +35,6 @@ module RedstoneBot
       @ce = ChatEvaluator.new(@client, self)      
       @cm = ChatMover.new(@chat_filter, self, @entity_tracker)
       
-      #@cm.aliases = {"meq" => "m -2570 -2069", "mpl" => "m 100 240"}
-      #if defined?(MASTER)
-      #  @cm.master = @ce.master = MASTER
-      #end
-      
       @body.on_position_update do
         if !@body.current_fiber
           fall_update
@@ -47,6 +43,18 @@ module RedstoneBot
       end
       
       @pathfinder = Pathfinder.new(@chunk_tracker)
+      
+      @chat_filter.listen do |p|
+        next unless p.is_a?(Packet::ChatMessage) && p.player_chat?
+        
+        case p.chat
+        when /d (\-?\d+) (\-?\d+) (\-?\d+)/
+          x, y, z = $1.to_i, $2.to_i, $3.to_i
+          puts "using #{x},#{y},#{z}!"
+          #@client.send_packet Packet::PlayerDigging.new(2, [x, y, z], 0)
+          @client.send_packet Packet::PlayerDigging.start [x,y,z]
+        end
+      end
       
       @client.listen do |p|
         case p
@@ -77,6 +85,11 @@ module RedstoneBot
     
     def inspect
       to_s
+    end
+    
+    def standing_on
+      coord_array = (@body.position - Coords::Y).to_a.collect &:floor
+      "#{block_type coord_array} #{@body.position.y}->#{coord_array[1]}"
     end
     
     def jump_to_height(*args)

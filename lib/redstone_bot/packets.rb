@@ -358,6 +358,34 @@ module RedstoneBot
     end
   end
   
+  class Packet::PlayerDigging < Packet
+    packet_type 0x0E
+    attr_reader :status, :x, :y, :z, :face
+    
+    def initialize(status, intcoords, face)
+      @status = status
+      @x, @y, @z = intcoords
+      @face = face
+    end
+    
+    def encode_data
+      byte(status) + int(x) + byte(y) + int(z) + byte(face)
+    end
+    
+    def self.done(intcoords, face=0)
+      p = allocate
+      p.send :initialize, 2, intcoords, face
+      p
+    end
+    
+    def self.start(intcoords, face=0)
+      p = allocate
+      p.send :initialize, 0, intcoords, face
+      p
+    end
+    
+  end
+  
   class Packet::UseBed < Packet
     packet_type 0x11
     attr_reader :eid
