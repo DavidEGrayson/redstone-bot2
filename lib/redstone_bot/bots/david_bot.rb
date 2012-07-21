@@ -23,7 +23,7 @@ module RedstoneBot
     def setup
       standard_setup
       
-      @body.update_period = 0.01
+      @body.update_period = 0.05
       #@body.debug = true
       
       @ce = ChatEvaluator.new(self, @client)
@@ -44,7 +44,7 @@ module RedstoneBot
           @current_fiber.resume
           @current_fiber = nil if !@current_fiber.alive?
         else
-          fall
+          fall_update
           @body.look_at @entity_tracker.closest_entity
         end
         @body.stance = @body.position[1] + 1.62   # TODO: let @body handle setting stance correctly
@@ -117,11 +117,16 @@ module RedstoneBot
     end
     
     def tmphax_fiber
-      jump(5)
+      jump 5
+      fall
+      jump 4
+      fall
+      jump 3
       fall
     end
     
-    def jump(dy=5, opts={})
+    def jump(dy=2, opts={})
+      puts "JUMPING by #{dy}"
       jump_to_height @body.position[1] + dy
     end
     
@@ -137,9 +142,34 @@ module RedstoneBot
         end
       end
     end
-    
+	
     def fall
-      raise "not implemented"
+      puts "FALL NOW"
+      while true
+        wait_for_next_position_update
+        break if fall_update
+      end
+      delay(0.2)
+    end
+  
+    def fall_update
+      speed = 10
+    
+      ground = find_ground
+      if (@body.position[1] > ground)
+        @body.position.y -= speed*@body.update_period
+      end
+      if ((@body.position[1] - ground).abs < 0.5)
+        @body.position.y = ground
+        return true
+      end
+      return false
+    end
+    
+    def delay(time)
+      (time/@body.update_period).ceil.times do
+        wait_for_next_position_update
+      end
     end
     
     def wait_for_next_position_update
@@ -148,6 +178,8 @@ module RedstoneBot
     
     # fly through the air
     def miracle(x, z)
+      # TODO: temporarily set the body_update_period to 0.1 for the miracle jump
+    
       @start_fly = Time.now
       jump = Jump.new(200)
       waypoint1 = Waypoint.new(Coords[@body.position.x, 290, @body.position.z])
@@ -155,6 +187,8 @@ module RedstoneBot
       jump.speed = 500
       waypoint1.speed = waypoint2.speed = 500
 
+      # TODO: fall at 50 m/s for the miracle jump!
+      
       @current_action = MultiAction.new(jump, waypoint1, waypoint2) 
     end
     
@@ -180,16 +214,6 @@ module RedstoneBot
           return test_y+1
         end
       end 
-    end
-	
-    def fall
-      ground = find_ground
-      if (@body.position[1] > ground)
-        @body.position -= Coords[0,0.5,0]
-      end
-      if ((@body.position[1] - ground).abs < 0.5)
-        @body.position = Coords[@body.position[0],ground,@body.position[2]]
-      end
     end
 
     def_delegator :@chunk_tracker, :block_type, :block_type
