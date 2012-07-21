@@ -5,7 +5,6 @@ module RedstoneBot
   #   "eval " + string
   #   EvaluatesRuby.instance_method(:handle_chat).bind(self).call(message)
   class ChatEvaluator
-    attr_accessor :master
     attr_accessor :permission_denied_message
     attr_accessor :safe_level
   
@@ -20,11 +19,6 @@ module RedstoneBot
 
         next unless p.chat =~ /^eval (.+)/
         str = $1
-
-        if master && p.username != master
-          @client.chat @permission_denied_message % [p.username]
-          next
-        end
         
         do_eval str
       end
