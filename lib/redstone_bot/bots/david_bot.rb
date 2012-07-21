@@ -52,12 +52,15 @@ module RedstoneBot
       
       @pathfinder = Pathfinder.new(@chunk_tracker)
       
+      aliases = {"meq" => "m -2570 -2069", "mpl" => "m 100 240"}
+      
       @client.listen do |p|
         case p
         when Packet::ChatMessage
           puts p
           next if !p.player_chat? || (defined?(MASTER) && p.username != MASTER)
-          case p.chat
+          chat = aliases[p.chat] || p.chat
+          case chat
             when /where (.+)/ then
               name = $1
               if name == "u"
