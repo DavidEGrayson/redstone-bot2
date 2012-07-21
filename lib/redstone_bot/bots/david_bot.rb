@@ -89,7 +89,7 @@ module RedstoneBot
               x = $1.to_i
               z = $2.to_i
               chat "coming to #{x}, #{z}!"
-              miracle x, z
+              @current_fiber = new_fiber :miracle_fiber, x, z
             when "h"
               player = @entity_tracker.player(p.username)
               if player
@@ -117,6 +117,7 @@ module RedstoneBot
       @start_fly = Time.now
       jump_to_height 276, opts
       move_to Coords[x, 257, z], opts
+      # TODO: fall slowly while the chunks under you are not loaded
       fall opts
       chat "I be at #{@body.position} after #{Time.now - @start_fly} seconds."
     end
@@ -209,22 +210,6 @@ module RedstoneBot
       Fiber.yield
     end
     
-    # fly through the air
-    def miracle(x, z)
-      # TODO: temporarily set the body_update_period to 0.1 for the miracle jump
-    
-      @start_fly = Time.now
-      jump = Jump.new(200)
-      waypoint1 = Waypoint.new(Coords[@body.position.x, 290, @body.position.z])
-      waypoint2 = Waypoint.new(Coords[x, 260, z])
-      jump.speed = 500
-      waypoint1.speed = waypoint2.speed = 500
-
-      # TODO: fall at 50 m/s for the miracle jump!
-      
-      @current_action = MultiAction.new(jump, waypoint1, waypoint2) 
-    end
-    
     def tmphax_find_path
       @pathfinder.start = @body.position.to_a.collect(&:to_i)
       @pathfinder.bounds = [94..122, 69..78, 233..261]
@@ -267,7 +252,9 @@ module RedstoneBot
       y.ceil.downto(0).each do |test_y|
         #puts "#{x} #{_} #{z} #{@chunk_tracker.block_type([x,_,z])}"
         #TODO: .to_i on x and z might be wrong here
-        if (@chunk_tracker.block_type([x.to_i, test_y, z.to_i]).solid?)
+        block_type = @chunk_tracker.block_type([x.to_i, test_y, z.to_i])
+        block_type ||= BlockType::Air
+        if (block_type.solid?)
           return test_y+1
         end
       end 
