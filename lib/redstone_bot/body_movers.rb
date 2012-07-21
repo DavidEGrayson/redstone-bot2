@@ -94,9 +94,7 @@ module RedstoneBot
       
       body.position.y += dy
       
-      if (body.position.y - ground).abs < 0.2
-        return true
-      end
+      return (body.position.y - ground).abs < 0.2
     end
     
     # TODO: clean this up to do proper collision detecting, probably need to check multiple columns
