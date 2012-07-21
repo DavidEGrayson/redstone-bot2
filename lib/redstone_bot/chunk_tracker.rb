@@ -93,7 +93,8 @@ module RedstoneBot
       coords = coords.collect &:floor   # make array of ints
 
       return BlockType::Air if coords[1] > 255   # treat spots above the top of the world as air
-
+      return BlockType::Bedrock if coords[1] < 0 # treat spots below the top of the world as bedrock
+      
       # TODO: see if calling floor here is really the right thing to do.  What is the correspondend between integer coords and float coords?
       chunk_coords = [coords[0]/16*16, coords[2]/16*16]
       chunk = @chunks[chunk_coords]
