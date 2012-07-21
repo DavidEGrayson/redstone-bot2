@@ -7,6 +7,7 @@ require "redstone_bot/pathfinder"
 require "redstone_bot/waypoint"
 require "redstone_bot/jump"
 require "redstone_bot/multi_action"
+require "redstone_bot/body_movers"
 
 class FiberWrapper
   def initialize(meth)
@@ -19,6 +20,9 @@ module RedstoneBot
 
   class Bots::DavidBot < RedstoneBot::Bot
     extend Forwardable
+    include BodyMovers
+    
+    attr_reader :body, :chunk_tracker
     
     def setup
       standard_setup
@@ -92,7 +96,7 @@ module RedstoneBot
               x = $1.to_i
               z = $2.to_i
               chat "coming to #{x}, #{z}!"
-              @current_fiber = new_fiber :miracle_fiber, x, z
+              @current_fiber = start_miracle_jump x, z
             when "h"
               player = @entity_tracker.player(p.username)
               if player
@@ -106,24 +110,22 @@ module RedstoneBot
             end              
         when Packet::Disconnect
           puts "Position = #{@body.position}"
-          puts "Fly time = #{Time.now-@start_fly}" if @start_fly
           exit 2
         end        
       end 
       
     end
     
-    def miracle_fiber(x, z)
-      puts "miracle_fiber #{x} #{z}"
+    def start_fiber(&proc)
+      @current_fiber = proc
+    end
     
-      opts = { :update_period => 0.01, :speed => 600 }
-    
-      @start_fly = Time.now
-      jump_to_height 276, opts
-      move_to Coords[x, 257, z], opts
-      # TODO: fall slowly while the chunks under you are not loaded
-      fall opts
-      chat "I be at #{@body.position} after #{Time.now - @start_fly} seconds."
+    def start_miracle_jump(x,z)
+      start_fiber do
+        @start_fly = Time.now
+        miracle_jump x, z
+        chat "I be at #{@body.position} after #{Time.now - @start_fly} seconds."
+      end
     end
 
     def move_to(coords, opts={})
@@ -159,15 +161,6 @@ module RedstoneBot
         meth = method(meth)
       end
       @current_fiber = Proc.new { meth.call(*args) }
-    end
-    
-    def tmphax_fiber
-      jump 5
-      fall
-      jump 4
-      fall
-      jump 3
-      fall
     end
     
     def jump(dy=2, opts={})
