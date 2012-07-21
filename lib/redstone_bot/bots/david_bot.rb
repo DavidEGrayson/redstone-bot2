@@ -102,6 +102,7 @@ module RedstoneBot
               @current_fiber = new_fiber :tmphax_fiber
             end              
         when Packet::Disconnect
+          puts "Position = #{@body.position}"
           puts "Fly time = #{Time.now-@start_fly}" if @start_fly
           exit 2
         end        
@@ -112,7 +113,7 @@ module RedstoneBot
     def miracle_fiber(x, z)
       puts "miracle_fiber #{x} #{z}"
     
-      opts = { :update_period => 0.01, :speed => 500 }
+      opts = { :update_period => 0.01, :speed => 600 }
     
       @start_fly = Time.now
       jump_to_height 276, opts
@@ -187,8 +188,6 @@ module RedstoneBot
     end
 	
     def fall(opts={})
-      puts "FALL NOW"
-      #@body.debug = true # TMPHAX
       while true
         wait_for_next_position_update(opts[:update_period])
         break if fall_update(opts)
@@ -226,9 +225,7 @@ module RedstoneBot
     def fall_update(opts={})
       speed = opts[:speed] || 10
       
-      #@body.debug = true
-    
-      ground = find_ground
+      ground = find_nearby_ground || -1
       
       max_distance = speed*@body.last_update_period
       
@@ -241,23 +238,22 @@ module RedstoneBot
       
       @body.position.y += dy
       
-      if ((@body.position[1] - ground).abs < 0.2)
-        #puts "on ground"
+      if ((@body.position.y - ground).abs < 0.2)
         return true
       end
     end
     
-    def find_ground
+    def find_nearby_ground
       x,y,z = @body.position.to_a
-      y.ceil.downto(0).each do |test_y|
-        #puts "#{x} #{_} #{z} #{@chunk_tracker.block_type([x,_,z])}"
+      y.ceil.downto(y.ceil-10).each do |test_y|
         #TODO: .to_i on x and z might be wrong here
         block_type = @chunk_tracker.block_type([x.to_i, test_y, z.to_i])
-        block_type ||= BlockType::Air
+        block_type ||= BlockType::Air    # block_type is nil if it is in an unloaded chunk
         if (block_type.solid?)
-          return test_y+1
+          return test_y + 1
         end
-      end 
+      end
+      nil
     end
 
     def_delegator :@chunk_tracker, :block_type, :block_type
