@@ -37,7 +37,11 @@ module RedstoneBot
           @current_action.update_position(@body)
           @current_action = nil if @current_action.done?
         elsif @current_fiber
-          @current_fiber.resume @body
+          if @current_fiber.respond_to? :call
+            c = @current_fiber
+            @current_fiber = Fiber.new { c.call }
+          end
+          @current_fiber.resume
           @current_fiber = nil if !@current_fiber.alive?
         else
           fall
@@ -111,8 +115,7 @@ module RedstoneBot
       if meth.is_a? Symbol
         meth = method(meth)
       end
-    
-      Fiber.new { meth.call }
+      @current_fiber = meth
     end
     
     def tmphax_fiber
