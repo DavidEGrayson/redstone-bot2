@@ -30,7 +30,7 @@ module RedstoneBot
       client.listen do |p|
         case p
           when Packet::PlayerPositionAndLook
-            puts "RX! #{p}"
+            puts "#{client.time_string} RX! #{p}"
             @position = Coords[p.x, p.y, p.z]
             @stance = p.stance
             @look = Look.new(p.yaw, p.pitch)
@@ -93,7 +93,7 @@ module RedstoneBot
               position.x, position.y, position.z,
               stance, look.yaw, look.pitch, on_ground)
       @client.send_packet packet
-      puts "tx#{packet.to_s}" if debug
+      puts "#{@client.time_string} tx#{packet.to_s}" if debug
     end
   end
 end

@@ -337,7 +337,7 @@ module RedstoneBot
     end
     
     def to_s
-      "pos: %7.4f %7.4f %7.4f dy=%7.4f g=%d y=%7.4f p=%7.4f" % ([x, y, z, stance - y, on_ground ? 1 : 0, yaw, pitch])
+      "pos: %7.2f %7.2f %7.2f dy=%4.2f g=%d yw=%6.2f pt=%6.2f" % ([x, y, z, stance - y, on_ground ? 1 : 0, yaw, pitch])
     end
   end
   

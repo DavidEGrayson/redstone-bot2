@@ -4,16 +4,7 @@ require 'fiber'
 require "redstone_bot/bot"
 require "redstone_bot/chat_evaluator"
 require "redstone_bot/pathfinder"
-require "redstone_bot/waypoint"
-require "redstone_bot/jump"
-require "redstone_bot/multi_action"
 require "redstone_bot/body_movers"
-
-class FiberWrapper
-  def initialize(meth)
-  
-  end
-end
 
 module RedstoneBot
   module Bots; end
@@ -33,14 +24,8 @@ module RedstoneBot
       @ce = ChatEvaluator.new(self, @client)
       @ce.master = MASTER if defined?(MASTER)
       
-      @current_action = nil
-      
       @body.on_position_update do
-        if @current_action
-          @current_action.start(@body) unless @current_action.started?
-          @current_action.update_position(@body)
-          @current_action = nil if @current_action.done?
-        elsif @current_fiber
+        if @current_fiber
           if @current_fiber.respond_to? :call
             c = @current_fiber
             @current_fiber = Fiber.new { c.call }
@@ -77,12 +62,12 @@ module RedstoneBot
                   chat "dunno who dat '#{name}' is"
                 end
               end
-            when "stop" then @current_action = nil
-            when "n", "z-" then @current_action = Waypoint.new @body.position - Coords::Z
-            when "s", "z+" then @current_action = Waypoint.new @body.position + Coords::Z
-            when "e", "x+" then @current_action = Waypoint.new @body.position + Coords::X
-            when "w", "x-" then @current_action = Waypoint.new @body.position - Coords::X
-            when "j" then @current_action = Jump.new(5)
+            when "stop" then @current_fiber = nil
+            when "n", "z-" then start_move_to @body.position - Coords::Z
+            when "s", "z+" then start_move_to @body.position + Coords::Z
+            when "e", "x+" then start_move_to @body.position + Coords::X
+            when "w", "x-" then start_move_to @body.position - Coords::X
+            when "j" then start_jump 5
             when "m"
               player = @entity_tracker.player(p.username)
               if player
@@ -101,23 +86,17 @@ module RedstoneBot
               player = @entity_tracker.player(p.username)
               if player
                 chat "coming!"
-                @current_action = Waypoint.new player.position + Coords::Y*0.2
+                start_move_to player.position + Coords::Y*0.2
               else
                 chat "dunno where U r"
               end
-            when "f"
-              @current_fiber = new_fiber :tmphax_fiber
-            end              
+            end
         when Packet::Disconnect
           puts "Position = #{@body.position}"
           exit 2
-        end        
+        end
       end 
       
-    end
-    
-    def start_fiber(&proc)
-      @current_fiber = proc
     end
     
     def start_miracle_jump(x,z)
@@ -127,61 +106,9 @@ module RedstoneBot
         chat "I be at #{@body.position} after #{Time.now - @start_fly} seconds."
       end
     end
-
-    def move_to(coords, opts={})
-      tolerance = opts[:tolerance] || 0.2
-      speed = opts[:speed] || 10
-      axes = [Coords::X, Coords::Y, Coords::Z].cycle
-      
-      while true
-        wait_for_next_position_update(opts[:update_period])
-        @body.look_at coords
-
-        d = coords - @body.position
-        if d.norm < tolerance
-          return # reached it
-        end
-      
-        max_distance = speed*@body.last_update_period
-        if d.norm > max_distance
-          d = d.normalize*max_distance
-        end
-      
-        if @body.bumped?
-          d = d.project_onto_unit_vector(axes.next)*3
-        end
-      
-        @body.position += d
-      end
-      
-    end
     
-    def jump(dy=2, opts={})
-      puts "JUMPING by #{dy}"
-      jump_to_height @body.position[1] + dy, opts
-    end
-    
-    def jump_to_height(y, opts={})
-      @start_fly = Time.now
-      speed = opts[:speed] || 10
-    
-      while @body.position[1] <= y
-        #puts @client.time_string + " jumping lup=#{@body.last_update_period}"
-        wait_for_next_position_update(opts[:update_period])
-        @body.position[1] += speed*@body.last_update_period
-        if @body.bumped?
-          puts "bumped my head!"
-          return false
-        end
-      end
-    end
-	
-    def fall(opts={})
-      while true
-        wait_for_next_position_update(opts[:update_period])
-        break if fall_update(opts)
-      end
-      delay(0.2)
+    def start_fiber(&proc)
+      @current_fiber = proc
     end
     
     def delay(time)
@@ -209,40 +136,6 @@ module RedstoneBot
     
     def inspect
       to_s
-    end
-      
-    def fall_update(opts={})
-      speed = opts[:speed] || 10
-      
-      ground = find_nearby_ground || -1
-      
-      max_distance = speed*@body.last_update_period
-      
-      dy = ground - @body.position.y
-      if (dy < -max_distance)
-        dy = -max_distance
-      elsif (dy > max_distance)
-        dy = max_distance
-      end
-      
-      @body.position.y += dy
-      
-      if ((@body.position.y - ground).abs < 0.2)
-        return true
-      end
-    end
-    
-    def find_nearby_ground
-      x,y,z = @body.position.to_a
-      y.ceil.downto(y.ceil-10).each do |test_y|
-        #TODO: .to_i on x and z might be wrong here
-        block_type = @chunk_tracker.block_type([x.to_i, test_y, z.to_i])
-        block_type ||= BlockType::Air    # block_type is nil if it is in an unloaded chunk
-        if (block_type.solid?)
-          return test_y + 1
-        end
-      end
-      nil
     end
 
     def_delegator :@chunk_tracker, :block_type, :block_type
