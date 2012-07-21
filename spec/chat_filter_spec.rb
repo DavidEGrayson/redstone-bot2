@@ -3,18 +3,8 @@ require 'redstone_bot/chat_filter'
 
 ChatMessage = RedstoneBot::Packet::ChatMessage
 
-class ChatMessage
-  def player_chat(username, chat)
-    @data = "<#{username}> #{chat}"
-    @username = username
-    @chat = chat
-  end
-end
-
-def player_chat(username, chat)
-  p = ChatMessage.allocate
-  p.player_chat(username, chat)
-  p
+def player_chat(*args)
+  ChatMessage.player_chat *args
 end
 
 class TestChatter

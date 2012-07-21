@@ -5,6 +5,8 @@ require "redstone_bot/bot"
 require "redstone_bot/chat_evaluator"
 require "redstone_bot/pathfinder"
 require "redstone_bot/body_movers"
+require "redstone_bot/chat_filter"
+require "redstone_bot/chat_mover"
 
 module RedstoneBot
   module Bots; end
@@ -27,10 +29,10 @@ module RedstoneBot
       @chat_filter.only_player_chats
       @chat_filter.reject_from_self      
       @chat_filter.aliases Aliases
-      @chat_filer.only_from_user(MASTER) if defined?(MASTER)
+      @chat_filter.only_from_user(MASTER) if defined?(MASTER)
       
-      @ce = ChatEvaluator.new(@client_filter, self)      
-      @cm = ChatMover.new(@client_filter, self, @entity_tracker)
+      @ce = ChatEvaluator.new(@chat_filter, self)      
+      @cm = ChatMover.new(@chat_filter, self, @entity_tracker)
       
       #@cm.aliases = {"meq" => "m -2570 -2069", "mpl" => "m 100 240"}
       #if defined?(MASTER)

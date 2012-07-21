@@ -18,7 +18,7 @@ module RedstoneBot
       @entity_tracker = entity_tracker
       
       @chatter.listen do |p|
-        process_chat(p) if p.is_a?(Packets::ChatMessage) && p.player_chat?
+        process_chat(p) if p.is_a?(Packet::ChatMessage) && p.player_chat?
       end
     end
     
@@ -70,5 +70,6 @@ module RedstoneBot
     protected
     
     def_delegators :@body_mover, :start_move_to, :start_jump, :start_miracle_jump, :position
+    def_delegators :@chatter, :chat
   end
 end

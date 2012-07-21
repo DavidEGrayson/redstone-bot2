@@ -190,13 +190,14 @@ module RedstoneBot
       p
     end
     
-    protected
     def player_chat(username, chat)
       @data = "<#{username}> #{chat}"
       @username = username
       @chat = chat
     end
    
+    protected
+
     def init_player_chat_info
       if data =~ /^<([^>]+)> (.*)/
         @username, @chat = $1, $2
