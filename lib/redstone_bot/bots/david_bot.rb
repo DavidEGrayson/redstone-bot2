@@ -88,7 +88,7 @@ module RedstoneBot
               if player
                 x, z = player.position.x, player.position.z
                 chat "coming to #{x}, #{z}!"
-                @current_fiber = new_fiber :miracle_fiber, x, z
+                start_miracle_jump x, z
               else
                 chat "dunno where U r (chat m <X> <Z> to specify)"
               end
@@ -96,7 +96,7 @@ module RedstoneBot
               x = $1.to_i
               z = $2.to_i
               chat "coming to #{x}, #{z}!"
-              @current_fiber = start_miracle_jump x, z
+              start_miracle_jump x, z
             when "h"
               player = @entity_tracker.player(p.username)
               if player
@@ -154,13 +154,6 @@ module RedstoneBot
         @body.position += d
       end
       
-    end
-    
-    def new_fiber(meth, *args)
-      if meth.is_a? Symbol
-        meth = method(meth)
-      end
-      @current_fiber = Proc.new { meth.call(*args) }
     end
     
     def jump(dy=2, opts={})
