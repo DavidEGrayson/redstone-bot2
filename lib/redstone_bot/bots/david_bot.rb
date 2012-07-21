@@ -188,6 +188,7 @@ module RedstoneBot
 	
     def fall(opts={})
       puts "FALL NOW"
+      @body.debug = true # TMPHAX
       while true
         wait_for_next_position_update(opts[:update_period])
         break if fall_update(opts)
@@ -240,16 +241,26 @@ module RedstoneBot
       
     def fall_update(opts={})
       speed = opts[:speed] || 10
+      
+      @body.debug = true
     
       ground = find_ground
-      if (@body.position[1] > ground)
-        @body.position.y -= speed*@body.last_update_period
+      
+      max_distance = speed*@body.last_update_period
+      
+      dy = ground - @body.position.y
+      if (dy < -max_distance)
+        dy = -max_distance
+      elsif (dy > max_distance)
+        dy = max_distance
       end
-      if ((@body.position[1] - ground).abs < 0.5)
-        @body.position.y = ground
+      
+      @body.position.y += dy
+      
+      if ((@body.position[1] - ground).abs < 0.2)
+        puts "on ground"
         return true
       end
-      return false
     end
     
     def find_ground
