@@ -10,6 +10,7 @@ module RedstoneBot
     attr_accessor :next_update_period
     attr_accessor :last_update_period
     attr_accessor :debug
+    attr_accessor :current_fiber
     
     def on_ground?
       @on_ground
@@ -49,6 +50,17 @@ module RedstoneBot
             end
         end
       end
+      
+      on_position_update do
+        if @current_fiber
+          if @current_fiber.respond_to? :call
+            c = @current_fiber
+            @current_fiber = Fiber.new { c.call }
+          end
+          @current_fiber.resume
+          @current_fiber = nil if !@current_fiber.alive?
+        end
+      end
     end
     
     def on_position_update(&proc)
@@ -64,6 +76,7 @@ module RedstoneBot
           sleep(@last_update_period)
           @client.synchronize do
             @position_updaters.each &:call
+            self.stance = position.y + 1.62   # TODO: handle this better!
             @bumped = false
             send_update
           end
@@ -85,6 +98,22 @@ module RedstoneBot
       yaw = Math::atan2(x, -z) * 180 / Math::PI + 180
       pitch = -Math::atan2(y, Math::sqrt((x * x) + (z * z))) * 180 / Math::PI
       Look.new(yaw, pitch)
+    end
+    
+        
+    def start(&proc)
+      @current_fiber = proc
+    end
+    
+    def delay(time)
+      wait_for_next_position_update(time)
+    end
+    
+    def wait_for_next_position_update(update_period = nil)
+      if update_period
+        self.next_update_period = update_period
+      end
+      Fiber.yield
     end
     
     protected  

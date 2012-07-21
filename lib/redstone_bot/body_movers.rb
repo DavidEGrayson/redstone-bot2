@@ -7,11 +7,11 @@ module RedstoneBot
   module BodyMovers
     
     def start_move_to(*args)
-      start_fiber { move_to *args }
+      body.start { move_to *args }
     end
     
     def start_jump(*args)
-      start_fiber { jump *args }
+      body.start { jump *args }
     end
     
     def miracle_jump(x, z)
@@ -27,7 +27,7 @@ module RedstoneBot
       axes = [Coords::X, Coords::Y, Coords::Z].cycle
       
       while true
-        wait_for_next_position_update(opts[:update_period])
+        body.wait_for_next_position_update(opts[:update_period])
         body.look_at coords
 
         d = coords - body.position
@@ -57,7 +57,7 @@ module RedstoneBot
       speed = opts[:speed] || 10
     
       while body.position[1] <= y
-        wait_for_next_position_update(opts[:update_period])
+        body.wait_for_next_position_update(opts[:update_period])
         body.position[1] += speed*@body.last_update_period
         if body.bumped?
           return false   # the head got bumped
@@ -67,10 +67,9 @@ module RedstoneBot
 	
     def fall(opts={})
       while true
-        wait_for_next_position_update(opts[:update_period])
+        body.wait_for_next_position_update(opts[:update_period])
         break if fall_update(opts)
       end
-      delay(0.2)
     end
           
     def fall_update(opts={})

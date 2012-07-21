@@ -25,18 +25,10 @@ module RedstoneBot
       @ce.master = MASTER if defined?(MASTER)
       
       @body.on_position_update do
-        if @current_fiber
-          if @current_fiber.respond_to? :call
-            c = @current_fiber
-            @current_fiber = Fiber.new { c.call }
-          end
-          @current_fiber.resume
-          @current_fiber = nil if !@current_fiber.alive?
-        else
+        if !@body.current_fiber
           fall_update
           @body.look_at @entity_tracker.closest_entity
         end
-        @body.stance = @body.position[1] + 1.62   # TODO: let @body handle setting stance correctly
       end
       
       @pathfinder = Pathfinder.new(@chunk_tracker)
@@ -100,29 +92,11 @@ module RedstoneBot
     end
     
     def start_miracle_jump(x,z)
-      start_fiber do
+      @body.start do
         @start_fly = Time.now
         miracle_jump x, z
         chat "I be at #{@body.position} after #{Time.now - @start_fly} seconds."
       end
-    end
-    
-    def start_fiber(&proc)
-      @current_fiber = proc
-    end
-    
-    def delay(time)
-      # NOTE: we could just do wait_for_next_position_update(time)
-      (time/@body.update_period).ceil.times do
-        wait_for_next_position_update
-      end
-    end
-    
-    def wait_for_next_position_update(next_update_period = nil)
-      if next_update_period
-        @body.next_update_period = next_update_period
-      end
-      Fiber.yield
     end
     
     def tmphax_find_path
