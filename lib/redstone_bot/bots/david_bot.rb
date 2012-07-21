@@ -18,8 +18,14 @@ module RedstoneBot
     def setup
       standard_setup
       
-      @ce = ChatEvaluator.new(self, @client)
-      @ce.master = MASTER if defined?(MASTER)
+      
+      @ce = ChatEvaluator.new(@client, self)      
+      @cm = ChatMover.new(@client, self, @entity_tracker)
+      
+      #@cm.aliases = {"meq" => "m -2570 -2069", "mpl" => "m 100 240"}
+      #if defined?(MASTER)
+      #  @cm.master = @ce.master = MASTER
+      #end
       
       @body.on_position_update do
         if !@body.current_fiber
@@ -30,56 +36,10 @@ module RedstoneBot
       
       @pathfinder = Pathfinder.new(@chunk_tracker)
       
-      aliases = {"meq" => "m -2570 -2069", "mpl" => "m 100 240"}
-      
       @client.listen do |p|
         case p
         when Packet::ChatMessage
           puts p
-          next if !p.player_chat? || (defined?(MASTER) && p.username != MASTER)
-          chat = aliases[p.chat] || p.chat
-          case chat
-            when /where (.+)/ then
-              name = $1
-              if name == "u"
-                chat "I be at #{@body.position}"
-              else
-                player = @entity_tracker.player(name)
-                if player
-                  chat "dat guy at #{player.position}"
-                else
-                  chat "dunno who dat '#{name}' is"
-                end
-              end
-            when "stop" then @current_fiber = nil
-            when "n", "z-" then start_move_to @body.position - Coords::Z
-            when "s", "z+" then start_move_to @body.position + Coords::Z
-            when "e", "x+" then start_move_to @body.position + Coords::X
-            when "w", "x-" then start_move_to @body.position - Coords::X
-            when "j" then start_jump 5
-            when "m"
-              player = @entity_tracker.player(p.username)
-              if player
-                x, z = player.position.x, player.position.z
-                chat "coming to #{x}, #{z}!"
-                start_miracle_jump x, z
-              else
-                chat "dunno where U r (chat m <X> <Z> to specify)"
-              end
-            when /m (\-?\d+) (\-?\d+)/
-              x = $1.to_i
-              z = $2.to_i
-              chat "coming to #{x}, #{z}!"
-              start_miracle_jump x, z
-            when "h"
-              player = @entity_tracker.player(p.username)
-              if player
-                chat "coming!"
-                start_move_to player.position + Coords::Y*0.2
-              else
-                chat "dunno where U r"
-              end
-            end
         when Packet::Disconnect
           puts "Position = #{@body.position}"
           exit 2
@@ -107,7 +67,8 @@ module RedstoneBot
       to_s
     end
 
-    def_delegator :@chunk_tracker, :block_type, :block_type
-    def_delegator :@client, :chat, :chat
+    protected
+    def_delegators :@chunk_tracker, :block_type
+    def_delegators :@client, :chat
   end
 end

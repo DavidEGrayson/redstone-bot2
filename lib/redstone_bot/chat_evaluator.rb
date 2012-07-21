@@ -9,7 +9,7 @@ module RedstoneBot
     attr_accessor :permission_denied_message
     attr_accessor :safe_level
   
-    def initialize(context, client)
+    def initialize(client, context)
       @context = context
       @client = client
       @permission_denied_message = "I'm sorry %s, but I cannot do that."
