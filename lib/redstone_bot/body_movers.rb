@@ -71,6 +71,7 @@ module RedstoneBot
           return false   # the head got bumped
         end
       end
+      return true
     end
 	
     def fall(opts={})

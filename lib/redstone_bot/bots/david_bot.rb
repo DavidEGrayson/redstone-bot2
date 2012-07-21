@@ -31,7 +31,7 @@ module RedstoneBot
       @chat_filter.aliases Aliases
       @chat_filter.only_from_user(MASTER) if defined?(MASTER)
       
-      @ce = ChatEvaluator.new(@chat_filter, self)      
+      @ce = ChatEvaluator.new(@client, self)      
       @cm = ChatMover.new(@chat_filter, self, @entity_tracker)
       
       #@cm.aliases = {"meq" => "m -2570 -2069", "mpl" => "m 100 240"}
@@ -77,6 +77,12 @@ module RedstoneBot
     
     def inspect
       to_s
+    end
+    
+    def jump_to_height(*args)
+      result = super
+      chat "I bumped my head!" if !result
+      result
     end
 
     protected
