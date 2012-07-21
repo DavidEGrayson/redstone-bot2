@@ -71,4 +71,20 @@ describe RedstoneBot::ChatFilter do
     end
   end
   
+  context "when only listening to one user" do  
+    before do
+      @filter.only_from_user "Elavid"
+    end
+    
+    it "rejects messages from others" do
+      @receiver.should_not_receive :packet
+      @chatter << player_chat("slob", "stuff")
+    end
+    
+    it "passes messages from that user" do    
+      @receiver.should_receive :packet
+      @chatter << player_chat("Elavid", "do something")
+    end
+  end
+  
 end

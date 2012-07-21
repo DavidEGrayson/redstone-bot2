@@ -52,7 +52,7 @@ module RedstoneBot
     end
     
     def only_from_user(name)
-      raise ArgumentError.new("given username is nil")
+      raise ArgumentError.new("given username is nil") unless name
       filter { |p| p.username == name }
     end
     
