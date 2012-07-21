@@ -80,8 +80,8 @@ module RedstoneBot
               player = @entity_tracker.player(p.username)
               if player
                 x, z = player.position.x, player.position.z
-                chat "coming to #{x}, #{z}!"
-                miracle x, z
+                #TODO: chat "coming to #{x}, #{z}!"
+                @current_fiber = new_fiber :miracle_fiber, x, z
               else
                 chat "dunno where U r (chat m <X> <Z> to specify)"
               end
@@ -108,12 +108,25 @@ module RedstoneBot
       end 
       
     end
+    
+    def miracle_fiber(x, z)
+      puts "miracle_fiber #{x} #{z}"
+    
+      opts = { :update_period => 0.01, :speed => 500 }
+    
+      @start_fly = Time.now
+      jump 200, opts
+      chat "I jumped to #{@body.position}"
+      #move_to Coords[@body.position.x, 290, @body.position.z], opts
+      #move_to Coords[x, 260, z]
+      fall :update_period => 0.01, :speed => 50
+    end
 
-    def new_fiber(meth)
+    def new_fiber(meth, *args)
       if meth.is_a? Symbol
         meth = method(meth)
       end
-      @current_fiber = meth
+      @current_fiber = Proc.new { meth.call(*args) }
     end
     
     def tmphax_fiber
@@ -127,15 +140,17 @@ module RedstoneBot
     
     def jump(dy=2, opts={})
       puts "JUMPING by #{dy}"
-      jump_to_height @body.position[1] + dy
+      jump_to_height @body.position[1] + dy, opts
     end
     
     def jump_to_height(y, opts={})
+      @start_fly = Time.now
       speed = opts[:speed] || 10
     
       while @body.position[1] <= y
-        wait_for_next_position_update
-        @body.position[1] += speed*@body.update_period
+        puts @client.time_string + " jumping lup=#{@body.last_update_period}"
+        wait_for_next_position_update(opts[:update_period])
+        @body.position[1] += speed*@body.last_update_period
         if @body.bumped?
           puts "bumped my head!"
           return false
@@ -143,36 +158,26 @@ module RedstoneBot
       end
     end
 	
-    def fall
+    def fall(opts)
       puts "FALL NOW"
       while true
-        wait_for_next_position_update
+        wait_for_next_position_update(opts[:update_period])
         break if fall_update
       end
       delay(0.2)
     end
-  
-    def fall_update
-      speed = 10
-    
-      ground = find_ground
-      if (@body.position[1] > ground)
-        @body.position.y -= speed*@body.update_period
-      end
-      if ((@body.position[1] - ground).abs < 0.5)
-        @body.position.y = ground
-        return true
-      end
-      return false
-    end
     
     def delay(time)
+      # NOTE: we could just do wait_for_next_position_update(time)
       (time/@body.update_period).ceil.times do
         wait_for_next_position_update
       end
     end
     
-    def wait_for_next_position_update
+    def wait_for_next_position_update(next_update_period = nil)
+      if next_update_period
+        @body.next_update_period = next_update_period
+      end
       Fiber.yield
     end
     
@@ -203,6 +208,20 @@ module RedstoneBot
     
     def inspect
       to_s
+    end
+      
+    def fall_update
+      speed = 10
+    
+      ground = find_ground
+      if (@body.position[1] > ground)
+        @body.position.y -= speed*@body.update_period
+      end
+      if ((@body.position[1] - ground).abs < 0.5)
+        @body.position.y = ground
+        return true
+      end
+      return false
     end
     
     def find_ground

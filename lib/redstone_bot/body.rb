@@ -7,6 +7,8 @@ module RedstoneBot
   class Body
     attr_accessor :position, :look, :on_ground, :stance, :health
     attr_accessor :update_period
+    attr_accessor :next_update_period
+    attr_accessor :last_update_period
     attr_accessor :debug
     
     def on_ground?
@@ -54,12 +56,18 @@ module RedstoneBot
     end
     
     def start_regular_update_thread
-      @client.regularly(@update_period) do
-        @position_updaters.each do |p|
-          p.call
+      Thread.new do
+        while true
+          # TODO: get more reliable timing by using Time.now to compute how long to sleep
+          @last_update_period = @next_update_period || @update_period
+          @next_update_period = nil
+          sleep(@last_update_period)
+          @client.synchronize do
+            @position_updaters.each &:call
+            @bumped = false
+            send_update
+          end
         end
-        @bumped = false
-        send_update
       end
     end
     

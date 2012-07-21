@@ -50,7 +50,7 @@ module RedstoneBot
     end
     
     def to_s
-      "(%7.4f,%7.4f,%7.4f)" % [x, y, z]
+      "(%7.2f,%7.2f,%7.2f)" % [x, y, z]
     end
 
     X = East = Coords[1,0,0]
