@@ -80,7 +80,7 @@ module RedstoneBot
               player = @entity_tracker.player(p.username)
               if player
                 x, z = player.position.x, player.position.z
-                #TODO: chat "coming to #{x}, #{z}!"
+                chat "coming to #{x}, #{z}!"
                 @current_fiber = new_fiber :miracle_fiber, x, z
               else
                 chat "dunno where U r (chat m <X> <Z> to specify)"
@@ -118,10 +118,38 @@ module RedstoneBot
       jump_to_height 276, opts
       chat "I jumped to #{@body.position}"
       #move_to Coords[@body.position.x, 290, @body.position.z], opts
-      #move_to Coords[x, 257, z]
+      move_to Coords[x, 257, z], opts
       fall :update_period => 0.01, :speed => 500
     end
 
+    def move_to(coords, opts={})
+      tolerance = opts[:tolerance] || 0.2
+      speed = opts[:speed] || 10
+      axes = [Coords::X, Coords::Y, Coords::Z].cycle
+      
+      while true
+        wait_for_next_position_update(opts[:update_period])
+        @body.look_at coords
+
+        d = coords - @body.position
+        if d.norm < tolerance
+          return # reached it
+        end
+      
+        max_distance = speed*@body.last_update_period
+        if d.norm > max_distance
+          d = d.normalize*max_distance
+        end
+      
+        if @body.bumped?
+          d = d.project_onto_unit_vector(axes.next)*3
+        end
+      
+        @body.position += d
+      end
+      
+    end
+    
     def new_fiber(meth, *args)
       if meth.is_a? Symbol
         meth = method(meth)
