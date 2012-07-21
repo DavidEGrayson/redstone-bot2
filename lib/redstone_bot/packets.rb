@@ -155,6 +155,10 @@ module RedstoneBot
       initialize(socket.read_string)
     end
     
+    def ==(other)
+      other.respond_to?(:data) && @data == other.data
+    end
+    
     def safe_data
       data.chars.select { |c| AllowedChatChars.include?(c) }[0,100].join
     end
@@ -180,7 +184,19 @@ module RedstoneBot
       str.gsub /\u00A7[0-9a-z]/, ''
     end
 
+    def self.player_chat(username, chat)
+      p = ChatMessage.allocate
+      p.player_chat(username, chat)
+      p
+    end
+    
     protected
+    def player_chat(username, chat)
+      @data = "<#{username}> #{chat}"
+      @username = username
+      @chat = chat
+    end
+   
     def init_player_chat_info
       if data =~ /^<([^>]+)> (.*)/
         @username, @chat = $1, $2

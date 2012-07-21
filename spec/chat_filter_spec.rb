@@ -78,12 +78,44 @@ describe RedstoneBot::ChatFilter do
     
     it "rejects messages from others" do
       @receiver.should_not_receive :packet
-      @chatter << player_chat("slob", "stuff")
+      @chatter << player_chat("RyanTM", "stuff")
     end
     
     it "passes messages from that user" do    
       @receiver.should_receive :packet
       @chatter << player_chat("Elavid", "do something")
+    end
+        
+    it "rejects non-player chats" do
+      @receiver.should_not_receive :packet
+      @chatter << ChatMessage.new("DavidBot joined the game.")
+    end
+  end
+  
+  context "when only passing player chats" do
+    before do
+      @filter.only_player_chats
+    end
+    
+    it "rejects non-player chats" do
+      @receiver.should_not_receive :packet
+      @chatter << ChatMessage.new("DavidBot joined the game.")
+    end
+    
+    it "passes player chats" do
+      @receiver.should_receive :packet
+      @chatter << player_chat("iprefermuffins", "stuff")
+    end
+  end
+  
+  context "when using aliases" do
+    before do
+      @filter.aliases "good" => "great", "cool" => "awesome"
+    end
+    
+    it "changes player chats that match the alias" do
+      @receiver.should_receive(:packet).with player_chat("Elavid", "great")
+      @chatter << player_chat("Elavid", "good")
     end
   end
   

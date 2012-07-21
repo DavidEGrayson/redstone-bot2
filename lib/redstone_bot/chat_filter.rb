@@ -13,31 +13,40 @@ module RedstoneBot
     # So the chatter can be a RedstoneBot::Client or RedstoneBot::ChatFilter or some other object. 
     def initialize(chatter)
       @listeners = []
-      @filters = []
+      @modifiers = []
       @chatter = chatter
       
       @chatter.listen do |p|
-        p = p.dup   # Some of the filters might modify the packet, but we don't want to change the original.
         next unless p.is_a?(Packet::ChatMessage)        
-        next unless @filters.all? { |f| f.call p }        
+        next unless @modifiers.all? { |m| p = m.call(p) }        
         notify_listeners p
       end
     end
-        
+    
     def listen(&proc)
       @listeners << proc
     end
     
-    def filter(&proc)
-      @filters << proc
+    def modify(&proc)
+      @modifiers << proc
+    end
+    
+    def filter
+      modify do |p|
+        p if yield(p)
+      end
     end
     
     def_delegators :@chatter, :username, :chat
     
     def modify_chat
-      filter do |packet|
-        packet.chat = yield packet.chat
-        true
+      modify do |packet|
+        chat = yield packet.chat
+        if chat == packet.chat
+          packet
+        else
+          Packet::ChatMessage.player_chat(packet.username, chat)
+        end
       end
     end
     
