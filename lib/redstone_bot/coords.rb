@@ -46,7 +46,7 @@ module RedstoneBot
     end
     
     def project_onto_vector(coords)
-      project_onto_unit_vector coords.norm
+      project_onto_unit_vector coords.normalize
     end
     
     def to_s
