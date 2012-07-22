@@ -51,9 +51,9 @@ module RedstoneBot
         else
           chat "dunno where U r (chat m <X> <Z> to specify)"
         end
-      when /m (\-?\d+) (\-?\d+)/
-        x = $1.to_i
-        z = $2.to_i
+      when /m (\-?[\.\d]+) (\-?[\.\d]+)/
+        x = $1.to_f
+        z = $2.to_f
         chat "coming to #{x}, #{z}!"
         start_miracle_jump x, z
       when "h"
