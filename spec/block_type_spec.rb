@@ -8,5 +8,9 @@ describe RedstoneBot::BlockType do
     described_class.from("20").should == glass
     described_class.from("0x14").should == glass
     described_class.from(20).should == glass
+    described_class.from(nil).should == nil
+    described_class.from("nil").should == nil
+    described_class.from("diamond").should == nil
+    described_class.from("diamond ore").should == RedstoneBot::BlockType::DiamondOre
   end
 end

@@ -35,9 +35,13 @@ module RedstoneBot
     end
     
     def self.from(x)
-      (from_id(x) if x.is_a?(Integer)) or 
-      from_string(x.to_s) or
-      from_id((x.hex if x.to_s[0,2]=='0x') || x.to_i)
+      case x
+      when nil, "nil" then nil
+      when Integer then from_id(x)
+      when String
+        x = x.gsub(/\s+/,'')
+        from_string(x.to_s) or (from_id(x.hex) if x[0,2]=='0x') or (from_id(x.to_i) if x =~ /\d+/)
+      end
     end
     
     File.open(File.join(File.dirname(__FILE__), "block_types.tsv")) do |f|

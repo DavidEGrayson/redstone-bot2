@@ -58,6 +58,27 @@ module RedstoneBot
         end
       end 
       
+      @client.listen do |p|
+        next unless p.is_a?(Packet::ChatMessage) && p.player_chat?
+        
+        case p.chat
+        when /how much (.+)/
+          # TODO: perhaps cache these results using a SimpleCache
+          name = $1
+          block_type = BlockType.from name
+          if block_type.nil? && name != "nil" && name != "unloaded"
+            chat "dunno what #{name} is"
+            next
+          end          
+          
+          chat "counting #{block_type && block_type.inspect || 'unloaded blocks'}..."
+          result = @chunk_tracker.loaded_chunks.inject(0) do |sum, chunk|
+            sum + chunk.count_block_type(block_type)
+          end
+          chat "there are #{result}"
+        end
+      end
+      
     end
     
     def miracle_jump(x,z)
