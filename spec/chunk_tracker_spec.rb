@@ -77,9 +77,23 @@ describe RedstoneBot::ChunkTracker do
     @chunk_tracker.block_metadata(coords).should == 6    
   end
   
-  it "should report nil (unknown) at y > 16"
+  it "should report nil (unknown) at y > 16" do
+    testdata1.ground_up_continuous.should == false
+    #therefore, we don't actually know what is in the upper sections yet...
+    (16..255).step(30).each do |y|
+      @chunk_tracker.block_type([42, y, 20]).should == nil
+      @chunk_tracker.block_metadata([42,y,20]).should == 15
+    end
+  end
   
-  it "handles ground-up-continuous updates"
+  it "handles ground-up-continuous updates" do
+    testdata2 = RedstoneBot::Packet::ChunkData.create(testdata1.chunk_id, true, testdata1.primary_bit_map, testdata1.add_bit_map, data)
+    @client << testdata2
+    (16..255).step(30).each do |y|
+      @chunk_tracker.block_type([42, y, 20]).should == RedstoneBot::BlockType::Air
+      @chunk_tracker.block_metadata([42,y,20]).should == 0
+    end    
+  end
   
   it "handles multi-block changes" do
     @chunk_tracker.chunks.size.should == 1

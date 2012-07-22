@@ -9,9 +9,12 @@ module RedstoneBot
   
     Size = [16, 256, 16]  # x,y,z size of each chunk
 
-    NullSection = "\x00"*(16*16*16)
-    NullSection.freeze
-
+    DefaultBlockTypeIdData = ("\xFF"*(16*16*16)).freeze
+    DefaultMetadata = ("\xFF"*(8*16*16)).freeze
+    
+    AirBlockTypeIdData = ("\x00"*(16*16*16)).freeze
+    AirMetadata = ("\x00"*(8*16*16)).freeze
+    
     attr_reader :coords   # array of integers [x, z]
 
     def initialize(coords)
@@ -21,8 +24,10 @@ module RedstoneBot
       # 1 byte per block, 4096 bytes per section
       # The block type array has 16 sections.
       # Each section has 4096 bytes, one byte per block, ordered by x,z,y.
-      @block_type = [NullSection]*16
-      @metadata = [NullSection]*16
+      # The default value of the block_type_id is \xFF, which results in a block_type of nil instead of BlockType::Air.
+      # The default value of the metadata doesn't matter too much because block_type will be 0xFF before the metadata is set for the first time
+      @block_type = 16.times.collect { DefaultBlockTypeIdData.dup }
+      @metadata = 16.times.collect { DefaultMetadata.dup }
     end
 
     def x
@@ -56,6 +61,14 @@ module RedstoneBot
       
       included_sections.each { |i| @block_type[i] = data.read(16*16*16) }
       included_sections.each { |i| @metadata[i] = data.read(16*16*8) }
+      
+      if p.ground_up_continuous
+        other_sections = (0..15).to_a - included_sections
+        other_sections.each do |i|
+          @block_type[i] = AirBlockTypeIdData.dup
+          @metadata[i] = AirMetadata.dup
+        end
+      end
     end
     
     def apply_block_change(p)
