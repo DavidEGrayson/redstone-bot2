@@ -57,7 +57,7 @@ describe RedstoneBot::ChunkTracker do
   before do
     @client = TestClient.new
     @chunk_tracker = RedstoneBot::ChunkTracker.new(@client)
-    @client << RedstoneBot::Packet::ChunkAllocation.new(testdata1.x, testdata1.z, true)
+    @client << RedstoneBot::Packet::ChunkAllocation.create(testdata1.x, testdata1.z, true)
     @client << testdata1
   end
   
@@ -75,7 +75,7 @@ describe RedstoneBot::ChunkTracker do
   
   it "handles block changes" do
     coords = [10,1,21]
-    @client << RedstoneBot::Packet::BlockChange.new(coords, RedstoneBot::BlockType::Wool.id, 6)
+    @client << RedstoneBot::Packet::BlockChange.create(coords, RedstoneBot::BlockType::Wool.id, 6)
     @chunk_tracker.block_type(coords).should == RedstoneBot::BlockType::Wool
     @chunk_tracker.block_metadata(coords).should == 6    
   end
@@ -106,7 +106,7 @@ describe RedstoneBot::ChunkTracker do
     end
     
     it "reports chunk allocation" do
-      p = RedstoneBot::Packet::ChunkAllocation.new(testdata1.x, testdata1.z, true)
+      p = RedstoneBot::Packet::ChunkAllocation.create(testdata1.x, testdata1.z, true)
       @receiver.should_receive(:info).with([0,16], p)
       @client << p
     end
@@ -117,7 +117,7 @@ describe RedstoneBot::ChunkTracker do
     end
     
     it "reports chunk deallocation" do
-      p = RedstoneBot::Packet::ChunkAllocation.new(testdata1.x, testdata1.z, false)
+      p = RedstoneBot::Packet::ChunkAllocation.create(testdata1.x, testdata1.z, false)
       @receiver.should_receive(:info).with([0,16], p)
       @client << p
     end

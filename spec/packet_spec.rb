@@ -1,8 +1,30 @@
 require 'redstone_bot/packets'
 
+module RedstoneBot
+  def (Packet::BlockChange).create(coords, block_type_id, block_metadata)
+    receive_data test_stream (coords + [block_type_id, block_metadata]).pack('l>Cl>CC')
+  end
+  
+  def (Packet::ChunkAllocation).create(x, z, mode)
+    receive_data test_stream [x, z, mode ? 1 : 0].pack('l>l>C')
+  end
+end
+
+describe RedstoneBot::Packet::BlockChange do
+  it "correctly parses binary data" do
+    bc = described_class.create([70,80,900], 44, 3)
+    bc.x.should == 70
+    bc.y.should == 80
+    bc.z.should == 900
+    bc.chunk_id.should == [70/16*16, 900/16*16]
+    bc.block_type_id.should == 44
+    bc.block_metadata.should == 3
+  end
+end
+
 def multi_block_change(block_changes)
   block_changes = block_changes.collect do |c|
-    c = RedstoneBot::Packet::BlockChange.new(*c) unless c.respond_to?(:x)
+    c = RedstoneBot::Packet::BlockChange.create(*c) unless c.respond_to?(:x)
   end
 
   chunk_id = block_changes[0].chunk_id
@@ -13,6 +35,17 @@ def multi_block_change(block_changes)
   end.join
     
   RedstoneBot::Packet::MultiBlockChange.receive_data(test_stream(binary_data))
+end
+
+describe RedstoneBot::Packet::ChunkAllocation do
+  it "correctly parses binary data" do
+    ca = described_class.create(7, 8, true)
+    ca.mode.should == true
+    ca.chunk_id.should == [7*16, 8*16]
+
+    ca = described_class.create(7, 8, false)
+    ca.mode.should == false
+  end
 end
 
 describe RedstoneBot::Packet::MultiBlockChange do
