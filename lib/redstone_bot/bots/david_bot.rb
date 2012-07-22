@@ -15,8 +15,6 @@ module RedstoneBot
     extend Forwardable
     include BodyMovers
     
-    FarmBounds = [(-294..-156), (63..63), (682..797)]
-    
     Aliases = {
       "meq" => "m -2570 -2069",
       "mpl" => "m 99.5 225.5",
@@ -34,7 +32,7 @@ module RedstoneBot
       @chat_filter.aliases Aliases
       @chat_filter.only_from_user(MASTER) if defined?(MASTER)
       
-      @ce = ChatEvaluator.new(@client, self)      
+      @ce = ChatEvaluator.new(@chat_filter, self)      
       @cm = ChatMover.new(@chat_filter, self, @entity_tracker)
       
       @body.on_position_update do
@@ -45,18 +43,6 @@ module RedstoneBot
       end
       
       @pathfinder = Pathfinder.new(@chunk_tracker)
-      
-      @chat_filter.listen do |p|
-        next unless p.is_a?(Packet::ChatMessage) && p.player_chat?
-        
-        case p.chat
-        when /d (\-?\d+) (\-?\d+) (\-?\d+)/
-          x, y, z = $1.to_i, $2.to_i, $3.to_i
-          puts "using #{x},#{y},#{z}!"
-          #@client.send_packet Packet::PlayerDigging.new(2, [x, y, z], 0)
-          @client.send_packet Packet::PlayerDigging.start [x,y,z]
-        end
-      end
       
       @client.listen do |p|
         case p
