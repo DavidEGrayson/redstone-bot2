@@ -15,10 +15,10 @@ module RedstoneBot
     AirBlockTypeIdData = ("\x00"*(16*16*16)).freeze
     AirMetadata = ("\x00"*(8*16*16)).freeze
     
-    attr_reader :coords   # array of integers [x, z]
+    attr_reader :id   # array of integers [x, z], e.g. [32,16]
 
-    def initialize(coords)
-      @coords = coords
+    def initialize(chunk_id)
+      @id = chunk_id
       @unloaded = false
       
       # 1 byte per block, 4096 bytes per section
@@ -31,11 +31,11 @@ module RedstoneBot
     end
 
     def x
-      @coords[0]
+      @id[0]
     end
 
     def z
-      @coords[1]
+      @id[1]
     end
 
     def unload
@@ -121,6 +121,17 @@ module RedstoneBot
         (@metadata[section_num][metadata_offset].ord & 0xF0) | (metadata & 0xF)
       end.chr
     end
+    
+    # block_type can be an object like BlockType::Air, nil (for unknown), or just an integer
+    def count_block_type(block_type)
+      block_type_data.bytes.count block_type ? block_type.to_i : 255
+    end
+    
+    protected 
+    # returns a string 4096 bytes long with all the block type data for this chunk
+    def block_type_data
+      @block_type.join
+    end
   end
 
   class ChunkTracker
@@ -191,6 +202,10 @@ module RedstoneBot
     
     def on_change(&proc)
       @change_listeners << proc
+    end
+    
+    def loaded_chunks
+      @chunks.values
     end
 
     protected

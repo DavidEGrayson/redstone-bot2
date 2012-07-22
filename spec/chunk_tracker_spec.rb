@@ -48,6 +48,14 @@ describe RedstoneBot::Chunk do
     @chunk.block_metadata([43,1,20]).should == 5
     @chunk.block_type_id([43,1,20]).should == RedstoneBot::BlockType::Wheat.id
   end
+  
+  it "can count blocks by type" do
+    @chunk.count_block_type(RedstoneBot::BlockType::Wool).should == 0
+    @chunk.count_block_type(RedstoneBot::BlockType::Farmland).should == 256
+    @chunk.count_block_type(RedstoneBot::BlockType::Wheat).should == 256
+    @chunk.count_block_type(RedstoneBot::BlockType::Air).should == 14*256
+    @chunk.count_block_type(nil).should == 15*16*256    
+  end
 end
 
 describe RedstoneBot::ChunkTracker do
@@ -110,6 +118,10 @@ describe RedstoneBot::ChunkTracker do
       @chunk_tracker.block_type([42, 1+i, 23]).should == RedstoneBot::BlockType::Piston
       @chunk_tracker.block_metadata([42, 1+i, 23]).should == i
     end
+  end
+  
+  it "reports which chunks are loaded" do
+    @chunk_tracker.loaded_chunks.collect(&:id).should == [testdata1.chunk_id]
   end
   
   context "when reporting chunk changes" do
