@@ -3,14 +3,6 @@ require 'redstone_bot/chunk_tracker'
 require 'packet_spec'   # contains helper methods for constructing packet
 require 'zlib'
 
-class RedstoneBot::Packet::ChunkData
-  # Not included yet: :add_bit_map, :ground_up_contiguous
-  
-  def data=(data)
-    @compressed_data = Zlib::Deflate.deflate(data)
-  end
-end
-
 testdata1 = RedstoneBot::Packet::ChunkData.new
 testdata1.instance_variable_set :@x, 0
 testdata1.instance_variable_set :@z, 1
@@ -22,7 +14,7 @@ data = data.ljust(16*256, "\x00")   # the rest of the block types are air
 data << "\x00" * 128   # y = 0 no metadata
 data << "\x55" * 128   # y = 1 : All crops are 5 tall (7 is the max)
 data = data.ljust(16*256 + 16*128, "\x00")   # the rest of the metadata is 0
-testdata1.data = data
+testdata1.instance_variable_set :@compressed_data, Zlib::Deflate.deflate(data)
 
 describe RedstoneBot::Chunk do
   before do
@@ -84,7 +76,7 @@ describe RedstoneBot::ChunkTracker do
     @chunk_tracker.chunks.size.should == 1
     @chunk_tracker.chunks[[0,16]].instance_variable_get(:@metadata)[0].size.should >= 2048
     
-    @client << multi_block_change([
+    @client << RedstoneBot::Packet::MultiBlockChange.create([
       [[10,1,23], RedstoneBot::BlockType::Piston.id, 0],
       [[10,2,23], RedstoneBot::BlockType::Piston.id, 1],
       [[10,3,23], RedstoneBot::BlockType::Piston.id, 2],
