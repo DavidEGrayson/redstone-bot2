@@ -105,6 +105,10 @@ module RedstoneBot
       @current_fiber = proc
     end
     
+    def stop
+      @current_fiber = nil
+    end
+    
     def delay(time)
       wait_for_next_position_update(time)
     end

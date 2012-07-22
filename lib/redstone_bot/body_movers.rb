@@ -116,5 +116,8 @@ module RedstoneBot
       body.position
     end
     
+    def stop
+      body.stop
+    end
   end
 end

@@ -69,7 +69,7 @@ module RedstoneBot
     
     protected
     
-    def_delegators :@body_mover, :start_move_to, :start_jump, :start_miracle_jump, :position
+    def_delegators :@body_mover, :start_move_to, :start_jump, :start_miracle_jump, :position, :stop
     def_delegators :@chatter, :chat
   end
 end
