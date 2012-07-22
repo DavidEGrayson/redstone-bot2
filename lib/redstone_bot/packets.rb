@@ -679,6 +679,10 @@ module RedstoneBot
     packet_type 0x32
     attr_reader :x, :z, :mode
     
+    def chunk_id
+      [x*16, z*16]
+    end
+    
     def initialize(x, z, mode)
       @x, @z, @mode = x, z, mode
     end
@@ -696,6 +700,10 @@ module RedstoneBot
     attr_reader :ground_up_contiguous
     attr_reader :primary_bit_map, :add_bit_map
     attr_reader :compressed_data
+    
+    def chunk_id
+      [x*16, z*16]
+    end
     
     def receive_data(socket)
       @x = socket.read_int
@@ -727,7 +735,7 @@ module RedstoneBot
     attr_reader :data
     
     def chunk_id
-      [x, z] # IS THIS RIGHT?
+      [x*16, z*16]
     end
     
     def receive_data(socket)
@@ -736,12 +744,29 @@ module RedstoneBot
       @count = socket.read_short
       @data = socket.read(socket.read_int)
     end
+    
+    def each
+      (0...@data.length).step(4) do |i|
+        data = @data[i,4]
+        bytes = data.bytes.to_a
+        x = bytes[0] & 0x0F
+        z = bytes[0] >> 4 & 0x0F
+        y = bytes[1]
+        block_type_id = (bytes[2]<<4) | ((bytes[3]&0xF0)>>4)
+        metadata = bytes[3] & 0xF
+        yield [x, y, z], block_type_id, metadata
+      end
+    end
   end
   
   class Packet::BlockChange < Packet
     packet_type 0x35
     attr_reader :x, :y, :z
     attr_reader :block_type, :block_metadata
+    
+    def chunk_id
+      [x/16*16, z/16*16]
+    end
     
     def receive_data(socket)
       @x = socket.read_int

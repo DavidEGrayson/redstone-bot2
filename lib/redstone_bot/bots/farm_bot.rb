@@ -4,7 +4,7 @@ require 'redstone_bot/simple_cache'
 module RedstoneBot
   class Bots::FarmBot < Bots::DavidBot
   
-    ExpectedWheat = 9747
+    ExpectedWheat = 9759
     FarmBounds = [(-300..-150), (63..63), (670..800)]
   
     def setup

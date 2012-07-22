@@ -63,8 +63,8 @@ module RedstoneBot
     end
     
     def apply_multi_block_change(p)
-      raise "multi-block change is not implemented yet"
-      p.each do |x|
+      p.each do |coords, block_type_id, metadata|
+        set_block_type_and_metadata coords, block_type_id, metadata
       end
     end
 
@@ -121,40 +121,27 @@ module RedstoneBot
       @chunks = {}
 
       client.listen do |p|
-        #case p
-        #when Packet::ChunkAllocation, Packet::ChunkData, Packet::MultiBlockChange, Packet::BlockChange
-        #  puts Time.now.strftime("%M:%S.%L") + " " + p.inspect
-        #end
+        next unless p.respond_to?(:chunk_id)
+      
+        # puts Time.now.strftime("%M:%S.%L") + " " + p.inspect
 
-        # TODO: clean this up
-        case p
-        when Packet::ChunkAllocation
-          coords = [p.x*16, p.z*16]
+        chunk_id = p.chunk_id
+        
+        if p.is_a?(Packet::ChunkAllocation)
           if p.mode
-            allocate_chunk coords
+            allocate_chunk chunk_id
           else
-            unload_chunk coords
+            unload_chunk chunk_id
           end
-          notify_change_listeners coords, p
-        when Packet::ChunkData, Packet::MultiBlockChange
-          coords = [p.x*16, p.z*16]
-          chunk = @chunks[coords]
-          if chunk
-            @chunks[coords].apply_change p
+        else
+          if chunk = @chunks[chunk_id]
+            chunk.apply_change p
           else
             $stderr.puts "warning: received update for a chunk that is not loaded: #{coords.inspect}"
           end
-          notify_change_listeners coords, p
-        when Packet::BlockChange
-          coords = [p.x/16*16, p.z/16*16]
-          chunk = @chunks[coords]
-          if chunk
-            @chunks[coords].apply_block_change p
-          else
-            $stderr.puts "warning: received update for a chunk that is not loaded: #{coords.inspect}"
-          end
-          notify_change_listeners coords, p          
         end
+        
+        notify_change_listeners chunk_id, p
       end
     end
 
