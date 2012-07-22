@@ -17,7 +17,7 @@ module RedstoneBot
     
     Aliases = {
       "meq" => "m -2570 -2069",
-      "mpl" => "m 100 240",
+      "mpl" => "m 99.5 225.5",
       "mkn" => "m -211 785",
       }
     
@@ -95,7 +95,7 @@ module RedstoneBot
     end
 
     protected
-    def_delegators :@chunk_tracker, :block_type
+    def_delegators :@chunk_tracker, :block_type, :block_metadata
     def_delegators :@client, :chat
   end
 end
