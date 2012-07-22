@@ -17,7 +17,7 @@ module RedstoneBot
     def initialize(coords)
       @coords = coords
       @unloaded = false
-
+      
       # 1 byte per block, 4096 bytes per section
       # The block type array has 16 sections.
       # Each section has 4096 bytes, one byte per block, ordered by x,z,y.
@@ -67,12 +67,14 @@ module RedstoneBot
       offset = 128*section_y + 8*section_z + section_x/2
       @metadata[section_num][offset].ord >> ((section_x % 2) * 4) & 0x0F
     end
+    
   end
 
   class ChunkTracker
     include Uninspectable
   
     def initialize(client)
+      @change_listeners = []
       @chunks = {}
 
       client.listen do |p|
@@ -89,6 +91,7 @@ module RedstoneBot
           else
             unload_chunk coords
           end
+          notify_change_listeners coords, p
         when Packet::ChunkData
           coords = [p.x*16, p.z*16]
           chunk = @chunks[coords]
@@ -97,6 +100,8 @@ module RedstoneBot
           else
             $stderr.puts "warning: received update for a chunk that is not loaded: #{coords.inspect}"
           end
+          notify_change_listeners coords, p
+        # TODO: handle BlockChange and MultiBlockChange packets??
         end
       end
     end
@@ -124,6 +129,10 @@ module RedstoneBot
       c = [coords[0]/16*16, coords[2]/16*16]
       @chunks[[coords[0]/16*16, coords[2]/16*16]]
     end
+    
+    def on_change(&proc)
+      @change_listeners << proc
+    end
 
     protected
     def allocate_chunk(chunk_coords)
@@ -135,6 +144,12 @@ module RedstoneBot
     def unload_chunk(chunk_coords)
       chunk = @chunks.delete(chunk_coords)
       chunk.unload if chunk
+    end
+    
+    def notify_change_listeners(*args)
+      @change_listeners.each do |l|
+        l.call(*args)
+      end
     end
   end
 

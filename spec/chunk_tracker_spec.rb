@@ -58,4 +58,30 @@ describe RedstoneBot::ChunkTracker do
   it "should report metadata at y = 1" do
     @chunk_tracker.block_metadata([10,1,20]).should == 5
   end
+  
+  context "when reporting chunk changes" do
+    before do
+      @receiver = double("receiver")
+      @chunk_tracker.on_change do |coords, packet|
+        @receiver.info(coords,packet)
+      end
+    end
+    
+    it "reports chunk allocation" do
+      p = RedstoneBot::Packet::ChunkAllocation.new(testdata1.x, testdata1.z, true)
+      @receiver.should_receive(:info).with([0,16], p)
+      @client << p
+    end
+    
+    it "reports chunk changes" do
+      @receiver.should_receive(:info).with([0,16], testdata1)
+      @client << testdata1
+    end
+    
+    it "reports chunk deallocation" do
+      p = RedstoneBot::Packet::ChunkAllocation.new(testdata1.x, testdata1.z, false)
+      @receiver.should_receive(:info).with([0,16], p)
+      @client << p
+    end
+  end
 end 

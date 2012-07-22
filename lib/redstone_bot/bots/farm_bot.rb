@@ -23,8 +23,26 @@ module RedstoneBot
       
     end
     
-    def count_wheat
-      Coords.each_in_bounds(FarmBounds).count { |c| block_type(c) == BlockType::Wheat }
+    def average_growth
+      growths = wheats.collect { |c| block_metadata(c) }
+      growths.inject(:+).to_f / growths.count
     end
+    
+    def wheats
+      farm_blocks.select { |c| block_type(c) == BlockType::Wheat }
+    end
+    
+    def count_wheat
+      farm_blocks.count { |c| block_type(c) == BlockType::Wheat }
+    end
+    
+    def count_unloaded
+      farm_blocks.count { |c| block_type(c) == nil }
+    end
+    
+    def farm_blocks
+      Coords.each_in_bounds(FarmBounds)
+    end    
+
   end
 end
