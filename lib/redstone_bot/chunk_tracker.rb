@@ -38,6 +38,17 @@ module RedstoneBot
     end
 
     def apply_change(p)
+      case p
+      when Packet::ChunkData
+        apply_broad_change(p)
+      when Packet::BlockChange
+        apply_block_change(p)
+      when Packet::MultiBlockChange
+        apply_multi_block_change(p)
+      end
+    end  
+      
+    def apply_broad_change(p)
       data_string = Zlib::Inflate.inflate(p.compressed_data)      
       data = StringIO.new(data_string)
 
@@ -45,6 +56,16 @@ module RedstoneBot
       
       included_sections.each { |i| @block_type[i] = data.read(16*16*16) }
       included_sections.each { |i| @metadata[i] = data.read(16*16*8) }
+    end
+    
+    def apply_block_change(p)
+      set_block_type_and_metadata [p.x, p.y, p.z], p.block_type, p.block_metadata
+    end
+    
+    def apply_multi_block_change(p)
+      raise "multi-block change is not implemented yet"
+      p.each do |x|
+      end
     end
 
     def convert_coords(coords)
@@ -72,6 +93,22 @@ module RedstoneBot
       section_num, section_y = y.divmod 16
       @block_type[section_num][256*section_y, 256]
     end
+    
+    def set_block_type_and_metadata(coords, block_type, metadata)
+      section_num, section_x, section_y, section_z = convert_coords(coords)
+      
+      block_type_offset = 256*section_y + 16*section_z + section_x
+      @block_type[section_num][block_type_offset] = block_type.chr
+      
+      metadata_offset = 128*section_y + 8*section_z + section_x/2
+      nibble = section_x % 1
+      @metadata[section_num][metadata_offset] = if nibble == 1
+        (@metadata[section_num][metadata_offset].ord & 0x0F) | (metadata << 4 & 0xF0)
+      else
+        (@metadata[section_num][metadata_offset].ord & 0xF0) | (metadata & 0xF)
+      end.chr
+      # Please excuse our mess.
+    end
   end
 
   class ChunkTracker
@@ -89,6 +126,7 @@ module RedstoneBot
         #  puts Time.now.strftime("%M:%S.%L") + " " + p.inspect
         #end
 
+        # TODO: clean this up
         case p
         when Packet::ChunkAllocation
           coords = [p.x*16, p.z*16]
@@ -98,7 +136,7 @@ module RedstoneBot
             unload_chunk coords
           end
           notify_change_listeners coords, p
-        when Packet::ChunkData
+        when Packet::ChunkData, Packet::MultiBlockChange
           coords = [p.x*16, p.z*16]
           chunk = @chunks[coords]
           if chunk
@@ -107,7 +145,15 @@ module RedstoneBot
             $stderr.puts "warning: received update for a chunk that is not loaded: #{coords.inspect}"
           end
           notify_change_listeners coords, p
-        # TODO: handle BlockChange and MultiBlockChange packets??
+        when Packet::BlockChange
+          coords = [p.x/16*16, p.z/16*16]
+          chunk = @chunks[coords]
+          if chunk
+            @chunks[coords].apply_block_change p
+          else
+            $stderr.puts "warning: received update for a chunk that is not loaded: #{coords.inspect}"
+          end
+          notify_change_listeners coords, p          
         end
       end
     end

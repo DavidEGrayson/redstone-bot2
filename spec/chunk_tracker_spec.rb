@@ -42,6 +42,14 @@ describe RedstoneBot::Chunk do
   it "should report metadata=5 at y=1" do
     @chunk.block_metadata([10,1,20]).should == 5
   end
+  
+  it "can change individual block type and metadata" do
+    @chunk.set_block_type_and_metadata([10,1,20], RedstoneBot::BlockType::Wool.id, 6)
+    @chunk.block_metadata([10,1,20]).should == 6
+    @chunk.block_type_id([10,1,20]).should == RedstoneBot::BlockType::Wool.id
+    @chunk.block_metadata([11,1,20]).should == 5
+    @chunk.block_type_id([11,1,20]).should == RedstoneBot::BlockType::Wheat.id
+  end
 end
 
 describe RedstoneBot::ChunkTracker do

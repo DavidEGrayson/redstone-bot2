@@ -41,10 +41,6 @@ module RedstoneBot
       farm_chunks.inject(0) { |sum, chunk_id| sum + @wheat_count[chunk_id] }
     end
     
-    def wheat_count_
-      farm_blocks.count { |c| block_type(c) == BlockType::Wheat }
-    end
-    
     def count_unloaded
       farm_blocks.count { |c| block_type(c) == nil }
     end

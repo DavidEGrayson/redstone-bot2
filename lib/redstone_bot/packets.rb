@@ -722,13 +722,17 @@ module RedstoneBot
   
   class Packet::MultiBlockChange < Packet
     packet_type 0x34
-    attr_reader :chunk_x, :chunk_z
+    attr_reader :x, :z
     attr_reader :count
     attr_reader :data
     
+    def chunk_id
+      [x, z] # IS THIS RIGHT?
+    end
+    
     def receive_data(socket)
-      @chunk_x = socket.read_int
-      @chunk_z = socket.read_int
+      @x = socket.read_int
+      @z = socket.read_int
       @count = socket.read_short
       @data = socket.read(socket.read_int)
     end
