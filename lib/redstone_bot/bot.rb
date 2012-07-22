@@ -1,11 +1,14 @@
-require "redstone_bot/body"
-require "redstone_bot/entity_tracker"
-require "redstone_bot/chunk_tracker"
+require_relative 'body'
+require_relative 'entity_tracker'
+require_relative 'chunk_tracker'
+require_relative 'uninspectable'
 
 # This class is not too useful on its own.  It is meant to be subclassed by
 # people making bots.
 module RedstoneBot
   class Bot
+    include Uninspectable
+  
     def initialize(client)
       @client = client
     end

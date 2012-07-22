@@ -7,29 +7,9 @@ def player_chat(*args)
   ChatMessage.player_chat *args
 end
 
-class TestChatter
-  def initialize
-    @listeners = []
-  end
-  
-  def listen(&proc)
-    @listeners << proc
-  end
-  
-  def <<(packet)
-    @listeners.each do |l|
-      l.call packet
-    end
-  end
-  
-  def username
-    "testbot"
-  end
-end
-
 describe RedstoneBot::ChatFilter do
   before do
-    @chatter = TestChatter.new
+    @chatter = TestClient.new
     @filter = RedstoneBot::ChatFilter.new(@chatter)
     @receiver = double("receiver")
     @filter.listen { |p| @receiver.packet p }

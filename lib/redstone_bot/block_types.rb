@@ -40,6 +40,13 @@ module RedstoneBot
         @types[id] = block_type
       end
     end
+    
+    # TODO: better way to represent this, so that FullyGrown can actually be a constant.
+    class << Wheat
+      def fully_grown
+        7
+      end
+    end
   end
 end
 

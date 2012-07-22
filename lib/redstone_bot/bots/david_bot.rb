@@ -83,10 +83,6 @@ module RedstoneBot
       puts "t: " + result.inspect
     end
     
-    def inspect
-      to_s
-    end
-    
     def standing_on
       coord_array = (@body.position - Coords::Y*0.5).to_a.collect &:floor
       "#{block_type coord_array} #{@body.position.y}->#{coord_array[1]}"

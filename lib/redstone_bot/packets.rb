@@ -679,10 +679,14 @@ module RedstoneBot
     packet_type 0x32
     attr_reader :x, :z, :mode
     
+    def initialize(x, z, mode)
+      @x, @z, @mode = x, z, mode
+    end
+    
     def receive_data(socket)
       @x = socket.read_int
       @z = socket.read_int
-      @mode = socket.read_byte
+      @mode = socket.read_bool
     end
   end
   

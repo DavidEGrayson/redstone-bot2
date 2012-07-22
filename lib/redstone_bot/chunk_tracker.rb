@@ -1,9 +1,12 @@
 require 'zlib'
 require 'stringio'
-require "redstone_bot/block_types"
+require_relative 'block_types'
+require_relative 'uninspectable'
 
 module RedstoneBot
   class Chunk
+    include Uninspectable
+  
     Size = [16, 256, 16]  # x,y,z size of each chunk
 
     NullSection = "\x00"*(16*16*16)
@@ -67,6 +70,8 @@ module RedstoneBot
   end
 
   class ChunkTracker
+    include Uninspectable
+  
     def initialize(client)
       @chunks = {}
 
@@ -103,10 +108,21 @@ module RedstoneBot
       return BlockType::Air if coords[1] > 255   # treat spots above the top of the world as air
       return BlockType::Bedrock if coords[1] < 0 # treat spots below the top of the world as bedrock
       
-      # TODO: see if calling floor here is really the right thing to do.  What is the correspondend between integer coords and float coords?
-      chunk_coords = [coords[0]/16*16, coords[2]/16*16]
-      chunk = @chunks[chunk_coords]
+      chunk = chunk_from_coords(coords)
       chunk && BlockType.from_id(chunk.block_type_id(coords))
+    end
+    
+    def block_metadata(coords)
+      coords = coords.collect &:floor
+      return 0 if coords[1] > 255 || coords[1] < 0
+      chunk = chunk_from_coords(coords)
+      chunk && chunk.block_metadata(coords)
+    end
+    
+    # coords is an array of INTEGERS [x,z]
+    def chunk_from_coords(coords)
+      c = [coords[0]/16*16, coords[2]/16*16]
+      @chunks[[coords[0]/16*16, coords[2]/16*16]]
     end
 
     protected
