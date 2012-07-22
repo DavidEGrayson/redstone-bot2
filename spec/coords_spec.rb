@@ -72,7 +72,13 @@ describe RedstoneBot::Coords do
 
   it "can iterate over grid points" do
     bounds =  [(-294..-156), (63..64), (682..797)]
-    enum = RedstoneBot::Coords.each_in_bounds bounds
+    enum = described_class.each_in_bounds bounds
     enum.count.should == bounds[0].count * bounds[1].count * bounds[2].count
+  end
+  
+  it "can iterate over chunk ids" do
+    bounds =  [(-294..-156), (63..64), (682..797)]
+    enum = described_class.each_chunk_id_in_bounds bounds
+    enum.count.should == 80
   end
 end

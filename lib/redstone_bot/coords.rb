@@ -67,6 +67,18 @@ module RedstoneBot
       end
     end
     
+    def self.each_chunk_id_in_bounds(bounds)
+      return enum_for(:each_chunk_id_in_bounds, bounds) unless block_given?
+      xrange, _, zrange = bounds
+      cxrange = (xrange.min.to_i/16)..(xrange.max.to_i/16)
+      czrange = (zrange.min.to_i/16)..(zrange.max.to_i/16)
+      cxrange.each do |cx|
+        czrange.each do |cz|
+          yield [cx*16, cz*16]
+        end        
+      end
+    end
+    
     X = East = Coords[1,0,0]
     Y = Up = Coords[0,1,0]
     Z = South = Coords[0,0,1]

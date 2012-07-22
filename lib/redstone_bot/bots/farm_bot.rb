@@ -5,7 +5,7 @@ module RedstoneBot
   class Bots::FarmBot < Bots::DavidBot
   
     ExpectedWheat = 9747
-    FarmBounds = [(-294..-156), (63..63), (682..797)]
+    FarmBounds = [(-300..-150), (63..63), (670..800)]
   
     def setup
       super
@@ -37,7 +37,11 @@ module RedstoneBot
       farm_blocks.select { |c| block_type(c) == BlockType::Wheat }
     end
     
-    def count_wheat_
+    def wheat_count
+      farm_chunks.inject(0) { |sum, chunk_id| sum + @wheat_count[chunk_id] }
+    end
+    
+    def wheat_count_
       farm_blocks.count { |c| block_type(c) == BlockType::Wheat }
     end
     
@@ -47,6 +51,10 @@ module RedstoneBot
     
     def farm_blocks
       Coords.each_in_bounds(FarmBounds)
+    end
+    
+    def farm_chunks
+      Coords.each_chunk_id_in_bounds(FarmBounds)
     end
     
     # This function has intimate knowledge of Chunk and ChunkTracker.
