@@ -25,8 +25,19 @@ module RedstoneBot
     end
     
     @types = []  # array where each block type is placed
+    @types_by_string = {}
     def self.from_id(id)
       @types[id]
+    end
+    
+    def self.from_string(string)
+      @types_by_string[string.downcase]
+    end
+    
+    def self.from(x)
+      (from_id(x) if x.is_a?(Integer)) or 
+      from_string(x.to_s) or
+      from_id((x.hex if x.to_s[0,2]=='0x') || x.to_i)
     end
     
     File.open(File.join(File.dirname(__FILE__), "block_types.tsv")) do |f|
@@ -37,7 +48,7 @@ module RedstoneBot
         attrs = (attr_string||"").split(",")
         block_type = BlockType.new(id, symbol, attrs.include?("solid"))
         const_set symbol, block_type
-        @types[id] = block_type
+        @types_by_string[symbol.to_s.downcase] = @types[id] = block_type        
       end
     end
     
