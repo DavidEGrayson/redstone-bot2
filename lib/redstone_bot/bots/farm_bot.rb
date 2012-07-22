@@ -1,4 +1,5 @@
-require_relative "david_bot"
+require_relative 'david_bot'
+require 'redstone_bot/simple_cache'
 
 module RedstoneBot
   class Bots::FarmBot < Bots::DavidBot
@@ -8,6 +9,10 @@ module RedstoneBot
   
     def setup
       super
+      
+      @wheat_count = SimpleCache.new(@chunk_tracker) do |chunk_id|
+        count_wheat_in_chunk(chunk_id)
+      end
             
       @chat_filter.listen do |p|
         next unless p.is_a?(Packet::ChatMessage) && p.player_chat?
@@ -32,7 +37,7 @@ module RedstoneBot
       farm_blocks.select { |c| block_type(c) == BlockType::Wheat }
     end
     
-    def count_wheat
+    def count_wheat_
       farm_blocks.count { |c| block_type(c) == BlockType::Wheat }
     end
     
@@ -42,7 +47,19 @@ module RedstoneBot
     
     def farm_blocks
       Coords.each_in_bounds(FarmBounds)
-    end    
-
+    end
+    
+    # This function has intimate knowledge of Chunk and ChunkTracker.
+    # chunk_id is an [x,z] array with x and z are multiples of 16.
+    def count_wheat_in_chunk(chunk_id)
+      puts "COUNTING WHEAT in #{chunk_id}"
+      yrange = FarmBounds[1]
+      chunk = @chunk_tracker.chunks[chunk_id]      
+      return nil if !chunk
+      yrange.inject(0) do |sum, y|
+        sum + chunk.block_type_raw_yslice(y).count(';')  # NOTE: this will NOT work for '^'
+      end
+    end
+    
   end
 end

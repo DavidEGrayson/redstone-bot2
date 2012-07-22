@@ -35,6 +35,11 @@ describe RedstoneBot::Chunk do
   
   it "should report wheat at y = 1" do
     @chunk.block_type_id([10,1,20]).should == RedstoneBot::BlockType::Wheat.id
+    
+    @chunk.block_type_raw_yslice(1).should == "\x3B" * 256
+  end
+  
+  it "should report metadata=5 at y=1" do
     @chunk.block_metadata([10,1,20]).should == 5
   end
 end

@@ -67,11 +67,17 @@ module RedstoneBot
       offset = 128*section_y + 8*section_z + section_x/2
       @metadata[section_num][offset].ord >> ((section_x % 2) * 4) & 0x0F
     end
-    
+        
+    def block_type_raw_yslice(y)
+      section_num, section_y = y.divmod 16
+      @block_type[section_num][256*section_y, 256]
+    end
   end
 
   class ChunkTracker
     include Uninspectable
+  
+    attr_reader :chunks
   
     def initialize(client)
       @change_listeners = []
