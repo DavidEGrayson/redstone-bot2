@@ -764,6 +764,12 @@ module RedstoneBot
     attr_reader :x, :y, :z
     attr_reader :block_type, :block_metadata
     
+    def initialize(coords, block_type, block_metadata)
+      @x, @y, @z = coords
+      @block_type = block_type
+      @block_metadata = block_metadata
+    end
+    
     def chunk_id
       [x/16*16, z/16*16]
     end
