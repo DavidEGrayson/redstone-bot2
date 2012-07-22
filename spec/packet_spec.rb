@@ -1,4 +1,5 @@
 require_relative 'spec_helper'
+require 'zlib'
 
 module RedstoneBot
   def (Packet::BlockChange).create(coords, block_type_id, block_metadata)
@@ -16,12 +17,22 @@ module RedstoneBot
 
     chunk_id = block_changes[0].chunk_id
   
-    binary_data = [chunk_id[0]/16, chunk_id[1]/16, block_changes.size, 4*block_changes.size].pack("l>l>s>l>")
+    binary_data = [chunk_id[0]/16, chunk_id[1]/16, block_changes.size, 4*block_changes.size].pack("l>l>S>l>")
     binary_data += block_changes.collect do |c|
       [(c.x%16)+((c.z%16)<<4), c.y, (c.block_type_id<<4) + (c.block_metadata&0xF)].pack("CCs>")
     end.join
     
-    receive_data(test_stream(binary_data))
+    receive_data test_stream binary_data
+  end
+  
+  def (Packet::ChunkData).create(chunk_id, ground_up_continuous, primary_bit_map, add_bit_map, data)
+    compressed = Zlib::Deflate.deflate(data)
+    binary_data = [chunk_id[0]/16, chunk_id[1]/16,
+      ground_up_continuous ? 1 : 0,
+      primary_bit_map, add_bit_map,
+      compressed.size, 0
+    ].pack("l>l>CS>S>l>l>") + compressed
+    receive_data test_stream binary_data
   end
 end
 
@@ -63,5 +74,25 @@ describe RedstoneBot::Packet::MultiBlockChange do
       [[10,3,7], RedstoneBot::BlockType::Piston.id, 2],
       [[10,4,7], RedstoneBot::BlockType::Piston.id, 3],
     ]
+  end
+end
+
+describe RedstoneBot::Packet::ChunkData do
+  it "correctly parses binary data" do
+    data = ("\x00".."\xFF").to_a.join
+    chunk_id = [96,256]
+    p = RedstoneBot::Packet::ChunkData.create(chunk_id, true, 0xFFFF, 5, data)
+    p.ground_up_continuous.should == true
+    p.primary_bit_map.should == 0xFFFF
+    p.add_bit_map.should == 5
+    Zlib::Inflate.inflate(p.compressed_data).should == data
+    p.chunk_id.should == chunk_id
+
+    q = RedstoneBot::Packet::ChunkData.create(chunk_id, true, 6, 0xAAAA, data)
+    q.ground_up_continuous.should == true
+    q.primary_bit_map.should == 6
+    q.add_bit_map.should == 0xAAAA
+    Zlib::Inflate.inflate(q.compressed_data).should == data
+    q.chunk_id.should == chunk_id
   end
 end

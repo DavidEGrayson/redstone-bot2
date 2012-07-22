@@ -692,7 +692,7 @@ module RedstoneBot
   
   class Packet::ChunkData < Packet
     packet_type 0x33
-    attr_reader :ground_up_contiguous
+    attr_reader :ground_up_continuous
     attr_reader :primary_bit_map, :add_bit_map
     attr_reader :compressed_data
     
@@ -703,9 +703,9 @@ module RedstoneBot
     def receive_data(socket)
       @x = socket.read_int*16
       @z = socket.read_int*16
-      @ground_up_contiguous = socket.read_byte
-      @primary_bit_map = socket.read_short
-      @add_bit_map = socket.read_short
+      @ground_up_continuous = socket.read_bool
+      @primary_bit_map = socket.read_unsigned_short
+      @add_bit_map = socket.read_unsigned_short
       compressed_size = socket.read_int
       socket.read_int
       @compressed_data = socket.read(compressed_size)
@@ -721,6 +721,7 @@ module RedstoneBot
         @compressed_data = tmp
       end
     end
+
   end
   
   class Packet::MultiBlockChange < Packet
@@ -735,8 +736,8 @@ module RedstoneBot
     def receive_data(socket)
       @x = socket.read_int*16
       @z = socket.read_int*16
-      @count = socket.read_short
-      @data = socket.read(socket.read_int)
+      @count = socket.read_unsigned_short
+      @data = socket.read(socket.read_unsigned_int)
     end
     
     def each

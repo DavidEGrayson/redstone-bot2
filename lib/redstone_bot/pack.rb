@@ -16,10 +16,18 @@ module RedstoneBot
       read(2).unpack('s>')[0]
     end
 
+    def read_unsigned_short
+      read(2).unpack('S>')[0]
+    end
+    
     def read_int
       read(4).unpack('l>')[0]
     end
 
+    def read_unsigned_int
+      read(4).unpack('L>')[0]
+    end
+    
     def read_long
       read(8).unpack('q>')[0]
     end

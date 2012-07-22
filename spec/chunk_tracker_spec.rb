@@ -10,10 +10,6 @@ class RedstoneBot::ChunkTracker
   end
 end
   
-testdata1 = RedstoneBot::Packet::ChunkData.new
-testdata1.instance_variable_set :@x, 32
-testdata1.instance_variable_set :@z, 16
-testdata1.instance_variable_set :@primary_bit_map, 1   # only set the y=0..15 section
 bt = ""
 bt << "\x3C" * 256   # y = 0 is all farmland
 bt << "\x3B" * 256   # y = 1 is all wheat
@@ -23,7 +19,7 @@ metadata << "\x00" * 128   # y = 0 no metadata
 metadata << "\x55" * 128   # y = 1 : All crops are 5 tall (7 is the max)
 metadata = metadata.ljust(16*128, "\x00")   # the rest of the metadata is 0
 data = bt + metadata
-testdata1.instance_variable_set :@compressed_data, Zlib::Deflate.deflate(data)
+testdata1 = RedstoneBot::Packet::ChunkData.create([32,16], false, 1, 0, data)
 
 describe RedstoneBot::Chunk do
   before do
@@ -80,6 +76,10 @@ describe RedstoneBot::ChunkTracker do
     @chunk_tracker.block_type(coords).should == RedstoneBot::BlockType::Wool
     @chunk_tracker.block_metadata(coords).should == 6    
   end
+  
+  it "should report nil (unknown) at y > 16"
+  
+  it "handles ground-up-continuous updates"
   
   it "handles multi-block changes" do
     @chunk_tracker.chunks.size.should == 1
