@@ -5,8 +5,8 @@ module RedstoneBot
     receive_data test_stream (coords + [block_type_id, block_metadata]).pack('l>Cl>CC')
   end
   
-  def (Packet::ChunkAllocation).create(x, z, mode)
-    receive_data test_stream [x, z, mode ? 1 : 0].pack('l>l>C')
+  def (Packet::ChunkAllocation).create(chunk_id, mode)
+    receive_data test_stream [chunk_id[0]/16, chunk_id[1]/16, mode ? 1 : 0].pack('l>l>C')
   end
   
   def (Packet::MultiBlockChange).create(block_changes)
@@ -39,11 +39,11 @@ end
 
 describe RedstoneBot::Packet::ChunkAllocation do
   it "correctly parses binary data" do
-    ca = described_class.create(7, 8, true)
+    ca = described_class.create([7*16, 8*16], true)
     ca.mode.should == true
     ca.chunk_id.should == [7*16, 8*16]
 
-    ca = described_class.create(7, 8, false)
+    ca = described_class.create([7*16, 8*16], false)
     ca.mode.should == false
   end
 end

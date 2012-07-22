@@ -40,11 +40,11 @@ module RedstoneBot
     def apply_change(p)
       case p
       when Packet::ChunkData
-        apply_broad_change(p)
+        apply_broad_change p
       when Packet::BlockChange
-        apply_block_change(p)
+        apply_block_change p
       when Packet::MultiBlockChange
-        apply_multi_block_change(p)
+        apply_multi_block_change p
       end
     end  
       
@@ -107,7 +107,6 @@ module RedstoneBot
       else
         (@metadata[section_num][metadata_offset].ord & 0xF0) | (metadata & 0xF)
       end.chr
-      # Please excuse our mess.
     end
   end
 
@@ -137,7 +136,7 @@ module RedstoneBot
           if chunk = @chunks[chunk_id]
             chunk.apply_change p
           else
-            $stderr.puts "warning: received update for a chunk that is not loaded: #{chunk_id.inspect}"
+            handle_update_for_unloaded_chunk chunk_id
           end
         end
         
@@ -145,6 +144,10 @@ module RedstoneBot
       end
     end
 
+    def handle_update_for_unloaded_chunk(chunk_id)
+      $stderr.puts "warning: received update for a chunk that is not loaded: #{chunk_id.inspect}"
+    end
+    
     # coords is a RedstoneBot::Coords object or an array of numbers
     def block_type(coords)
       coords = coords.collect &:floor   # make array of ints
@@ -152,21 +155,25 @@ module RedstoneBot
       return BlockType::Air if coords[1] > 255   # treat spots above the top of the world as air
       return BlockType::Bedrock if coords[1] < 0 # treat spots below the top of the world as bedrock
       
-      chunk = chunk_from_coords(coords)
+      chunk = chunk_at(coords)
       chunk && BlockType.from_id(chunk.block_type_id(coords))
     end
     
+    # coords is a RedstoneBot::Coords object or an array of numbers
     def block_metadata(coords)
       coords = coords.collect &:floor
       return 0 if coords[1] > 255 || coords[1] < 0
-      chunk = chunk_from_coords(coords)
+      chunk = chunk_at(coords)
       chunk && chunk.block_metadata(coords)
     end
     
-    # coords is an array of INTEGERS [x,z]
-    def chunk_from_coords(coords)
-      c = [coords[0]/16*16, coords[2]/16*16]
-      @chunks[[coords[0]/16*16, coords[2]/16*16]]
+    # coords is a RedstoneBot::Coords object or an array of numbers.  The y value is ignored.
+    def chunk_id_at(coords)
+      [coords[0].to_i/16*16, coords[2].to_i/16*16]
+    end
+
+    def chunk_at(coords)
+      @chunks[chunk_id_at(coords)]
     end
     
     def on_change(&proc)
@@ -174,6 +181,7 @@ module RedstoneBot
     end
 
     protected
+    
     def allocate_chunk(chunk_coords)
       unload_chunk chunk_coords    # make sure the state stays consistent
 

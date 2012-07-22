@@ -3,9 +3,16 @@ require 'redstone_bot/chunk_tracker'
 require 'packet_spec'   # contains helper methods for constructing packet
 require 'zlib'
 
+class RedstoneBot::ChunkTracker
+  # Raise an exception instead of just printing to stderr: make it easier to debug
+  def handle_update_for_unloaded_chunk(chunk_id)
+    raise "Received update for unloaded chunk at #{chunk_id.inspect}"
+  end
+end
+  
 testdata1 = RedstoneBot::Packet::ChunkData.new
-testdata1.instance_variable_set :@x, 2
-testdata1.instance_variable_set :@z, 1
+testdata1.instance_variable_set :@x, 32
+testdata1.instance_variable_set :@z, 16
 testdata1.instance_variable_set :@primary_bit_map, 1   # only set the y=0..15 section
 bt = ""
 bt << "\x3C" * 256   # y = 0 is all farmland
@@ -51,7 +58,7 @@ describe RedstoneBot::ChunkTracker do
   before do
     @client = TestClient.new
     @chunk_tracker = RedstoneBot::ChunkTracker.new(@client)
-    @client << RedstoneBot::Packet::ChunkAllocation.create(testdata1.x, testdata1.z, true)
+    @client << RedstoneBot::Packet::ChunkAllocation.create(testdata1.chunk_id, true)
     @client << testdata1
   end
   
@@ -100,7 +107,7 @@ describe RedstoneBot::ChunkTracker do
     end
     
     it "reports chunk allocation" do
-      p = RedstoneBot::Packet::ChunkAllocation.create(testdata1.x, testdata1.z, true)
+      p = RedstoneBot::Packet::ChunkAllocation.create(testdata1.chunk_id, true)
       @receiver.should_receive(:info).with([32,16], p)
       @client << p
     end
@@ -111,7 +118,7 @@ describe RedstoneBot::ChunkTracker do
     end
     
     it "reports chunk deallocation" do
-      p = RedstoneBot::Packet::ChunkAllocation.create(testdata1.x, testdata1.z, false)
+      p = RedstoneBot::Packet::ChunkAllocation.create(testdata1.chunk_id, false)
       @receiver.should_receive(:info).with([32,16], p)
       @client << p
     end
