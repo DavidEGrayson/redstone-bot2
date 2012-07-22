@@ -7,6 +7,7 @@ require "redstone_bot/pathfinder"
 require "redstone_bot/body_movers"
 require "redstone_bot/chat_filter"
 require "redstone_bot/chat_mover"
+require "redstone_bot/profiler"
 
 module RedstoneBot
   module Bots; end
@@ -14,6 +15,7 @@ module RedstoneBot
   class Bots::DavidBot < RedstoneBot::Bot
     extend Forwardable
     include BodyMovers
+    include Profiler
     
     Aliases = {
       "meq" => "m -2570 -2069",
@@ -32,7 +34,9 @@ module RedstoneBot
       @chat_filter.aliases Aliases
       @chat_filter.only_from_user(MASTER) if defined?(MASTER)
       
-      @ce = ChatEvaluator.new(@chat_filter, self)      
+      @ce = ChatEvaluator.new(@chat_filter, self)
+      @ce.safe_level = 2
+      @ce.timeout = 2
       @cm = ChatMover.new(@chat_filter, self, @entity_tracker)
       
       @body.on_position_update do
@@ -80,12 +84,6 @@ module RedstoneBot
       result = super
       chat "I bumped my head!" if !result
       result
-    end
-    
-    def run_time
-      start = Time.now
-      yield
-      Time.now - start
     end
 
     protected

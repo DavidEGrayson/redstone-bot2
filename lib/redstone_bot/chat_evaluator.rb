@@ -7,12 +7,14 @@ module RedstoneBot
   class ChatEvaluator
     attr_accessor :permission_denied_message
     attr_accessor :safe_level
+    attr_accessor :timeout
   
     def initialize(client, context)
       @context = context
       @client = client
       @permission_denied_message = "I'm sorry %s, but I cannot do that."
       @safe_level = 4
+      @timeout = 0.5
     
       client.listen do |p|
         next unless p.is_a?(Packet::ChatMessage)
@@ -36,7 +38,7 @@ module RedstoneBot
           e.message
         end
       end
-      if !thread.join(0.5)
+      if !thread.join(timeout)
         thread.kill
         result = ":("
       end
