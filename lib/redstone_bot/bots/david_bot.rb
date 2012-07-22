@@ -15,6 +15,8 @@ module RedstoneBot
     extend Forwardable
     include BodyMovers
     
+    FarmBounds = [(-294..-156), (63..63), (682..797)]
+    
     Aliases = {
       "meq" => "m -2570 -2069",
       "mpl" => "m 99.5 225.5",
@@ -92,6 +94,12 @@ module RedstoneBot
       result = super
       chat "I bumped my head!" if !result
       result
+    end
+    
+    def run_time
+      start = Time.now
+      yield
+      Time.now - start
     end
 
     protected
