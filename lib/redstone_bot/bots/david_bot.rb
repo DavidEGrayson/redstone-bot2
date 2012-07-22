@@ -88,7 +88,7 @@ module RedstoneBot
     end
     
     def standing_on
-      coord_array = (@body.position - Coords::Y).to_a.collect &:floor
+      coord_array = (@body.position - Coords::Y*0.5).to_a.collect &:floor
       "#{block_type coord_array} #{@body.position.y}->#{coord_array[1]}"
     end
     
