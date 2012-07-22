@@ -58,10 +58,10 @@ module RedstoneBot
     def count_wheat_in_chunk(chunk_id)
       puts "COUNTING WHEAT in #{chunk_id}"
       yrange = FarmBounds[1]
-      chunk = @chunk_tracker.chunks[chunk_id]      
+      chunk = @chunk_tracker.chunks[chunk_id]
       return nil if !chunk
       yrange.inject(0) do |sum, y|
-        sum + chunk.block_type_raw_yslice(y).count(';')  # NOTE: this will NOT work for '^'
+        sum + chunk.block_type_raw_yslice(y).bytes.count(BlockType::Wheat.id)
       end
     end
     
