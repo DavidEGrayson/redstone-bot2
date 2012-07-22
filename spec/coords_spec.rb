@@ -70,4 +70,9 @@ describe RedstoneBot::Coords do
     described_class[2, 3, 4].project_onto_vector(described_class::Z*-3).should == described_class[0,0,4]
   end
 
+  it "can iterate over grid points" do
+    bounds =  [(-294..-156), (63..64), (682..797)]
+    enum = RedstoneBot::Coords.each_in_bounds bounds
+    enum.count.should == bounds[0].count * bounds[1].count * bounds[2].count
+  end
 end

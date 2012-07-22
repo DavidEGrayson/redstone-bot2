@@ -52,7 +52,7 @@ describe RedstoneBot::ChunkTracker do
   end
 
   it "should report wheat at y = 1" do
-    @chunk_tracker.block_type([10,1,20]).should == RedstoneBot::BlockType::Wheat
+    @chunk_tracker.block_type(RedstoneBot::Coords[10,1,20]).should == RedstoneBot::BlockType::Wheat
   end
   
   it "should report metadata at y = 1" do

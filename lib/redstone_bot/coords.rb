@@ -53,6 +53,20 @@ module RedstoneBot
       "(%7.2f,%7.2f,%7.2f)" % [x, y, z]
     end
 
+    # TODO: see if block-searching algorithms get faster if these
+    # enumerators just give int arrays instead of Coord objects
+    def self.each_in_bounds(bounds)
+      return enum_for(:each_in_bounds, bounds) unless block_given?
+      xrange, yrange, zrange = bounds
+      xrange.each do |x|
+        yrange.each do |y|
+          zrange.each do |z|
+            yield Coords[x, y, z]
+          end
+        end
+      end
+    end
+    
     X = East = Coords[1,0,0]
     Y = Up = Coords[0,1,0]
     Z = South = Coords[0,0,1]
