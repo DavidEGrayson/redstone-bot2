@@ -764,6 +764,8 @@ module RedstoneBot
     attr_reader :x, :y, :z
     attr_reader :block_type, :block_metadata
     
+    alias :block_type_id :block_type 
+    
     def initialize(coords, block_type, block_metadata)
       @x, @y, @z = coords
       @block_type = block_type

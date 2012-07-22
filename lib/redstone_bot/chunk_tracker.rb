@@ -137,7 +137,7 @@ module RedstoneBot
           if chunk = @chunks[chunk_id]
             chunk.apply_change p
           else
-            $stderr.puts "warning: received update for a chunk that is not loaded: #{coords.inspect}"
+            $stderr.puts "warning: received update for a chunk that is not loaded: #{chunk_id.inspect}"
           end
         end
         
