@@ -90,9 +90,7 @@ module RedstoneBot
     end
 
     def angle_to_look_at(target)
-      if target.respond_to?(:position)
-        target = target.position
-      end
+      target = target.to_coords
       look_vector = target - position
       x, y, z = look_vector.to_a
       yaw = Math::atan2(x, -z) * 180 / Math::PI + 180
@@ -100,7 +98,10 @@ module RedstoneBot
       Look.new(yaw, pitch)
     end
     
-        
+    def distance_to(coords)
+      (coords.to_coords - position).magnitude
+    end
+    
     def start(&proc)
       @current_fiber = proc
     end

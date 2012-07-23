@@ -3,6 +3,9 @@ raise "Please use Ruby 1.9.3 or later." if RUBY_VERSION < "1.9.3"
 
 require "redstone_bot/pack"
 
+# TODO: to be more consistent, change all Coords var names to 'position or 'position_change' if that's what they represent?
+# start with the eid-related packets here
+
 module RedstoneBot
   ProtocolVersion = 29
       

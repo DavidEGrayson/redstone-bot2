@@ -70,6 +70,12 @@ describe RedstoneBot::Coords do
     described_class[2, 3, 4].project_onto_vector(described_class::Z*-3).should == described_class[0,0,4]
   end
 
+  it "can change individual components" do
+    described_class[2, 3, 4].change_x(89).should == described_class[89,  3,  4]
+    described_class[2, 3, 4].change_y(89).should == described_class[ 2, 89,  4]
+    described_class[2, 3, 4].change_z(89).should == described_class[ 2,  3, 89]
+  end
+
   it "can iterate over grid points" do
     bounds =  [(-294..-156), (63..64), (682..797)]
     enum = described_class.each_in_bounds bounds
@@ -81,4 +87,5 @@ describe RedstoneBot::Coords do
     enum = described_class.each_chunk_id_in_bounds bounds
     enum.count.should == 80
   end
+  
 end

@@ -23,16 +23,23 @@ module RedstoneBot
           puts "using #{x},#{y},#{z}!"
           #@client.send_packet Packet::PlayerDigging.new(2, [x, y, z], 0)
           @client.send_packet Packet::PlayerDigging.start [x,y,z]
+        when /g/
+          @body.start do
+            while true
+              item = @entity_tracker.closest_entity(Item)
+              if item && @body.distance_to(item) < 30
+                puts "moving to #{item}"
+                move_to item.position.change_y(FarmBounds[1].min)
+              else
+                @body.wait_for_next_position_update
+              end
+            end
+          end
         end
       end
       
-      @client.listen do |p|
-        case p
-        when Packet::SpawnDroppedItem, Packet::DestroyEntity
-          puts p.inspect
-        end
-      end
-      
+      #@entity_tracker.debug = true
+      #@entity_tracker.debug_ignore = [Villager, IronGolem, Zombie, Creeper, Skeleton, Pig, Spider, Squid, Enderman, Slime, Sheep, Cow]
     end
     
     def average_growth

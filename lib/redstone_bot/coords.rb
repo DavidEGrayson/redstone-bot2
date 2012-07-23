@@ -49,10 +49,26 @@ module RedstoneBot
       project_onto_unit_vector coords.normalize
     end
     
+    def change_x(x)
+      Coords[x, y, z]
+    end
+
+    def change_y(y)
+      Coords[x, y, z]
+    end
+
+    def change_z(z)
+      Coords[x, y, z]
+    end
+    
     def to_s
       "(%7.2f,%7.2f,%7.2f)" % [x, y, z]
     end
 
+    def to_coords
+      self
+    end
+    
     # TODO: see if block-searching algorithms get faster if these
     # enumerators just give int arrays instead of Coord objects
     def self.each_in_bounds(bounds)

@@ -29,16 +29,18 @@ module RedstoneBot
       fall opts
     end
     
-    def move_to(coords, opts={})
+    def move_to(target, opts={})
+      target = target.to_coords
+    
       tolerance = opts[:tolerance] || 0.2
       speed = opts[:speed] || 10
       axes = [Coords::X, Coords::Y, Coords::Z].cycle
       
       while true
         body.wait_for_next_position_update(opts[:update_period])
-        body.look_at coords
+        body.look_at target
 
-        d = coords - body.position
+        d = target - body.position
         if d.norm < tolerance
           return # reached it
         end

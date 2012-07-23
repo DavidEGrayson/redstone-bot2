@@ -16,6 +16,11 @@ class Entity
 	def self.attitude_is(attitude)
 		@attitude = attitude
 	end
+  
+  # to_coords is not an alias so that subclasses can easily and correctly override 'position'
+  def to_coords
+    position
+  end
 end
 
 class Player < Entity
@@ -213,6 +218,11 @@ class Ocelot < Mob
 	attitude_is :passive
 end
 
+class IronGolem < Mob
+  mob_type 99
+  attitude_is :utility
+end
+  
 class Villager < Mob
 	mob_type 120
 	attitude_is :passive

@@ -1,8 +1,11 @@
 require "redstone_bot/entities"
+require "redstone_bot/support"
 
 module RedstoneBot
   class EntityTracker
     attr_reader :entities
+    attr_accessor :debug
+    attr_accessor :debug_ignore
 
     # body should be an object that responds to .position and returns
     # a RedstoneBot::Coords representing the player's position.
@@ -11,10 +14,11 @@ module RedstoneBot
     def initialize(client, body=nil)
       @entities = {}
       @body = body
+      @debug_ignore = []
       
       client.listen do |p|
         next unless p.respond_to? :eid
-      
+        
         case p
         when Packet::SpawnNamedEntity
           entities[p.eid] = Player.new p.eid, p.player_name
@@ -29,7 +33,13 @@ module RedstoneBot
           update_entity_position_absolute p
         when Packet::EntityLookAndRelativeMove, Packet::EntityRelativeMove
           update_entity_position_relative p
-        when Packet::DestroyEntity
+        end
+        
+        if debug
+          debug_packet p
+        end
+
+        if Packet::DestroyEntity === p
           entities.delete p.eid
         end
       end
@@ -40,11 +50,7 @@ module RedstoneBot
     end
 
     def closest_entity(klass=Entity)
-      entities_of_type(klass).min_by { |e| distance_to(e.position) }
-    end
-
-    def distance_to(position)
-      (position - player_position).magnitude
+      entities_of_type(klass).min_by { |e| @body.distance_to(e.position) }
     end
 
     def debug_entities
@@ -53,6 +59,14 @@ module RedstoneBot
         puts "#{entity.class} - #{entity}"
       end
       nil
+    end
+    
+    def debug_packet(packet)
+      entity = entities[packet.eid]
+      
+      return if debug_ignore.any? { |m| m === entity || m === packet }
+      
+      puts "#{packet.eid} #{packet.inspect} #{entity}"
     end
     
     def player(name)
@@ -68,11 +82,6 @@ module RedstoneBot
     def update_entity_position_relative(p)
       return unless entities.has_key?(p.eid)
       entities[p.eid].position += p.coords_change
-    end
-    
-    def player_position
-      raise 'tmphax hell' if !@body.position.is_a?(Coords)
-      @body.position
     end
   end
 end
