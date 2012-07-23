@@ -9,7 +9,23 @@ describe RedstoneBot::EntityTracker do
   end
   
   it "tracks dropped items" do
+    eid = 44
+    item = 256
+    count = 13
+    damage = 3
+    coords = [100, 200, 300]
+    yaw = -3
+    pitch = -128
+    roll = 127
+  
+    @client << RedstoneBot::Packet::SpawnDroppedItem.create(eid, item, count, damage, coords, yaw, pitch, roll)
     
+    shovels = @entity_tracker.entities_of_type(IronShovel)
+    shovels.size.should == 1
+    shovel = shovels.first
+    shovel.eid.should == 44
+    shovel.should be_a_kind_of IronShovel
+    shovel.to_s.should == "IronShovelx13(44, ( 100.00, 200.00, 300.00), 3)"
   end
   
 end

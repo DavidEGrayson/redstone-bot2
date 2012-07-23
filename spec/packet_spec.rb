@@ -1,5 +1,6 @@
 require_relative 'spec_helper'
 require 'zlib'
+require 'redstone_bot/coords'
 
 module RedstoneBot
   def (Packet::BlockChange).create(coords, block_type_id, block_metadata)
@@ -35,9 +36,9 @@ module RedstoneBot
     receive_data test_stream binary_data
   end
   
-  def (Packet::SpawnDroppedItem).create(eid, item, count, damage, coords, yaw, pitch, roll)
-    binary_data = [eid, item, count, damage,
-     coords[0].to_i, coords[1].to_i, coords[2].to_i,
+  def (Packet::SpawnDroppedItem).create(eid, item, count, metadata, coords, yaw, pitch, roll)
+    binary_data = [eid, item, count, metadata,
+     (coords[0]*32).round, (coords[1]*32).round, (coords[2]*32).round,
      yaw, pitch, roll
     ].pack("l>s>Cs>l>l>l>ccc")
     receive_data test_stream binary_data
@@ -110,20 +111,18 @@ describe RedstoneBot::Packet::SpawnDroppedItem do
      eid = 44
      item = 2
      count = 13
-     damage = 3
-     coords = [100, 200, 300]
+     metadata = 3
+     coords = RedstoneBot::Coords[100.25, 200, 300.03125]
      yaw = -3
      pitch = -128
      roll = 127
      
-     p = described_class.create(eid, item, count, damage, coords, yaw, pitch, roll)
+     p = described_class.create(eid, item, count, metadata, coords, yaw, pitch, roll)
      p.eid.should == eid
      p.item.should == item
      p.count.should == count
-     p.damage.should == 3
-     p.x.should == coords[0]
-     p.y.should == coords[1]
-     p.z.should == coords[2]
+     p.metadata.should == 3
+     p.coords.should be_within(0.00001).of(coords)
      p.yaw.should == yaw
      p.pitch.should == pitch
      p.roll.should == roll

@@ -391,6 +391,10 @@ module RedstoneBot
     attr_reader :eid
     attr_reader :x, :y, :z
     
+    def coords
+      Coords[@x, @y, @z]
+    end
+    
     def receive_data(socket)
       @eid = socket.read_int
       socket.read_byte
@@ -419,12 +423,16 @@ module RedstoneBot
     attr_reader :yaw, :pitch
     attr_reader :current_item
     
+    def coords
+      Coords[@x, @y, @z]
+    end
+    
     def receive_data(socket)
       @eid = socket.read_int
       @player_name = socket.read_string
-      @x = socket.read_int
-      @y = socket.read_int
-      @z = socket.read_int
+      @x = socket.read_int/32.0
+      @y = socket.read_int/32.0
+      @z = socket.read_int/32.0
       @yaw = socket.read_signed_byte
       @pitch = socket.read_signed_byte
       @current_item = socket.read_short
@@ -436,18 +444,22 @@ module RedstoneBot
     attr_reader :eid
     attr_reader :item
     attr_reader :count
-    attr_reader :damage
+    attr_reader :metadata
     attr_reader :x, :y, :z
     attr_reader :yaw, :pitch, :roll
     
+    def coords
+      Coords[@x, @y, @z]
+    end
+        
     def receive_data(socket)
       @eid = socket.read_int
       @item = socket.read_short
       @count = socket.read_byte
-      @damage = socket.read_short
-      @x = socket.read_int
-      @y = socket.read_int
-      @z = socket.read_int
+      @metadata = socket.read_short
+      @x = socket.read_int/32.0
+      @y = socket.read_int/32.0
+      @z = socket.read_int/32.0
       @yaw = socket.read_signed_byte
       @pitch = socket.read_signed_byte
       @roll = socket.read_signed_byte
@@ -473,12 +485,16 @@ module RedstoneBot
     attr_reader :fireball_thrower_eid
     attr_reader :fireball_speed_x, :fireball_speed_y, :fireball_speed_z
   
+    def coords
+      Coords[@x, @y, @z]
+    end
+  
     def receive_data(socket)
       @eid = socket.read_int
       @type = socket.read_byte
-      @x = socket.read_int
-      @y = socket.read_int
-      @z = socket.read_int
+      @x = socket.read_int/32.0
+      @y = socket.read_int/32.0
+      @z = socket.read_int/32.0
       @fireball_thrower_eid = socket.read_int
       if @fireball_thrower_eid != 0
         @fireball_speed_x = socket.read_short
@@ -496,12 +512,16 @@ module RedstoneBot
     attr_reader :yaw, :pitch, :head_yaw
     attr_reader :metadata
     
+    def coords
+      Coords[@x, @y, @z]
+    end
+    
     def receive_data(socket)
       @eid = socket.read_int
       @type = socket.read_byte
-      @x = socket.read_int
-      @y = socket.read_int
-      @z = socket.read_int
+      @x = socket.read_int/32.0
+      @y = socket.read_int/32.0
+      @z = socket.read_int/32.0
       @yaw = socket.read_signed_byte
       @pitch = socket.read_signed_byte
       @head_yaw = socket.read_signed_byte
@@ -532,11 +552,15 @@ module RedstoneBot
     attr_reader :x, :y, :z
     attr_reader :count
     
+    def coords
+      Coords[@x, @y, @z]
+    end
+    
     def receive_data(socket)
       @eid = socket.read_int
-      @x = socket.read_int
-      @y = socket.read_int
-      @z = socket.read_int
+      @x = socket.read_int/32.0
+      @y = socket.read_int/32.0
+      @z = socket.read_int/32.0
       @count = socket.read_short
     end
   end
@@ -545,6 +569,10 @@ module RedstoneBot
     packet_type 0x1C
     attr_reader :eid
     attr_reader :vx, :vy, :vz
+    
+    def velocity
+      Coords[@vx, @vy, @vz]
+    end
     
     def receive_data(socket)
       @eid = socket.read_int
@@ -568,11 +596,15 @@ module RedstoneBot
     attr_reader :eid
     attr_reader :dx, :dy, :dz
     
+    def coords_change
+      Coords[@dx, @dy, @dz]
+    end
+    
     def receive_data(socket)
       @eid = socket.read_int
-      @dx = socket.read_signed_byte
-      @dy = socket.read_signed_byte
-      @dz = socket.read_signed_byte
+      @dx = socket.read_signed_byte/32.0
+      @dy = socket.read_signed_byte/32.0
+      @dz = socket.read_signed_byte/32.0
     end
   end
   
@@ -594,11 +626,15 @@ module RedstoneBot
     attr_reader :dx, :dy, :dz
     attr_reader :yaw, :pitch
     
+    def coords_change
+      Coords[@dx, @dy, @dz]
+    end
+    
     def receive_data(socket)
       @eid = socket.read_int
-      @dx = socket.read_signed_byte
-      @dy = socket.read_signed_byte
-      @dz = socket.read_signed_byte
+      @dx = socket.read_signed_byte/32.0
+      @dy = socket.read_signed_byte/32.0
+      @dz = socket.read_signed_byte/32.0
       @yaw = socket.read_signed_byte
       @pitch = socket.read_signed_byte
     end
@@ -610,11 +646,15 @@ module RedstoneBot
     attr_reader :x, :y, :z
     attr_reader :yaw, :pitch
     
+    def coords
+      Coords[@x, @y, @z]
+    end
+    
     def receive_data(socket)
       @eid = socket.read_int
-      @x = socket.read_int
-      @y = socket.read_int
-      @z = socket.read_int
+      @x = socket.read_int/32.0
+      @y = socket.read_int/32.0
+      @z = socket.read_int/32.0
       @yaw = socket.read_signed_byte
       @pitch = socket.read_signed_byte
     end
@@ -836,12 +876,16 @@ module RedstoneBot
     packet_type 0x47
     attr_accessor :eid, :x, :y, :z
     
+    def coords
+      Coords[@x, @y, @z]
+    end
+    
     def receive_data(socket)
       @eid = socket.read_int
       socket.read_byte
-      @x = socket.read_int
-      @y = socket.read_int
-      @z = socket.read_int
+      @x = socket.read_int/32.0
+      @y = socket.read_int/32.0
+      @z = socket.read_int/32.0
     end
   end
   

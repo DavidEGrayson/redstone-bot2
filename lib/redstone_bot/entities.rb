@@ -1,7 +1,9 @@
 require_relative 'coords'
 
+# TODO, eventually: move all these sublasses into the RedstoneBot::Entity namespace or something
+
 class Entity
-  attr_accessor :id
+  attr_accessor :eid
 	attr_accessor :position  # Coords object with floats
 	attr_accessor :name      # nil for non-players
 
@@ -19,13 +21,38 @@ end
 class Player < Entity
 	attitude_is :neutral
 
-	def initialize(id, name=nil)
-		@id = id
+	def initialize(eid, name=nil)
+		@eid = eid
 		@name = name
 	end
 
 	def to_s
-		"Player(#{id}, #{name.inspect}, #{position})"
+		"Player(#{eid}, #{name.inspect}, #{position})"
+	end
+end
+
+# Lets you associate some kind id (usually an integer) to different
+# classes and then create them using the integer.
+module TracksTypes
+  def self.extended(klass)
+    klass.instance_eval do
+      @@types = {}
+    end
+  end
+
+  def types
+    @@types
+  end
+  
+  # This is called in the subclass definitions.
+	def type_is(type)
+		@type = type
+		types[type] = self
+	end
+
+   # This is only called on self.
+	def create(type, *args)
+		(types[type] || self).new(*args)
 	end
 end
 
@@ -35,29 +62,40 @@ class Mob < Entity
 		@mob_types
 	end
 
-	def initialize(id)
-		@id = id
+	def initialize(eid)
+		@eid = eid
 	end
 
-	# This is called in the class definition.
+	# This is called in the subclass definitions.  TODO: get rid of this and just use 'extend TracksTypes'
 	def self.mob_type(type)
 		@mob_type = type
 		Mob.mob_types[type] = self
 	end
 
-	def self.create(id, type)
-		(mob_types[type] || Mob).new(id)
+	def self.create(eid, type)
+		(mob_types[type] || Mob).new(eid)
 	end
 
 	def to_s
-		"#{self.class}(#{id}, #{position})"
+		"#{self.class}(#{eid}, #{position})"
 	end
 end
 
-def Mob(id)
-	klass = Class.new(Mob)
-	klass.mob_type id
-	klass
+class Item < Entity
+  extend TracksTypes
+  attitude_is :passive   # this probably does not matter
+
+  attr_reader :count, :metadata  
+
+	def initialize(eid, count, metadata)
+		@eid = eid
+    @count = count
+    @metadata = metadata
+	end
+  
+  def to_s
+    "#{self.class}#{'x'+count.to_s if count > 1}(#{eid}, #{position}, #{metadata})"
+  end
 end
 
 class Creeper < Mob
@@ -178,5 +216,21 @@ end
 class Villager < Mob
 	mob_type 120
 	attitude_is :passive
+end
+
+class IronShovel < Item
+  type_is 256  
+end
+
+class Seeds < Item
+  type_is 295
+end
+
+class Wheat < Item
+  type_is 296
+end
+
+class Bread < Item
+  type_is 297
 end
 

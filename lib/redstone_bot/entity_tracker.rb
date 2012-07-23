@@ -19,6 +19,9 @@ module RedstoneBot
         when Packet::SpawnNamedEntity
           entities[p.eid] = Player.new p.eid, p.player_name
           update_entity_position_absolute p
+        when Packet::SpawnDroppedItem
+          entities[p.eid] = Item.create p.item, p.eid, p.count, p.metadata
+          update_entity_position_absolute p
         when Packet::SpawnMob
           entities[p.eid] = Mob.create p.eid, p.type
           update_entity_position_absolute p
@@ -59,12 +62,12 @@ module RedstoneBot
     protected  
     def update_entity_position_absolute(p)
       return unless entities.has_key?(p.eid)
-      entities[p.eid].position = Coords[p.x, p.y, p.z]/32.0
+      entities[p.eid].position = p.coords
     end
 
     def update_entity_position_relative(p)
       return unless entities.has_key?(p.eid)
-      entities[p.eid].position += Coords[p.dx, p.dy, p.dz]/32.0
+      entities[p.eid].position += p.coords_change
     end
     
     def player_position
