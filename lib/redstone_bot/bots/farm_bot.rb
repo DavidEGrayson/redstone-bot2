@@ -26,6 +26,13 @@ module RedstoneBot
         end
       end
       
+      @client.listen do |p|
+        case p
+        when Packet::SpawnDroppedItem, Packet::DestroyEntity
+          puts p.inspect
+        end
+      end
+      
     end
     
     def average_growth

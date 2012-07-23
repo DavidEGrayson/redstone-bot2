@@ -34,6 +34,14 @@ module RedstoneBot
     ].pack("l>l>CS>S>l>l>") + compressed
     receive_data test_stream binary_data
   end
+  
+  def (Packet::SpawnDroppedItem).create(eid, item, count, damage, coords, yaw, pitch, roll)
+    binary_data = [eid, item, count, damage,
+     coords[0].to_i, coords[1].to_i, coords[2].to_i,
+     yaw, pitch, roll
+    ].pack("l>s>Cs>l>l>l>ccc")
+    receive_data test_stream binary_data
+  end
 end
 
 describe RedstoneBot::Packet::BlockChange do
@@ -81,7 +89,7 @@ describe RedstoneBot::Packet::ChunkData do
   it "correctly parses binary data" do
     data = ("\x00".."\xFF").to_a.join
     chunk_id = [96,256]
-    p = RedstoneBot::Packet::ChunkData.create(chunk_id, true, 0xFFFF, 5, data)
+    p = described_class.create(chunk_id, true, 0xFFFF, 5, data)
     p.ground_up_continuous.should == true
     p.primary_bit_map.should == 0xFFFF
     p.add_bit_map.should == 5
@@ -94,5 +102,30 @@ describe RedstoneBot::Packet::ChunkData do
     q.add_bit_map.should == 0xAAAA
     Zlib::Inflate.inflate(q.compressed_data).should == data
     q.chunk_id.should == chunk_id
+  end
+end
+
+describe RedstoneBot::Packet::SpawnDroppedItem do
+  it "correctly parses binary data" do
+     eid = 44
+     item = 2
+     count = 13
+     damage = 3
+     coords = [100, 200, 300]
+     yaw = -3
+     pitch = -128
+     roll = 127
+     
+     p = described_class.create(eid, item, count, damage, coords, yaw, pitch, roll)
+     p.eid.should == eid
+     p.item.should == item
+     p.count.should == count
+     p.damage.should == 3
+     p.x.should == coords[0]
+     p.y.should == coords[1]
+     p.z.should == coords[2]
+     p.yaw.should == yaw
+     p.pitch.should == pitch
+     p.roll.should == roll
   end
 end
