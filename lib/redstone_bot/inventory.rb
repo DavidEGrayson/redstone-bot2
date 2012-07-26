@@ -2,13 +2,7 @@ require_relative "packets"
 require_relative "entities"
 
 module RedstoneBot
-  class Slot
-    attr_reader :item_id, :count, :damage
-    
-    def initialize(opts)
-      @item_id = opts[:item_id]
-      @count = opts[:count]
-    end
+  class InventorySlot < Struct.new(:item_type, :count, :damage)
   end
 
   class Inventory
@@ -32,7 +26,9 @@ module RedstoneBot
               if slot_data[:item_id] < 0
                 nil
               else
-                Item.create(slot_data[:item_id], nil, slot_data[:count], slot_data[:damage])
+                item_type = ItemType.from_id(slot_data[:item_id])
+                raise "Unknown item type #{slot_data[:item_id]}." if !item_type
+                InventorySlot.new(item_type, slot_data[:count], slot_data[:damage])
               end
             end
           end

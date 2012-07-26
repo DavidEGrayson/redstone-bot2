@@ -48,7 +48,7 @@ module RedstoneBot
     end
     
     def wheats
-      farm_blocks.select { |c| block_type(c) == BlockType::Wheat }
+      farm_blocks.select { |c| block_type(c) == ItemType::WheatBlock }
     end
     
     def wheat_count
@@ -75,7 +75,7 @@ module RedstoneBot
       chunk = @chunk_tracker.chunks[chunk_id]
       return nil if !chunk
       yrange.inject(0) do |sum, y|
-        sum + chunk.block_type_raw_yslice(y).bytes.count(BlockType::Wheat.id)
+        sum + chunk.block_type_raw_yslice(y).bytes.count(ItemType::WheatBlock.id)
       end
     end
     

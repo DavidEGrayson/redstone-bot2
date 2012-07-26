@@ -106,7 +106,7 @@ module RedstoneBot
       x,y,z = body.position.to_a
       y.ceil.downto(y.ceil-10).each do |test_y|
         block_type = chunk_tracker.block_type([x.to_i, test_y, z.to_i])
-        block_type ||= BlockType::Air    # block_type is nil if it is in an unloaded chunk
+        block_type ||= ItemType::Air    # block_type is nil if it is in an unloaded chunk
         if block_type.solid?
           return test_y + 1
         end
