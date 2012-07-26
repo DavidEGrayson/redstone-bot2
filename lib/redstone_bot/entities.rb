@@ -232,6 +232,158 @@ class IronShovel < Item
   type_is 256  
 end
 
+class IronPickaxe < Item
+  type_is 257
+end
+
+class IronAxe < Item
+  type_is 258
+end
+
+class FlintAndSteel < Item
+  type_is 259
+end
+
+class RedApple < Item
+  type_is 260
+end
+
+class Bow < Item
+  type_is 261
+end
+
+class Arrow < Item
+  type_is 262
+end
+
+class Coal < Item
+  type_is 263
+end
+
+class Diamond < Item
+  type_is 264
+end
+
+class IronIngot < Item
+  type_is 265
+end
+
+class GoldIngot < Item
+  type_is 266
+end
+
+class IronSword < Item
+  type_is 267
+end
+
+class WoodenSword < Item
+  type_is 268
+end
+
+class WoodenShovel < Item
+  type_is 269
+end
+
+class WoodenPickaxe < Item
+  type_is 270
+end
+
+class WoodenAxe < Item
+  type_is 271
+end
+
+class StoneSword < Item
+  type_is 272
+end
+
+class StoneShovel < Item
+  type_is 273
+end
+
+class StonePickaxe < Item
+  type_is 274
+end
+
+class StoneAxe < Item
+  type_is 275
+end
+
+class DiamondSword < Item
+  type_is 276
+end
+
+class DiamondShovel < Item
+  type_is 277
+end
+
+class DiamondPickaxe < Item
+  type_is 278
+end
+
+class DiamondAxe < Item
+  type_is 279
+end
+
+class Stick < Item
+  type_is 280
+end
+
+class Bowl < Item
+  type_is 281
+end
+
+class MushroomSoup < Item
+  type_is 282
+end
+
+class GoldenSword < Item
+  type_is 283
+end
+
+class GoldenShovel < Item
+  type_is 284
+end
+
+class GoldenPickaxe < Item
+  type_is 285
+end
+
+class GoldenAxe < Item
+  type_is 286
+end
+
+class WhiteString < Item  # we should NOT have a class named String!
+  type_is 287
+end
+
+class Feather < Item
+  type_is 288
+end
+
+class Gunpowder < Item
+  type_is 289
+end
+
+class WoodenHoe < Item
+  type_is 290
+end
+
+class StoneHoe < Item
+  type_is 291
+end
+
+class IronHoe < Item
+  type_is 292
+end
+
+class DiamondHoe < Item
+  type_is 293
+end
+
+class GoldHoe < Item
+  type_is 294
+end
+
 class Seeds < Item
   type_is 295
 end
@@ -243,4 +395,3 @@ end
 class Bread < Item
   type_is 297
 end
-

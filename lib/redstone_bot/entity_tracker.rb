@@ -1,5 +1,4 @@
-require "redstone_bot/entities"
-require "redstone_bot/support"
+require_relative "entities"
 
 module RedstoneBot
   class EntityTracker

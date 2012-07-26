@@ -62,18 +62,18 @@ module RedstoneBot
 
     def read_slot
       h = {}
-      h[:id] = read_short
-      if h[:id] != -1
+      h[:item_id] = read_short
+      if h[:item_id] != -1
         h[:count] = read_byte
         h[:damage] = read_short
-        if ENCHANTABLE.include?(h[:id])
+        if ENCHANTABLE.include?(h[:item_id])
           enchant_data_len = read_short
           if enchant_data_len > 0
             h[:enchant_data] = read(enchant_data_len)
           end
         end
       end
-       h
+      h
     end
 
     def read_metadata

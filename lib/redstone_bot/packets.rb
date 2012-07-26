@@ -894,18 +894,18 @@ module RedstoneBot
   
   class Packet::SetSlot < Packet
     packet_type 0x67
-    attr_reader :window_id, :slot, :slot_data
+    attr_reader :window_id, :slot_id, :slot_data
     
     def receive_data(socket)
       @window_id = socket.read_byte
-      @slot = socket.read_short
+      @slot_id = socket.read_short
       @slot_data = socket.read_slot
     end
   end
   
   class Packet::SetWindowItems < Packet
     packet_type 0x68
-    attr_reader :window_id, :count, :slots_data
+    attr_reader :window_id, :slots_data
     
     def receive_data(socket)
       @window_id = socket.read_byte
