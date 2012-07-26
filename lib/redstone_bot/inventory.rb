@@ -32,9 +32,10 @@ module RedstoneBot
               end
             end
           end
-          puts @data.inspect
+          puts @data.inspect  # tmphax
         end
       end
     end
+    
   end
 end
