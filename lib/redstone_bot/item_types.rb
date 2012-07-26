@@ -20,6 +20,10 @@ module RedstoneBot
       @symbol
     end
     
+    def block?
+      id < 256
+    end
+    
     def to_s
       @symbol.to_s
     end

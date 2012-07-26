@@ -36,4 +36,14 @@ describe RedstoneBot::ItemType do
     RedstoneBot::ItemType::IronShovel.should === RedstoneBot::Item.new(44, RedstoneBot::ItemType::IronShovel, 1, nil)
     RedstoneBot::ItemType::IronShovel.should === RedstoneBot::ItemType::IronShovel
   end
+  
+  it "tells you if it is a block or not" do
+    RedstoneBot::ItemType::DiamondOre.should be_block
+    RedstoneBot::ItemType::Diamond.should_not be_block
+  end
+  
+  it "tells you if it is solid or not" do
+    RedstoneBot::ItemType::CoalOre.should be_solid
+    RedstoneBot::ItemType::WheatBlock.should_not be_solid
+  end
 end
