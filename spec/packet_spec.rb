@@ -2,49 +2,6 @@ require_relative 'spec_helper'
 require 'zlib'
 require 'redstone_bot/coords'
 
-module RedstoneBot
-  def (Packet::BlockChange).create(coords, block_type_id, block_metadata)
-    receive_data test_stream (coords + [block_type_id, block_metadata]).pack('l>Cl>CC')
-  end
-  
-  def (Packet::ChunkAllocation).create(chunk_id, mode)
-    receive_data test_stream [chunk_id[0]/16, chunk_id[1]/16, mode ? 1 : 0].pack('l>l>C')
-  end
-  
-  def (Packet::MultiBlockChange).create(block_changes)
-    block_changes = block_changes.collect do |c|
-      c = RedstoneBot::Packet::BlockChange.create(*c) unless c.respond_to?(:x)
-    end
-
-    chunk_id = block_changes[0].chunk_id
-  
-    binary_data = [chunk_id[0]/16, chunk_id[1]/16, block_changes.size, 4*block_changes.size].pack("l>l>S>l>")
-    binary_data += block_changes.collect do |c|
-      [(c.x%16)+((c.z%16)<<4), c.y, (c.block_type_id<<4) + (c.block_metadata&0xF)].pack("CCs>")
-    end.join
-    
-    receive_data test_stream binary_data
-  end
-  
-  def (Packet::ChunkData).create(chunk_id, ground_up_continuous, primary_bit_map, add_bit_map, data)
-    compressed = Zlib::Deflate.deflate(data)
-    binary_data = [chunk_id[0]/16, chunk_id[1]/16,
-      ground_up_continuous ? 1 : 0,
-      primary_bit_map, add_bit_map,
-      compressed.size, 0
-    ].pack("l>l>CS>S>l>l>") + compressed
-    receive_data test_stream binary_data
-  end
-  
-  def (Packet::SpawnDroppedItem).create(eid, item, count, metadata, coords, yaw, pitch, roll)
-    binary_data = [eid, item, count, metadata,
-     (coords[0]*32).round, (coords[1]*32).round, (coords[2]*32).round,
-     yaw, pitch, roll
-    ].pack("l>s>Cs>l>l>l>ccc")
-    receive_data test_stream binary_data
-  end
-end
-
 describe RedstoneBot::Packet::BlockChange do
   it "correctly parses binary data" do
     bc = described_class.create([70,80,900], 44, 3)
@@ -126,5 +83,23 @@ describe RedstoneBot::Packet::SpawnDroppedItem do
      p.yaw.should == yaw
      p.pitch.should == pitch
      p.roll.should == roll
+  end
+end
+
+describe RedstoneBot::Packet::SpawnMob do
+  it "correctly parses binary data" do
+    eid = 45
+    type = 50   # Creeper
+    coords = RedstoneBot::Coords[100.25, 200, 300.03125]
+    yaw = -1
+    pitch = -2
+    head_yaw = -3
+    p = described_class.create(eid, type, coords, yaw, pitch, head_yaw)
+    p.eid.should == eid
+    p.type.should == type
+    p.coords.should be_within(0.00001).of(coords)
+    p.yaw.should == yaw
+    p.pitch.should == pitch
+    p.head_yaw.should == head_yaw
   end
 end

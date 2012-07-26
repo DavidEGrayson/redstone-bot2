@@ -1,14 +1,16 @@
 require_relative 'coords'
 
-# TODO, eventually: move all these sublasses into the RedstoneBot::Entity namespace or something
-
 module RedstoneBot
 
   class Entity
     attr_accessor :eid
     attr_accessor :position  # Coords object with floats
     attr_accessor :name      # nil for non-players
-
+   
+    def initialize(eid)
+      @eid = eid
+    end
+   
     # :passive, :neutral, :hostile, :utility
     def self.attitude
       @attitude
@@ -65,9 +67,9 @@ module RedstoneBot
 
   class Mob < Entity
     extend TracksTypes
-
+    
     def to_s
-      "#{self.class}(#{eid}, #{position})"
+      "#{self.class.name.split('::').last}(#{eid}, #{position})"
     end
   end
 

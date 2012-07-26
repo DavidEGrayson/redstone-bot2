@@ -1,6 +1,5 @@
 require_relative 'spec_helper'
 require 'redstone_bot/chunk_tracker'
-require 'packet_spec'   # contains helper methods for constructing packet
 require 'zlib'
 
 class RedstoneBot::ChunkTracker

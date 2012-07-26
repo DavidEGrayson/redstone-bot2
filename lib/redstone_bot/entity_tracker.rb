@@ -28,7 +28,7 @@ module RedstoneBot
           entities[p.eid] = Item.new p.eid, item_type, p.count, p.metadata
           update_entity_position_absolute p
         when Packet::SpawnMob
-          entities[p.eid] = Mob.create p.eid, p.type
+          entities[p.eid] = Mob.create p.type, p.eid
           update_entity_position_absolute p
         when Packet::EntityTeleport
           update_entity_position_absolute p

@@ -1,5 +1,4 @@
 require_relative 'spec_helper'
-require_relative 'packet_spec'
 require 'redstone_bot/entity_tracker'
 
 describe RedstoneBot::EntityTracker do
@@ -27,6 +26,25 @@ describe RedstoneBot::EntityTracker do
     shovel.should be_a_kind_of RedstoneBot::Item
     RedstoneBot::ItemType::IronShovel.should === shovel
     shovel.to_s.should == "IronShovelx13(44, ( 100.00, 200.00, 300.00), 3)"
+  end
+  
+  it "tracks mobs" do
+    eid = 45
+    type = 50   # Creeper
+    coords = RedstoneBot::Coords[100.25, 200, 300.03125]
+    yaw = -1
+    pitch = -2
+    head_yaw = -3
+    p = RedstoneBot::Packet::SpawnMob.create(eid, type, coords, yaw, pitch, head_yaw)
+    @client << p
+    
+    creepers = @entity_tracker.entities_of_type(RedstoneBot::Creeper)
+    creepers.size.should == 1
+    creeper = creepers.first
+    creeper.eid.should == 45
+    creeper.should be_a_kind_of RedstoneBot::Mob
+    creeper.position.should be_within(0.00001).of(coords)
+    creeper.to_s.should == "Creeper(45, ( 100.25, 200.00, 300.03))"
   end
   
 end
