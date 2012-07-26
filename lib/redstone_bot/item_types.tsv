@@ -57,7 +57,7 @@
 56	DiamondOre	solid
 57	DiamondBlock	solid
 58	CraftingTable	solid
-59	Wheat	
+59	WheatBlock	
 60	Farmland solid
 61	Furnace	solid
 62	BurningFurnace	solid
@@ -135,3 +135,45 @@
 134	SpruceWoodStairs	solid
 135	BirchWoodStairs	solid
 136	JungleWoodStairs	solid
+256	IronShovel
+257	IronPickaxe
+258	IronAxe
+259	FlintAndSteel
+260	RedApple
+261	Bow
+262	Arrow
+263	Coal
+264	Diamond
+265	IronIngot
+266	GoldIngot
+267	IronSword
+268	WoodenSword
+269	WoodenShovel
+270	WoodenPickaxe
+271	WoodenAxe
+272	StoneSword
+273	StoneShovel
+274	StonePickaxe
+275	StoneAxe
+276	DiamondSword
+277	DiamondShovel
+278	DiamondPickaxe
+279	DiamondAxe
+280	Stick
+281	Bowl
+282	MushroomSoup
+283	GoldenSword
+284	GoldenShovel
+285	GoldenPickaxe
+286	GoldenAxe
+287	WhiteString
+288	Feather
+289	Gunpowder
+290	WoodenHoe
+291	StoneHoe
+292	IronHoe
+293	DiamondHoe
+294	GoldHoe
+295	Seeds
+296	WheatItem
+297	Bread

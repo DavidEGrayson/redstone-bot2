@@ -71,17 +71,17 @@ end
 describe RedstoneBot::Packet::MultiBlockChange do
   it "correctly parses binary data" do
     mbc = described_class.create([
-      [[10,1,23], RedstoneBot::BlockType::Piston.id, 0],
-      [[10,2,23], RedstoneBot::BlockType::Piston.id, 1],
-      [[10,3,23], RedstoneBot::BlockType::Piston.id, 2],
-      [[10,4,23], RedstoneBot::BlockType::Piston.id, 3]
+      [[10,1,23], RedstoneBot::ItemType::Piston.id, 0],
+      [[10,2,23], RedstoneBot::ItemType::Piston.id, 1],
+      [[10,3,23], RedstoneBot::ItemType::Piston.id, 2],
+      [[10,4,23], RedstoneBot::ItemType::Piston.id, 3]
     ])    
     mbc.chunk_id.should == [0, 16]
     mbc.to_enum.to_a.should == [
-      [[10,1,7], RedstoneBot::BlockType::Piston.id, 0],
-      [[10,2,7], RedstoneBot::BlockType::Piston.id, 1],
-      [[10,3,7], RedstoneBot::BlockType::Piston.id, 2],
-      [[10,4,7], RedstoneBot::BlockType::Piston.id, 3],
+      [[10,1,7], RedstoneBot::ItemType::Piston.id, 0],
+      [[10,2,7], RedstoneBot::ItemType::Piston.id, 1],
+      [[10,3,7], RedstoneBot::ItemType::Piston.id, 2],
+      [[10,4,7], RedstoneBot::ItemType::Piston.id, 3],
     ]
   end
 end

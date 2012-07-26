@@ -1,11 +1,15 @@
 module RedstoneBot
-  class BlockType
+  class ItemType
     attr_reader :symbol, :id
   
     def initialize(id, symbol, solid)
       @id = id
       @symbol = symbol
       @solid = solid
+    end
+  
+    def ===(other)
+      self == other or other.respond_to?(:item_type) && self == other.item_type
     end
   
     def solid?
@@ -44,20 +48,21 @@ module RedstoneBot
       end
     end
     
-    File.open(File.join(File.dirname(__FILE__), "block_types.tsv")) do |f|
+    File.open(File.join(File.dirname(__FILE__), "item_types.tsv")) do |f|
       f.each_line do |line|
         id_string, name, attr_string = line.split
         id = id_string.to_i
         symbol = name.to_sym
         attrs = (attr_string||"").split(",")
-        block_type = BlockType.new(id, symbol, attrs.include?("solid"))
-        const_set symbol, block_type
-        @types_by_string[symbol.to_s.downcase] = @types[id] = block_type        
+        item_type = new(id, symbol, attrs.include?("solid"))
+        string = symbol.to_s.downcase
+        raise "Multiple item types named #{name}" if @types_by_string[string]
+        const_set symbol, item_type
+        @types_by_string[string] = @types[id] = item_type
       end
     end
     
-    # TODO: better way to represent this, so that FullyGrown can actually be a constant.
-    class << Wheat
+    class << WheatBlock
       def fully_grown
         7
       end

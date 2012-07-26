@@ -23,7 +23,9 @@ module RedstoneBot
           entities[p.eid] = Player.new p.eid, p.player_name
           update_entity_position_absolute p
         when Packet::SpawnDroppedItem
-          entities[p.eid] = Item.create p.item, p.eid, p.count, p.metadata
+          item_type = ItemType.from_id(p.item)
+          raise "Unknown item type #{p.item} enocunted." if !item_type
+          entities[p.eid] = Item.new p.eid, item_type, p.count, p.metadata
           update_entity_position_absolute p
         when Packet::SpawnMob
           entities[p.eid] = Mob.create p.eid, p.type

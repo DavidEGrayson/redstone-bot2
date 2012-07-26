@@ -1,6 +1,6 @@
 require 'zlib'
 require 'stringio'
-require_relative 'block_types'
+require_relative 'item_types'
 require_relative 'uninspectable'
 
 module RedstoneBot
@@ -24,7 +24,7 @@ module RedstoneBot
       # 1 byte per block, 4096 bytes per section
       # The block type array has 16 sections.
       # Each section has 4096 bytes, one byte per block, ordered by x,z,y.
-      # The default value of the block_type_id is \xFF, which results in a block_type of nil instead of BlockType::Air.
+      # The default value of the block_type_id is \xFF, which results in a block_type of nil instead of ItemType::Air.
       # The default value of the metadata doesn't matter too much because block_type will be 0xFF before the metadata is set for the first time
       @block_type = 16.times.collect { DefaultBlockTypeIdData.dup }
       @metadata = 16.times.collect { DefaultMetadata.dup }
@@ -122,7 +122,7 @@ module RedstoneBot
       end.chr
     end
     
-    # block_type can be an object like BlockType::Air, nil (for unknown), or just an integer
+    # block_type can be an object like ItemType::Air, nil (for unknown), or just an integer
     def count_block_type(block_type)
       block_type_data.bytes.count block_type ? block_type.to_i : 255
     end
@@ -176,11 +176,11 @@ module RedstoneBot
     def block_type(coords)
       coords = coords.collect &:floor   # make array of ints
 
-      return BlockType::Air if coords[1] > 255   # treat spots above the top of the world as air
-      return BlockType::Bedrock if coords[1] < 0 # treat spots below the top of the world as bedrock
+      return ItemType::Air if coords[1] > 255   # treat spots above the top of the world as air
+      return ItemType::Bedrock if coords[1] < 0 # treat spots below the top of the world as bedrock
       
       chunk = chunk_at(coords)
-      chunk && BlockType.from_id(chunk.block_type_id(coords))
+      chunk && ItemType.from_id(chunk.block_type_id(coords))
     end
     
     # coords is a RedstoneBot::Coords object or an array of numbers

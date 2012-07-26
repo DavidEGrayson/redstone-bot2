@@ -28,11 +28,11 @@ describe RedstoneBot::Chunk do
   end
   
   it "should report farmland at y = 0" do
-    @chunk.block_type_id([35,0,17]).should == RedstoneBot::BlockType::Farmland.id
+    @chunk.block_type_id([35,0,17]).should == RedstoneBot::ItemType::Farmland.id
   end
   
   it "should report wheat at y = 1" do
-    @chunk.block_type_id([42,1,20]).should == RedstoneBot::BlockType::Wheat.id
+    @chunk.block_type_id([42,1,20]).should == RedstoneBot::ItemType::WheatBlock.id
     
     @chunk.block_type_raw_yslice(1).should == "\x3B" * 256
   end
@@ -42,18 +42,18 @@ describe RedstoneBot::Chunk do
   end
   
   it "can change individual block type and metadata" do
-    @chunk.set_block_type_and_metadata([42,1,20], RedstoneBot::BlockType::Wool.id, 6)
+    @chunk.set_block_type_and_metadata([42,1,20], RedstoneBot::ItemType::Wool.id, 6)
     @chunk.block_metadata([42,1,20]).should == 6
-    @chunk.block_type_id([42,1,20]).should == RedstoneBot::BlockType::Wool.id
+    @chunk.block_type_id([42,1,20]).should == RedstoneBot::ItemType::Wool.id
     @chunk.block_metadata([43,1,20]).should == 5
-    @chunk.block_type_id([43,1,20]).should == RedstoneBot::BlockType::Wheat.id
+    @chunk.block_type_id([43,1,20]).should == RedstoneBot::ItemType::WheatBlock.id
   end
   
   it "can count blocks by type" do
-    @chunk.count_block_type(RedstoneBot::BlockType::Wool).should == 0
-    @chunk.count_block_type(RedstoneBot::BlockType::Farmland).should == 256
-    @chunk.count_block_type(RedstoneBot::BlockType::Wheat).should == 256
-    @chunk.count_block_type(RedstoneBot::BlockType::Air).should == 14*256
+    @chunk.count_block_type(RedstoneBot::ItemType::Wool).should == 0
+    @chunk.count_block_type(RedstoneBot::ItemType::Farmland).should == 256
+    @chunk.count_block_type(RedstoneBot::ItemType::WheatBlock).should == 256
+    @chunk.count_block_type(RedstoneBot::ItemType::Air).should == 14*256
     @chunk.count_block_type(nil).should == 15*16*256    
   end
 end
@@ -67,11 +67,11 @@ describe RedstoneBot::ChunkTracker do
   end
   
   it "should report farmland at y = 0" do
-    @chunk_tracker.block_type([36,0,18]).should == RedstoneBot::BlockType::Farmland
+    @chunk_tracker.block_type([36,0,18]).should == RedstoneBot::ItemType::Farmland
   end
 
   it "should report wheat at y = 1" do
-    @chunk_tracker.block_type(RedstoneBot::Coords[42,1,20]).should == RedstoneBot::BlockType::Wheat
+    @chunk_tracker.block_type(RedstoneBot::Coords[42,1,20]).should == RedstoneBot::ItemType::WheatBlock
   end
   
   it "should report metadata at y = 1" do
@@ -80,8 +80,8 @@ describe RedstoneBot::ChunkTracker do
   
   it "handles block changes" do
     coords = [42,1,21]
-    @client << RedstoneBot::Packet::BlockChange.create(coords, RedstoneBot::BlockType::Wool.id, 6)
-    @chunk_tracker.block_type(coords).should == RedstoneBot::BlockType::Wool
+    @client << RedstoneBot::Packet::BlockChange.create(coords, RedstoneBot::ItemType::Wool.id, 6)
+    @chunk_tracker.block_type(coords).should == RedstoneBot::ItemType::Wool
     @chunk_tracker.block_metadata(coords).should == 6    
   end
   
@@ -98,7 +98,7 @@ describe RedstoneBot::ChunkTracker do
     testdata2 = RedstoneBot::Packet::ChunkData.create(testdata1.chunk_id, true, testdata1.primary_bit_map, testdata1.add_bit_map, data)
     @client << testdata2
     (16..255).step(30).each do |y|
-      @chunk_tracker.block_type([42, y, 20]).should == RedstoneBot::BlockType::Air
+      @chunk_tracker.block_type([42, y, 20]).should == RedstoneBot::ItemType::Air
       @chunk_tracker.block_metadata([42,y,20]).should == 0
     end    
   end
@@ -108,14 +108,14 @@ describe RedstoneBot::ChunkTracker do
     @chunk_tracker.chunks[[32,16]].instance_variable_get(:@metadata)[0].size.should >= 2048
     
     @client << RedstoneBot::Packet::MultiBlockChange.create([
-      [[42,1,23], RedstoneBot::BlockType::Piston.id, 0],
-      [[42,2,23], RedstoneBot::BlockType::Piston.id, 1],
-      [[42,3,23], RedstoneBot::BlockType::Piston.id, 2],
-      [[42,4,23], RedstoneBot::BlockType::Piston.id, 3]
+      [[42,1,23], RedstoneBot::ItemType::Piston.id, 0],
+      [[42,2,23], RedstoneBot::ItemType::Piston.id, 1],
+      [[42,3,23], RedstoneBot::ItemType::Piston.id, 2],
+      [[42,4,23], RedstoneBot::ItemType::Piston.id, 3]
     ])
     
     (0..3).each do |i|
-      @chunk_tracker.block_type([42, 1+i, 23]).should == RedstoneBot::BlockType::Piston
+      @chunk_tracker.block_type([42, 1+i, 23]).should == RedstoneBot::ItemType::Piston
       @chunk_tracker.block_metadata([42, 1+i, 23]).should == i
     end
   end

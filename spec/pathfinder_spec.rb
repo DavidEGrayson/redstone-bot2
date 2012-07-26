@@ -1,14 +1,14 @@
 require_relative "spec_helper"
 
-require "redstone_bot/block_types"
+require "redstone_bot/item_types"
 require "redstone_bot/pathfinder"
 
 class TestMap
   def block_type(coords)
     if coords[1] <= 70
-      return RedstoneBot::BlockType::Stone
+      return RedstoneBot::ItemType::Stone
     else
-      return RedstoneBot::BlockType::Air
+      return RedstoneBot::ItemType::Air
     end
   end
 end

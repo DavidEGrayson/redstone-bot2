@@ -20,11 +20,12 @@ describe RedstoneBot::EntityTracker do
   
     @client << RedstoneBot::Packet::SpawnDroppedItem.create(eid, item, count, damage, coords, yaw, pitch, roll)
     
-    shovels = @entity_tracker.entities_of_type(IronShovel)
+    shovels = @entity_tracker.entities_of_type(RedstoneBot::ItemType::IronShovel)
     shovels.size.should == 1
     shovel = shovels.first
     shovel.eid.should == 44
-    shovel.should be_a_kind_of IronShovel
+    shovel.should be_a_kind_of RedstoneBot::Item
+    RedstoneBot::ItemType::IronShovel.should === shovel
     shovel.to_s.should == "IronShovelx13(44, ( 100.00, 200.00, 300.00), 3)"
   end
   
