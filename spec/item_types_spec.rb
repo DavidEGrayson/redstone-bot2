@@ -23,9 +23,9 @@ describe RedstoneBot::ItemType do
     names = described_class.instance_variable_get(:@types_by_string).keys
     names.size.should > 100
     names.each do |name|
-      if name =~ /(.+)Item\Z/ || name =~ /(.+)Block\Z/
-        names.should not_has_key $1
-      end
+      next if ["diamond", "emerald"].include?(name)
+      names.should_not include name + "block"
+      names.should_not include name + "item"
     end
   end
   
