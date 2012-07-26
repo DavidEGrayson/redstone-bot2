@@ -61,6 +61,7 @@ module RedstoneBot
         item_type = new(id, symbol, attrs.include?("solid"))
         string = symbol.to_s.downcase
         raise "Multiple item types named #{name}" if @types_by_string[string]
+        raise "Multiple items with id #{id}" if @types[id]
         const_set symbol, item_type
         @types_by_string[string] = @types[id] = item_type
       end
