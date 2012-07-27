@@ -50,11 +50,15 @@ module RedstoneBot
   
   def (Packet::SetWindowItems).create(window_id, slots_data)
     binary_data = [window_id, slots_data.size].pack("CS>")
-    binary_data += slots_data.collect do |slot|
+    slots_data.collect do |slot|
       if slot
-        [slot[:item_id], slot[:count], slot[:damage]].pack("s>CS>")
+        binary_data += [slot[:item_id], slot[:count], slot[:damage]].pack("s>CS>")
+        if DataReader::ENCHANTABLE.include?(slot[:item_id])
+          enchant_data = slot[:enchant_data].to_s
+          binary_data += [enchant_data.size].pack("S>") + enchant_data
+        end
       else
-        [-1].pack("s>")
+        binary_data += [-1].pack("s>")
       end
     end.join
     receive_data test_stream binary_data

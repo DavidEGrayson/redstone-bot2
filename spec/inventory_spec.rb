@@ -30,6 +30,7 @@ describe RedstoneBot::Inventory do
   context "after being loaded" do
     before do
       slots_data = [nil]*45
+      slots_data[10] = {item_id: RedstoneBot::ItemType::IronShovel.id, count: 1, damage: 2}
       slots_data[36] = {item_id: RedstoneBot::ItemType::WheatItem.id, count: 31, damage: 0}
       slots_data[37] = {item_id: RedstoneBot::ItemType::Bread.id, count: 46, damage: 10}
       @client << RedstoneBot::Packet::SetWindowItems.create(0, slots_data)
@@ -54,11 +55,16 @@ describe RedstoneBot::Inventory do
     end
         
     it "has a nice include? method" do
+      @inventory.should include RedstoneBot::ItemType::IronShovel
       @inventory.should include RedstoneBot::ItemType::WheatItem
       @inventory.should include RedstoneBot::ItemType::Bread
       @inventory.should_not include RedstoneBot::ItemType::EmeraldOre      
     end
     
+    it "has a nice hotbar_include? method" do
+      @inventory.should_not be_hotbar_include(RedstoneBot::ItemType::IronShovel)
+      @inventory.should be_hotbar_include(RedstoneBot::ItemType::Bread)
+    end
   end
   
 end

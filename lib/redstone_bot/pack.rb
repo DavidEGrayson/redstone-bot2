@@ -67,7 +67,7 @@ module RedstoneBot
       h[:count] = read_byte
       h[:damage] = read_unsigned_short
       if ENCHANTABLE.include?(h[:item_id])
-        enchant_data_len = read_short
+        enchant_data_len = read_unsigned_short
         if enchant_data_len > 0
           h[:enchant_data] = read(enchant_data_len)
         end

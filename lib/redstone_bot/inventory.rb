@@ -56,5 +56,18 @@ module RedstoneBot
     def include?(item_type)
       slots.any? { |s| item_type === s }
     end
+    
+    def hotbar_include?(item_type)
+      hotbar_slots.any? { |s| item_type === s }      
+    end
+
+    def normal_slots
+      @slots[9..35]
+    end
+    
+    def hotbar_slots
+      @slots[36..44]
+    end
+    
   end
 end
