@@ -37,5 +37,9 @@ module RedstoneBot
       end
     end
     
+    def hold(slot_id)
+      @client.send_packet Packet::HeldItemChange.new(slot_id)
+    end
+    
   end
 end

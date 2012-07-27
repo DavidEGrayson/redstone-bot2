@@ -110,5 +110,6 @@ module RedstoneBot
     protected
     def_delegators :@chunk_tracker, :block_type, :block_metadata
     def_delegators :@client, :chat
+    def_delegators :@inventory, :hold
   end
 end

@@ -389,6 +389,19 @@ module RedstoneBot
     
   end
   
+  class Packet::HeldItemChange < Packet
+    packet_type 0x10
+    attr_reader :slot_id
+    
+    def initialize(slot_id)
+      @slot_id = slot_id
+    end
+    
+    def encode_data
+      unsigned_short(@slot_id)
+    end
+  end
+  
   class Packet::UseBed < Packet
     packet_type 0x11
     attr_reader :eid

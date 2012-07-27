@@ -144,6 +144,7 @@ module RedstoneBot
 
     def send_packet(packet)
       socket.write packet.encode
+      nil
     end
 
     def chat(message)

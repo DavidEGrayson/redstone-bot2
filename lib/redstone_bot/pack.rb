@@ -106,6 +106,10 @@ module RedstoneBot
     def short(s)
        [s].pack('s>')
     end
+    
+    def unsigned_short(s)
+      [s].pack('S>')
+    end
 
     def bool(b)
       byte(b ? 1 : 0)
