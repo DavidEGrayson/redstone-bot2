@@ -47,4 +47,16 @@ module RedstoneBot
       yaw.to_i, pitch.to_i, head_yaw.to_i].pack("l>Cl>l>l>ccc") + metadata
     receive_data test_stream binary_data
   end
+  
+  def (Packet::SetWindowItems).create(window_id, slots_data)
+    binary_data = [window_id, slots_data.size].pack("CS>")
+    binary_data += slots_data.collect do |slot|
+      if slot
+        [slot[:item_id], slot[:count], slot[:damage]].pack("s>CS>")
+      else
+        [-1].pack("s>")
+      end
+    end.join
+    receive_data test_stream binary_data
+  end
 end

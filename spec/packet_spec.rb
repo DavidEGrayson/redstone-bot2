@@ -103,3 +103,12 @@ describe RedstoneBot::Packet::SpawnMob do
     p.head_yaw.should == head_yaw
   end
 end
+
+describe RedstoneBot::Packet::SetWindowItems do
+  it "correctly parses binary data" do
+    slots_data = [ nil, {:item_id=>296, :count=>31, :damage=>0}, {:item_id=>295, :count=>46, :damage=>10} ]
+    p = described_class.create(2, slots_data)
+    p.window_id.should == 2
+    p.slots_data.should == slots_data
+  end
+end

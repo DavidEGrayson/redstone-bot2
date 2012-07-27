@@ -18,4 +18,8 @@ class TestClient
   def username
     "testbot"
   end
+  
+  def time_string
+    "FLEEMSDAY"   # http://dilbert.com/strips/comic/2012-07-25
+  end
 end

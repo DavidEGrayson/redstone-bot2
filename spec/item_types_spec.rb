@@ -1,6 +1,7 @@
 require_relative 'spec_helper'
 require 'redstone_bot/item_types'
 require 'redstone_bot/entities'
+require 'redstone_bot/inventory'
 
 describe RedstoneBot::ItemType do
   it "can flexibly figure out what block type you want" do
@@ -33,8 +34,9 @@ describe RedstoneBot::ItemType do
     s = double("something")
     s.stub(:item_type) { RedstoneBot::ItemType::IronShovel}
     RedstoneBot::ItemType::IronShovel.should === s
-    RedstoneBot::ItemType::IronShovel.should === RedstoneBot::Item.new(44, RedstoneBot::ItemType::IronShovel, 1, nil)
     RedstoneBot::ItemType::IronShovel.should === RedstoneBot::ItemType::IronShovel
+    RedstoneBot::ItemType::IronShovel.should === RedstoneBot::Item.new(44, RedstoneBot::ItemType::IronShovel, 1, nil)
+    RedstoneBot::ItemType::WheatItem.should === RedstoneBot::InventoryItem.new(RedstoneBot::ItemType::WheatItem, 2, 0)
   end
   
   it "tells you if it is a block or not" do
