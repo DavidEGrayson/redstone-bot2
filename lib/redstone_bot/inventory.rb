@@ -8,11 +8,6 @@ module RedstoneBot
   class Inventory  
     attr_reader :slots
     
-    def loaded?
-      @loaded
-    end
-
-
     def initialize(client)
       @client = client
       @slots = [nil]*45
@@ -49,6 +44,17 @@ module RedstoneBot
     def select_slot(slot_id)
       @client.send_packet Packet::HeldItemChange.new(slot_id)
     end
-        
+    
+    def loaded?
+      @loaded
+    end
+    
+    def empty?
+      slots.none?
+    end
+    
+    def include?(item_type)
+      slots.any? { |s| item_type === s }
+    end
   end
 end
