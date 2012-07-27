@@ -6,15 +6,40 @@ describe RedstoneBot::Inventory do
     @client = TestClient.new
     @inventory = described_class.new(@client)
   end
+
+  context "before receiving any packets" do
   
-  it "responds to SetWindowItems packets for window 0" do
-    slots_data = [nil]*45
-    slots_data[36] = {item_id: 296, count: 31, damage: 0}
-    slots_data[37] = {item_id: 295, count: 46, damage: 10}
-    p = RedstoneBot::Packet::SetWindowItems.create(0, slots_data)
-    @client << p
-    @inventory.slots[36].item_type.should == RedstoneBot::ItemType::WheatItem
-    RedstoneBot::ItemType::WheatItem.should === @inventory.slots[36]
+    it "has nil slots by default" do
+      @inventory.slots.should == [nil]*45
+    end
+  
+    it "reports that it is not loaded" do
+      @inventory.should_not be_loaded
+    end
   end
   
+  context "after receiving a SetWindowItems packet for window 0" do
+    before do
+      slots_data = [nil]*45
+      slots_data[36] = {item_id: 296, count: 31, damage: 0}
+      slots_data[37] = {item_id: 295, count: 46, damage: 10}
+      @client << RedstoneBot::Packet::SetWindowItems.create(0, slots_data)
+    end
+
+    it "is loaded" do
+      @inventory.should be_loaded
+    end
+    
+    it "has stuff in the slots" do
+      @inventory.slots[36].item_type.should == RedstoneBot::ItemType::WheatItem
+      RedstoneBot::ItemType::WheatItem.should === @inventory.slots[36]
+    end
+  
+  end
+  
+  it "ignores SetWindowItems packets for non-0 windows" do
+    @client << RedstoneBot::Packet::SetWindowItems.create(2, [{item_id: 296, count: 31, damage: 0}]*45)
+    @inventory.slots.should == [nil]*45
+    @inventory.should_not be_loaded
+  end
 end

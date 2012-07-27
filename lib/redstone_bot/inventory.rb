@@ -5,13 +5,18 @@ module RedstoneBot
   class InventoryItem < Struct.new(:item_type, :count, :damage)
   end
 
-  class Inventory
-  
+  class Inventory  
     attr_reader :slots
+    
+    def loaded?
+      @loaded
+    end
+
 
     def initialize(client)
       @client = client
-      @slots = []
+      @slots = [nil]*45
+      @loaded = false
             
       client.listen do |p|
         case p
@@ -35,6 +40,7 @@ module RedstoneBot
                 InventoryItem.new(item_type, slot_data[:count], slot_data[:damage])
               end
             end
+            @loaded = true
           end
         end
       end
@@ -43,6 +49,6 @@ module RedstoneBot
     def select_slot(slot_id)
       @client.send_packet Packet::HeldItemChange.new(slot_id)
     end
-    
+        
   end
 end
