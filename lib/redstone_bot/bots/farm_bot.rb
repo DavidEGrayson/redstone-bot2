@@ -18,12 +18,19 @@ module RedstoneBot
         next unless p.is_a?(Packet::ChatMessage) && p.player_chat?
         
         case p.chat
+        when "i"
+          puts "== INVENTORY =="
+          @inventory.slots.each_with_index do |slot, slot_id|
+            next unless slot
+            puts "#{slot_id}: #{slot}"            
+          end
+          puts "===="
         when /d (\-?\d+) (\-?\d+) (\-?\d+)/
           x, y, z = $1.to_i, $2.to_i, $3.to_i
           puts "using #{x},#{y},#{z}!"
           #@client.send_packet Packet::PlayerDigging.new(2, [x, y, z], 0)
           @client.send_packet Packet::PlayerDigging.start [x,y,z]
-        when /g/
+        when "g"
           @body.start do
             while true
               item = @entity_tracker.closest_entity(Item)

@@ -73,6 +73,8 @@ module RedstoneBot
         end
       end
       h
+      
+      # TODO: move this InventoryItem.receive_data
     end
 
     def read_metadata

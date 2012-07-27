@@ -166,5 +166,14 @@ module RedstoneBot
     def time_string
       Time.now.strftime("%M-%S-%L")
     end
+    
+    def next_action_number
+      @last_action_number ||= 0  # cannot use an enumerator we use this cross-thread 
+      if @last_action_number < 0xFFFF
+        @last_action_number += 1
+      else
+        @last_action_number = 1
+      end
+    end
   end
 end

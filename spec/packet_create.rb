@@ -60,7 +60,7 @@ module RedstoneBot
       else
         binary_data += [-1].pack("s>")
       end
-    end.join
+    end
     receive_data test_stream binary_data
   end
 end

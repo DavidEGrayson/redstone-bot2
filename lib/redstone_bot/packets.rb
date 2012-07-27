@@ -1,7 +1,8 @@
 # need ordered hashes!
 raise "Please use Ruby 1.9.3 or later." if RUBY_VERSION < "1.9.3"
 
-require "redstone_bot/pack"
+require_relative "pack"
+require_relative "inventory_item"
 
 # TODO: to be more consistent, change all Coords var names to 'position or 'position_change' if that's what they represent?
 # start with the eid-related packets here
@@ -401,7 +402,6 @@ module RedstoneBot
       other.respond_to?(:slot_id) && @slot_id == other.slot_id
     end
 
-    
     def encode_data
       unsigned_short(@slot_id)
     end
@@ -910,6 +910,26 @@ module RedstoneBot
     end
   end
   
+  class Packet::ClickWindow < Packet
+    packet_type 0x66
+    
+    attr_reader :window_id, :slot_id, :right_click, :action_number, :shift, :clicked_item
+    
+    def initialize(window_id, slot_id, right_click, action_number, shift, clicked_item)
+      @window_id = window_id
+      @slot_id = slot_id
+      @right_clock = right_click
+      @action_number = action_number
+      @shift = shift
+      @clicked_item = clicked_item
+    end
+    
+    def encode_data
+      raise "ClickWindow: clicked_item is nil" if clicked_item.nil?
+      byte(window_id) + unsigned_short(slot_id) + bool(right_click) + unsigned_short(action_number) + bool(shift) + clicked_item.encode_data
+    end
+  end
+  
   class Packet::SetSlot < Packet
     packet_type 0x67
     attr_reader :window_id, :slot_id, :slot_data
@@ -933,7 +953,39 @@ module RedstoneBot
       end
     end
   end
-      
+  
+  class Packet::UpdateWindowProperty < Packet
+    packet_type 0x69
+    attr_reader :window_id, :property, :value
+    
+    def receive_data(socket)
+      @window_id = socket.read_byte
+      @property = socket.read_unsigned_short
+      @value = socket.read_unsigned_short
+    end
+  end
+  
+  class Packet::ConfirmTransaction < Packet
+    packet_type 0x6A
+    attr_reader :window_id, :action_nuber, :accepted
+    
+    def initialize(window_id, action_number, accepted)
+      @window_id = window_id
+      @action_number = action_number
+      @accepted = accepted
+    end
+    
+    def receive_data(socket)
+      @window_id = socket.read_byte
+      @action_number = socket.read_unsigned_short
+      @accepted = socket.read_bool
+    end
+    
+    def encode_data
+      byte(window_id) + unsigned_short(action_number) + bool(accepted)
+    end
+  end
+  
   class Packet::UpdateSign < Packet
     packet_type 0x82
     attr_reader :x, :y, :z
@@ -1019,5 +1071,6 @@ module RedstoneBot
       @reason = socket.read_string
     end
   end
+
   
 end

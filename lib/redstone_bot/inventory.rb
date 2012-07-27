@@ -2,8 +2,6 @@ require_relative "packets"
 require_relative "item_types"
 
 module RedstoneBot
-  class InventoryItem < Struct.new(:item_type, :count, :damage)
-  end
 
   class Inventory  
     attr_reader :slots
@@ -15,11 +13,11 @@ module RedstoneBot
             
       client.listen do |p|
         case p
-        when Packet::SetWindowItems, Packet::SetSlot
+        when Packet::SetWindowItems, Packet::SetSlot, Packet::ConfirmTransaction, Packet::UpdateWindowProperty
         then
           puts "#{@client.time_string} #{p.inspect}"
         end
-      end if false
+      end
       
       client.listen do |p|
         case p
@@ -41,10 +39,6 @@ module RedstoneBot
       end
     end
     
-    def select_slot(slot_id)
-      @client.send_packet Packet::HeldItemChange.new(slot_id)
-    end
-    
     def loaded?
       @loaded
     end
@@ -62,11 +56,20 @@ module RedstoneBot
     end
 
     def normal_slots
-      @slots[9..35]
+      slots[9..35]
     end
     
     def hotbar_slots
-      @slots[36..44]
+      slots[36..44]
+    end
+    
+    def shift_click_slot(slot_id) 
+      puts "shift clicking slot #{slot_id} #{slots[slot_id]}"
+      @client.send_packet Packet::ClickWindow.new(0, slot_id, false, @client.next_action_number, true, slots[slot_id])
+    end
+    
+    def select_slot(slot_id)
+      @client.send_packet Packet::HeldItemChange.new(slot_id)
     end
     
   end
