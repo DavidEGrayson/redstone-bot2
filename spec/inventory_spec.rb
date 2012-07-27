@@ -18,7 +18,13 @@ describe RedstoneBot::Inventory do
     end
   end
   
-  context "after receiving a SetWindowItems packet for window 0" do
+  it "ignores SetWindowItems packets for non-0 windows" do
+    @client << RedstoneBot::Packet::SetWindowItems.create(2, [{item_id: 296, count: 31, damage: 0}]*45)
+    @inventory.slots.should == [nil]*45
+    @inventory.should_not be_loaded
+  end
+  
+  context "after being loaded" do
     before do
       slots_data = [nil]*45
       slots_data[36] = {item_id: 296, count: 31, damage: 0}
@@ -34,12 +40,11 @@ describe RedstoneBot::Inventory do
       @inventory.slots[36].item_type.should == RedstoneBot::ItemType::WheatItem
       RedstoneBot::ItemType::WheatItem.should === @inventory.slots[36]
     end
-  
+    
+    it "can select a slot to hold" do
+      @client.should_receive(:send_packet).with(RedstoneBot::Packet::HeldItemChange.new(3))
+      @inventory.select_slot 3
+    end
   end
   
-  it "ignores SetWindowItems packets for non-0 windows" do
-    @client << RedstoneBot::Packet::SetWindowItems.create(2, [{item_id: 296, count: 31, damage: 0}]*45)
-    @inventory.slots.should == [nil]*45
-    @inventory.should_not be_loaded
-  end
 end

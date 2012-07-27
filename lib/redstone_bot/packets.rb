@@ -396,6 +396,11 @@ module RedstoneBot
     def initialize(slot_id)
       @slot_id = slot_id
     end
+
+    def ==(other)
+      other.respond_to?(:slot_id) && @slot_id == other.slot_id
+    end
+
     
     def encode_data
       unsigned_short(@slot_id)
