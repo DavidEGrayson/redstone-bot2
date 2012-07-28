@@ -109,7 +109,7 @@ module RedstoneBot
     end
     
     def byte_array(b)
-      short(b.size) + b
+      unsigned_short(b.size) + b
     end
 
     def short(s)

@@ -17,7 +17,7 @@ module RedstoneBot
         then
           puts "#{@client.time_string} #{p.inspect}"
         end
-      end
+      end if false
       
       client.listen do |p|
         case p
