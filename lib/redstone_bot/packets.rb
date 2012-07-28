@@ -109,19 +109,14 @@ module RedstoneBot
     end
     
     def encode_data
-      int(ProtocolVersion) +
-      string(username) +
-      string("") +
-      int(0)*2 +
-      byte(0)*3
+      ""
     end
     
     def receive_data(socket)
       @eid = socket.read_int
       @level_type = socket.read_string
-      socket.read_string
-      @game_mode = socket.read_int
-      @dimension = socket.read_int
+      @server_mode = socket.read_byte
+      @dimension = socket.read_signed_byte
       @difficulty = socket.read_byte
       socket.read_byte  # was previously world height
       @max_players = socket.read_byte
@@ -1051,6 +1046,29 @@ module RedstoneBot
       @flying = socket.read_bool
       @can_fly = socket.read_bool
       @instant_destroy = socket.read_bool
+    end
+  end
+  
+  class Packet::ClientStatuses < Packet
+    packet_type 0xCD
+    
+    # Bit field. 0: Initial spawn, 1: Respawn after death
+    attr_reader :payload
+    
+    def initialize(payload)
+      @payload = payload
+    end
+    
+    def self.initial_spawn
+      new(0)
+    end
+    
+    def self.respawn
+      new(1)
+    end
+    
+    def encode_data
+      byte(payload)
     end
   end
   

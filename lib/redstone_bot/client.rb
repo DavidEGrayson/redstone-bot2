@@ -151,21 +151,24 @@ module RedstoneBot
       @tx_stream = EncryptionStream.new(@socket, secret)
       @rx_stream = DecryptionStream.new(@socket, secret)      
       
+      send_packet RedstoneBot::Packet::ClientStatuses.initial_spawn
       
-      
-      raise "SUCCESS SO FAR"
+      packet = receive_packet
+      if !packet.is_a?(RedstoneBot::Packet::LoginRequest)
+        raise "Expected login packet, but got #{packet.inspect}."
+      end
       
       # Log in to server
-      send_packet Packet::LoginRequest.new(username)
-      packet = receive_packet
-      case packet
-      when RedstoneBot::Packet::Disconnect
-        raise "Login refused with reason: #{packet.reason}"
-      when RedstoneBot::Packet::LoginRequest
-        @eid = packet.eid
-      else
-        raise "Unexpected packet when logging in: #{packet.inspect}"
-      end
+      #send_packet Packet::LoginRequest.new(username)
+      #packet = receive_packet
+      #case packet
+      #when RedstoneBot::Packet::Disconnect
+      #  raise "Login refused with reason: #{packet.reason}"
+      #when RedstoneBot::Packet::LoginRequest
+      #  @eid = packet.eid
+      #else
+      #  raise "Unexpected packet when logging in: #{packet.inspect}"
+      #end
 
       @connected = true
       @mutex = Mutex.new
