@@ -1084,33 +1084,33 @@ module RedstoneBot
     end
   end
   
-  class Packet::DunnoFC < Packet
+  class Packet::EncryptionKeyResponse < Packet
     packet_type 0xFC
     
+    attr_reader :shared_secret, :verify_token_response
+    
     def encode_data
-      # TODO: what is this?
-      dunno1 = String.from_hex "1f:4c:a6:e8:17:a0:df:45:e9:c3:fe:90:96:71:7c:64:6c:7e:89:c8:ce:b6:af:2b:bb:8f:0a:c6:84:82:3a:52:55:b8:b0:ff:a7:5c:06:08:2d:c5:1e:68:0d:01:c5:8b:1a:1b:a1:0a:7b:5f:2d:37:17:3a:8e:5b:cc:dd:bd:4b:cb:38:0f:8c:19:fb:0e:09:21:a3:1f:41:d9:0b:cd:b1:a1:99:2c:79:4c:6b:3c:c4:61:ad:ce:05:3f:3d:8d:75:2a:bb:9a:79:40:65:21:80:5b:ab:f1:cb:35:71:07:c6:f9:f4:98:a4:b4:f1:cf:e9:b6:a9:d3:ef:ad:59:65:59"
-      dunno2 = String.from_hex "45:ef:41:35:64:cc:4a:40:f6:de:2e:5f:06:15:c8:c3:fd:81:f6:20:5d:30:36:48:90:89:e5:d6:f7:fd:18:2e:ee:a0:5e:89:6f:77:a7:7d:15:31:e4:fc:78:e9:ff:c8:89:88:d5:36:7c:73:5a:dd:3f:80:62:ac:89:9f:07:dd:39:a7:30:3e:11:98:c6:14:24:6a:c3:ba:fc:f5:e4:07:8e:5a:70:33:d1:0b:1c:69:6e:28:a2:33:08:1f:97:a9:ed:cd:fd:b3:ca:87:d2:48:96:a0:18:25:81:8a:7f:11:0b:1c:af:13:c8:34:96:5c:f9:dc:42:65:57:f5:42:06"
-      
-      b = [dunno1, dunno2].collect do |d|
-        unsigned_short(d.size) + d
-      end.join
-      
-      b
+      byte_array(shared_secret) + byte_array(verify_token_response)
+    end
+    
+    def receive_data(socket)
+      @shared_secret = socket.read_byte_array
+      @verify_token_response = socket.read_byte_array
     end
   end
   
-  class Packet::HandshakeResponse < Packet
+  # TODO: read http://wiki.vg/Protocol_Encryption  http://wiki.vg/Pre-release_protocol
+  class Packet::EncryptionKeyRequest < Packet
     packet_type 0xFD
 
-    attr_reader :connection_hash
+    attr_reader :connection_hash, :public_key, :verify_token    
+    alias :server_id :connection_hash
     
     def receive_data(socket)
       @connection_hash = socket.read_string
       
-      dunno = socket.read(170)  # TODO: what are all these BYTES?
-      
-      puts "#{self.class} dunno: #{dunno.hexpect}"
+      @public_key = socket.read_byte_array
+      @verify_token = socket.read_byte_array
     end
   end
   

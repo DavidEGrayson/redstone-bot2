@@ -86,7 +86,7 @@ module RedstoneBot
       # Handshake
       send_packet Packet::Handshake.new(username, hostname, port)
       packet = receive_packet
-      if !packet.is_a? RedstoneBot::Packet::HandshakeResponse
+      if !packet.is_a? RedstoneBot::Packet::EncryptionKeyRequest
         raise "Unexpected packet when handshaking: #{packet.inspect}"
       end
       @connection_hash = packet.connection_hash
@@ -100,7 +100,14 @@ module RedstoneBot
         request_join_server
       end
 
-      send_packet Packet::DunnoFC.new
+      send_packet Packet::EncryptionKeyResponse.new
+      packet = receive_packet
+      if !packet.is_a? RedstoneBot::Packet::EncryptionKeyResponse
+        raise "Unexpected packet when handshaking: #{packet.inspect}"
+      end
+      if packet.result != 0
+        raise "Expected #{packet.class} result of 0 (for no particular reason) but got #{packet.result}."
+      end
       
       # Log in to server
       send_packet Packet::LoginRequest.new(username)
@@ -111,7 +118,7 @@ module RedstoneBot
       when RedstoneBot::Packet::LoginRequest
         @eid = packet.eid
       else
-        raise "Unexpected packet when logging in: #{p}"
+        raise "Unexpected packet when logging in: #{packet.inspect}"
       end
 
       @connected = true

@@ -12,6 +12,10 @@ module RedstoneBot
       read(1).unpack('c')[0]
     end
 
+    def read_byte_array
+      read(read_unsigned_short)
+    end
+    
     def read_short
       read(2).unpack('s>')[0]
     end
@@ -102,6 +106,10 @@ module RedstoneBot
 
     def byte(b)
       [b].pack('C')
+    end
+    
+    def byte_array(b)
+      short(b.size) + b
     end
 
     def short(s)
