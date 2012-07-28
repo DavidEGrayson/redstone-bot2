@@ -2,16 +2,56 @@ require "redstone_bot/pack"
 require "redstone_bot/packets"
 require "redstone_bot/synchronizer"
 
-require 'socket'
-require 'io/wait'
-require 'thread'
-require 'net/https'
-require 'net/http'
-require 'uri'
+require "socket"
+require "io/wait"
+require "thread"
+require "net/https"
+require "net/http"
+require "openssl"
+require "uri"
 
 Thread.abort_on_exception = true
 
 module RedstoneBot
+  class EncryptionStream
+    def initialize(writeable, secret)
+      @writeable = writeable
+      @cipher = OpenSSL::Cipher::Cipher.new('AES-128-CFB8')
+      @cipher.encrypt
+      @cipher.key = secret   # is this right?
+      @cipher.iv = secret
+    end
+    
+    def write(str)
+      @writeable.write @cipher.update(str)
+    end
+    
+  end
+  
+  class DecryptionStream
+    def initialize(readable, secret)
+      @readable = readable
+      @cipher = OpenSSL::Cipher::Cipher.new('AES-128-CFB8')
+      @cipher.decrypt
+      @cipher.key = secret  # is this right?
+      @cipher.iv = secret
+      @buffer = StringIO.new("")
+    end
+    
+    # TODO: support num_bytes > 8
+    def read(num_bytes)
+      if @buffer.eof?
+        str = @readable.read(8)
+        @buffer = @cipher.update(str)
+      end
+      @buffer.read(num_bytes)
+    end
+    
+    def read(num_bytes)
+      @cipher.update @readable.read(num_bytes)
+    end
+  end
+
   class Client
     include Synchronizer
 
@@ -85,6 +125,8 @@ module RedstoneBot
 
       # Handshake
       send_packet Packet::Handshake.new(username, hostname, port)
+      
+      # Get the encryption request.
       packet = receive_packet
       if !packet.is_a? RedstoneBot::Packet::EncryptionKeyRequest
         raise "Unexpected packet when handshaking: #{packet.inspect}"
@@ -100,10 +142,11 @@ module RedstoneBot
         request_join_server
       end
 
+      # Generate shared secret, send encryption response
       public_key = OpenSSL::PKey::RSA.new(packet.public_key)
-      encrypted_token = public_key.public_encrypt packet.verify_token, OpenSSL::PKey::RSA::PKCS1_PADDING
-      secret = "\xAA\x44"*16
-      encrypted_secret = public_key.public_encrypt secret, OpenSSL::PKey::RSA::PKCS1_PADDING
+      secret = generate_shared_secret
+      encrypted_secret = public_key.public_encrypt secret
+      encrypted_token = public_key.public_encrypt packet.verify_token  # uses OpenSSL::PKey::RSA::PKCS1_PADDING
       
       send_packet Packet::EncryptionKeyResponse.new(encrypted_secret, encrypted_token)
       packet = receive_packet
@@ -114,7 +157,10 @@ module RedstoneBot
         raise "Expected empty #{packet.class} but got #{packet.inspect}."
       end
       
-      raise "SUCCESS SO FAR"
+      # Start up our encrypted streams.  From now on we will use these instead
+      # of of reading and writing directly from the socket.
+      @tx_stream = EncryptionStream.new(socket, secret)
+      @rx_stream = DecryptionStream.new(socket, secret)      
       
       # Log in to server
       send_packet Packet::LoginRequest.new(username)
@@ -190,6 +236,12 @@ module RedstoneBot
       else
         @last_action_number = 1
       end
+    end
+    
+    protected
+    def generate_shared_secret
+      # TODO: generate something a little more secret
+      "\xAA\x44"*8
     end
   end
 end
