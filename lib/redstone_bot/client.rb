@@ -28,6 +28,8 @@ module RedstoneBot
   end
   
   class DecryptionStream
+    include DataReader
+  
     def initialize(readable, secret)
       @readable = readable
       @cipher = OpenSSL::Cipher::Cipher.new('AES-128-CFB8').decrypt
@@ -43,7 +45,6 @@ module RedstoneBot
   class Client
     include Synchronizer
 
-    attr_reader :socket
     attr_reader :username
     attr_reader :hostname
     attr_reader :port
@@ -108,7 +109,7 @@ module RedstoneBot
 
     def start
       # Connect
-      @socket = TCPSocket.open hostname, port
+      @rx_stream = @tx_stream = @socket = TCPSocket.open hostname, port
       @socket.extend DataReader
 
       # Handshake
@@ -147,8 +148,12 @@ module RedstoneBot
       
       # Start up our encrypted streams.  From now on we will use these instead
       # of of reading and writing directly from the socket.
-      @tx_stream = EncryptionStream.new(socket, secret)
-      @rx_stream = DecryptionStream.new(socket, secret)      
+      @tx_stream = EncryptionStream.new(@socket, secret)
+      @rx_stream = DecryptionStream.new(@socket, secret)      
+      
+      
+      
+      raise "SUCCESS SO FAR"
       
       # Log in to server
       send_packet Packet::LoginRequest.new(username)
@@ -186,14 +191,14 @@ module RedstoneBot
     end
 
     def receive_packet
-      packet = Packet.receive(socket)
+      packet = Packet.receive(@rx_stream)
       puts "RX: #{packet}"
       packet
     end
 
     def send_packet(packet)
       puts "TX: #{packet}"
-      socket.write packet.encode
+      @tx_stream.write packet.encode
       nil
     end
 

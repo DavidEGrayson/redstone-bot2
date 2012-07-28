@@ -9,27 +9,8 @@ require "zlib"
 # start with the eid-related packets here
 
 class String
-  def hexpect
-    bytes.collect { |b| "%02X" % [b]}.join(" ")
-  end
-  
-  def try_zlib
-    puts "Unknown = #{hexpect}"
-    (0..size).each do |i|
-      begin
-        portion = self[i, 200]
-        inflated = Zlib::Inflate.inflate portion
-        puts "inflated #{i} = #{inflated.hexpect}"
-      rescue
-      end
-    end
-  end
-  
-  # takes a hex string where bytes are separated by colons
-  def self.from_hex(hex_string)
-    hex_string.split(":").collect do |h|
-      h.hex.chr
-    end.join
+  def inspect_hex
+     '"' + bytes.collect { |b| '\x%02X' % [b]}.join + '"'
   end
 end
 
