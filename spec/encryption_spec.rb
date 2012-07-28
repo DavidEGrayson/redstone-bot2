@@ -26,8 +26,8 @@ describe "EncryptionStream and DecryptionStream" do
   end
   
   it "work together" do
-    packet = "David"
+    packet = "David"*100
     @enc_stream.write packet
-    @dec_stream.read(5).should == packet
+    @dec_stream.read(packet.size).should == packet
   end
 end

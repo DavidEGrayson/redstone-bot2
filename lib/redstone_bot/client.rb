@@ -16,8 +16,7 @@ module RedstoneBot
   class EncryptionStream
     def initialize(writeable, secret)
       @writeable = writeable
-      @cipher = OpenSSL::Cipher::Cipher.new('AES-128-CFB8')
-      @cipher.encrypt
+      @cipher = OpenSSL::Cipher::Cipher.new('AES-128-CFB8').encrypt
       @cipher.key = secret   # is this right?
       @cipher.iv = secret
     end
@@ -31,22 +30,11 @@ module RedstoneBot
   class DecryptionStream
     def initialize(readable, secret)
       @readable = readable
-      @cipher = OpenSSL::Cipher::Cipher.new('AES-128-CFB8')
-      @cipher.decrypt
+      @cipher = OpenSSL::Cipher::Cipher.new('AES-128-CFB8').decrypt
       @cipher.key = secret  # is this right?
       @cipher.iv = secret
-      @buffer = StringIO.new("")
     end
-    
-    # TODO: support num_bytes > 8
-    def read(num_bytes)
-      if @buffer.eof?
-        str = @readable.read(8)
-        @buffer = @cipher.update(str)
-      end
-      @buffer.read(num_bytes)
-    end
-    
+
     def read(num_bytes)
       @cipher.update @readable.read(num_bytes)
     end
