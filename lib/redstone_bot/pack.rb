@@ -41,7 +41,7 @@ module RedstoneBot
     end
 
     def read_string_raw
-      read(read_short * 2).force_encoding('UCS-2BE')
+      read(read_short * 2).force_encoding("UCS-2BE")
     end
 
     def read_string
@@ -118,6 +118,10 @@ module RedstoneBot
 
     def int(i)
        [i].pack('l>')
+    end
+    
+    def unsigned_int(i)
+      [i].pack('L>')
     end
 
     def long(l)

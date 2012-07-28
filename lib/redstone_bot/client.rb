@@ -86,8 +86,8 @@ module RedstoneBot
       # Handshake
       send_packet Packet::Handshake.new(username, hostname, port)
       packet = receive_packet
-      if !packet.is_a? RedstoneBot::Packet::Handshake
-        raise "Unexpected packet when handshaking: #{p}"
+      if !packet.is_a? RedstoneBot::Packet::HandshakeResponse
+        raise "Unexpected packet when handshaking: #{packet}"
       end
       @connection_hash = packet.connection_hash
 
@@ -100,6 +100,8 @@ module RedstoneBot
         request_join_server
       end
 
+      send_packet Packet::DunnoFC.new
+      
       # Log in to server
       send_packet Packet::LoginRequest.new(username)
       packet = receive_packet
@@ -118,16 +120,9 @@ module RedstoneBot
 
       # Receive packets
       Thread.new do
-        begin
-          while true
-            packet = receive_packet
-            #puts packet.inspect   # tmphax
-            notify_listeners packet
-          end
-        rescue UnknownPacketError => e
-          error_message = "WHAT'S 0x%02X PRECIOUSSS?" % [e.packet_type]
-          chat error_message
-          abort error_message
+        while true
+          packet = receive_packet
+          notify_listeners packet
         end
       end
 
@@ -136,13 +131,20 @@ module RedstoneBot
         send_packet Packet::KeepAlive.new
       end
 
+    rescue UnknownPacketError => e
+      error_message = "WHAT'S 0x%02X PRECIOUSSS?" % [e.packet_type]
+      chat error_message
+      abort error_message
     end
 
     def receive_packet
-      Packet.receive(socket)
+      packet = Packet.receive(socket)
+      puts "RX: #{packet}"
+      packet
     end
 
     def send_packet(packet)
+      puts "TX: #{packet}"
       socket.write packet.encode
       nil
     end
