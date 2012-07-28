@@ -87,7 +87,7 @@ module RedstoneBot
       send_packet Packet::Handshake.new(username, hostname, port)
       packet = receive_packet
       if !packet.is_a? RedstoneBot::Packet::HandshakeResponse
-        raise "Unexpected packet when handshaking: #{packet}"
+        raise "Unexpected packet when handshaking: #{packet.inspect}"
       end
       @connection_hash = packet.connection_hash
 
