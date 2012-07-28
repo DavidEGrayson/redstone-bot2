@@ -1089,6 +1089,11 @@ module RedstoneBot
     
     attr_reader :shared_secret, :verify_token_response
     
+    def initialize(shared_secret, verify_token_response)
+      @shared_secret = shared_secret
+      @verify_token_response = verify_token_response
+    end
+    
     def encode_data
       byte_array(shared_secret) + byte_array(verify_token_response)
     end

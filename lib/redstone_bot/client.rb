@@ -100,14 +100,21 @@ module RedstoneBot
         request_join_server
       end
 
-      send_packet Packet::EncryptionKeyResponse.new
+      public_key = OpenSSL::PKey::RSA.new(packet.public_key)
+      encrypted_token = public_key.public_encrypt packet.verify_token, OpenSSL::PKey::RSA::PKCS1_PADDING
+      secret = "\xAA\x44"*16
+      encrypted_secret = public_key.public_encrypt secret, OpenSSL::PKey::RSA::PKCS1_PADDING
+      
+      send_packet Packet::EncryptionKeyResponse.new(encrypted_secret, encrypted_token)
       packet = receive_packet
       if !packet.is_a? RedstoneBot::Packet::EncryptionKeyResponse
         raise "Unexpected packet when handshaking: #{packet.inspect}"
       end
-      if packet.result != 0
-        raise "Expected #{packet.class} result of 0 (for no particular reason) but got #{packet.result}."
+      if packet.shared_secret != "" || packet.verify_token_response != ""
+        raise "Expected empty #{packet.class} but got #{packet.inspect}."
       end
+      
+      raise "SUCCESS SO FAR"
       
       # Log in to server
       send_packet Packet::LoginRequest.new(username)
