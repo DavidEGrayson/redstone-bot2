@@ -18,16 +18,15 @@ describe OpenSSL::Cipher do
   
   it "works" do
     key = OpenSSL::PKey::RSA.new(@public_key)
-    puts
     puts key.to_pem
-  
-    b64 = Base64.encode64(@public_key)
-    pem = "-----BEGIN CERTIFICATE-----\n#{b64}-----END CERTIFICATE-----\n"
-    pem = "-----BEGIN PUBLIC KEY-----\n#{b64}-----END PUBLIC KEY-----\n"
-    puts pem
-    cert = OpenSSL::X509::Certificate.new pem
-    public_key = cert.public_key
-    puts cert.to_pem
+    key.to_der.should == @public_key
+    
+    puts key.class
+    p key.methods.sort - 0.methods
+    
+    encrypted = key.public_encrypt @verify_token, PKCS1_PADDING
+    encrypted.size.should == @expected_encrypted_token.size
+    encrypted.should == @expected_encrypted_token    
   end
 
   # it "works2" do  
