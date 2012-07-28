@@ -45,17 +45,11 @@ module RedstoneBot
     end
 
     def read_string_raw
-      len = read_short
-      if len < 0
-        nil
-      else
-        read(len * 2).force_encoding("UCS-2BE")
-      end
+      read(read_short * 2).force_encoding("UCS-2BE")
     end
 
     def read_string
-      str = read_string_raw
-      str && str.encode("UTF-8")
+      read_string_raw.encode("UTF-8")
     end
     
     ENCHANTABLE = [0x103, 0x105, 0x15A, 0x167,

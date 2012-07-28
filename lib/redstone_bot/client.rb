@@ -37,8 +37,8 @@ module RedstoneBot
       @cipher.iv = secret
     end
 
-    def read(*args)
-      @cipher.update @readable.read(*args)
+    def read(num_bytes)
+      @cipher.update @readable.read(num_bytes)
     end
   end
 
@@ -212,10 +212,8 @@ module RedstoneBot
       when Packet::KeepAlive
         send_packet p
       when Packet::Disconnect
-        if p.reason != nil
-          puts "#{self} was disconnected by server: #{p.reason}"
-          @connected = false
-        end
+        puts "#{self} was disconnected by server: #{p.reason}"
+        @connected = false
       end
     end
 
