@@ -90,7 +90,7 @@ module RedstoneBot
     end
     
     def encode_data
-      int(@id)
+      int(id)
     end
   end
   
@@ -249,14 +249,12 @@ module RedstoneBot
     packet_type 0x05
     attr_reader :eid
     attr_reader :slot
-    attr_reader :item_id
-    attr_reader :damage
+    attr_reader :item
     
     def receive_data(socket)
       @eid = socket.read_int
       @slot = socket.read_short
-      @item_id = socket.read_short
-      @damage = socket.read_short
+      @item = socket.read_slot   # TODO: make this thing be an InventorySlot?
     end
   end
   
@@ -1036,17 +1034,31 @@ module RedstoneBot
   class Packet::PlayerAbilities < Packet
     packet_type 0xCA
     
-    attr_reader :invulernable     # speculation
-    attr_reader :flying
-    attr_reader :can_fly
-    attr_reader :instant_destroy  # speculation
+    attr_reader :flags
+    attr_reader :flying_speed
+    attr_reader :walking_speed
     
     def receive_data(socket)
-      @invulnerable = socket.read_bool
-      @flying = socket.read_bool
-      @can_fly = socket.read_bool
-      @instant_destroy = socket.read_bool
+      @flags = socket.read_byte
+      @flying_speed = socket.read_byte
+      @walking_speed = socket.read_byte
     end
+    
+    def damage_disabled?
+      (flags & 1) != 0
+    end
+    
+    def flying?
+      (flags & 2) != 0
+    end
+
+    def can_fly?
+      (flags & 4) != 0
+    end
+
+    def creative_mode?
+      (flags & 4) != 0
+    end    
   end
   
   class Packet::ClientStatuses < Packet

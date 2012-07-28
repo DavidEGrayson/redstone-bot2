@@ -158,49 +158,47 @@ module RedstoneBot
         raise "Expected login packet, but got #{packet.inspect}."
       end
       
-      # Log in to server
-      #send_packet Packet::LoginRequest.new(username)
-      #packet = receive_packet
-      #case packet
-      #when RedstoneBot::Packet::Disconnect
-      #  raise "Login refused with reason: #{packet.reason}"
-      #when RedstoneBot::Packet::LoginRequest
-      #  @eid = packet.eid
-      #else
-      #  raise "Unexpected packet when logging in: #{packet.inspect}"
-      #end
-
       @connected = true
       @mutex = Mutex.new
       notify_listeners :start
 
       # Receive packets
       Thread.new do
-        while true
-          packet = receive_packet
-          notify_listeners packet
+        begin
+          while true
+            packet = receive_packet
+            notify_listeners packet
+          end
+        rescue UnknownPacketError => e
+          handle_unknown_packet(e)
         end
       end
 
-      # Send keepalives
+      # Send keepalives  # TODO: is this needed?
       regularly(1) do
         send_packet Packet::KeepAlive.new
       end
 
     rescue UnknownPacketError => e
-      error_message = "WHAT'S 0x%02X PRECIOUSSS?" % [e.packet_type]
-      chat error_message
-      abort error_message
+      handle_unknown_packet(e)
     end
 
+    def handle_unknown_packet(e)
+      error_message = "WHAT'S 0x%02X PRECIOUSSS?" % [e.packet_type]
+      $stderr.puts error_message
+      $stderr.puts "Last packet: #{@last_packet}"      
+      #chat error_message
+      abort
+    end  
+  
     def receive_packet
-      packet = Packet.receive(@rx_stream)
-      puts "RX: #{packet}"
+      @last_packet = packet = Packet.receive(@rx_stream)
+      puts "RX: #{packet.inspect}"
       packet
     end
 
     def send_packet(packet)
-      puts "TX: #{packet}"
+      puts "TX: #{packet.inspect}"
       @tx_stream.write packet.encode
       nil
     end
@@ -211,6 +209,8 @@ module RedstoneBot
 
     def handle_packet(p)
       case p
+      when Packet::KeepAlive
+        send_packet p
       when Packet::Disconnect
         puts "#{self} was disconnected by server: #{p.reason}"
         @connected = false
