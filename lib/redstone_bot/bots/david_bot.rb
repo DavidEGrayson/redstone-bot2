@@ -52,9 +52,11 @@ module RedstoneBot
         case p
         when Packet::ChatMessage
           puts p
-        when Packet::Disconnect
+        when Packet::Disconnect          
           puts "Position = #{@body.position}"
-          exit 2
+          if p.reason != nil
+            exit 2
+          end
         end
       end 
       
