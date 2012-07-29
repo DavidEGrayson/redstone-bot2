@@ -10,14 +10,20 @@ class RedstoneBot::ChunkTracker
 end
   
 bt = ""
+# Block Types: 4096 per section
 bt << "\x3C" * 256   # y = 0 is all farmland
 bt << "\x3B" * 256   # y = 1 is all wheat
 bt = bt.ljust(16*256, "\x00")   # the rest of the block types are air
+# Metadata: 2048 per section
 metadata = ""
 metadata << "\x00" * 128   # y = 0 no metadata
 metadata << "\x55" * 128   # y = 1 : All crops are 5 tall (7 is the max)
 metadata = metadata.ljust(16*128, "\x00")   # the rest of the metadata is 0
-data = bt + metadata
+# Light: 2048 per section
+light = "\x01"*2048
+# Sky light: 2048 per section
+sky_light = "\x02"*2048
+data = bt + metadata + light + sky_light
 testdata1 = RedstoneBot::Packet::ChunkData.create([32,16], false, 1, 0, data)
 
 describe RedstoneBot::Chunk do
@@ -38,6 +44,15 @@ describe RedstoneBot::Chunk do
   
   it "should report metadata=5 at y=1" do
     @chunk.block_metadata([42,1,20]).should == 5
+  end
+  
+  it "reports light" do
+    @chunk.instance_variable_get(:@light).size.should == 16
+    @chunk.light([42, 1, 20]).should == 1
+  end
+
+  it "reports sky light" do
+    @chunk.sky_light([42, 1, 20]).should == 2
   end
   
   it "can change individual block type and metadata" do
@@ -88,7 +103,7 @@ describe RedstoneBot::ChunkTracker do
     #therefore, we don't actually know what is in the upper sections yet...
     (16..255).step(30).each do |y|
       @chunk_tracker.block_type([42, y, 20]).should == nil
-      @chunk_tracker.block_metadata([42,y,20]).should == 15
+      @chunk_tracker.block_metadata([42,y,20]).should == 0
     end
   end
   

@@ -1,3 +1,8 @@
+# Definitions:
+# Chunk = 16x256x16
+# Section = 16x16x16 
+
+
 require 'zlib'
 require 'stringio'
 require_relative 'item_types'
@@ -10,10 +15,14 @@ module RedstoneBot
     Size = [16, 256, 16]  # x,y,z size of each chunk
 
     DefaultBlockTypeIdData = ("\xFF"*(16*16*16)).freeze
-    DefaultMetadata = ("\xFF"*(8*16*16)).freeze
+    DefaultMetadata = DefaultLightData = DefaultSkyLightData = ("\x00"*(8*16*16)).freeze
     
     AirBlockTypeIdData = ("\x00"*(16*16*16)).freeze
-    AirMetadata = ("\x00"*(8*16*16)).freeze
+    AirMetadata = DefaultMetadata
+    
+    # Assumption: is not sent because it has all air, then sky_light = 0xF and light = 0
+    AirLightData = DefaultMetadata
+    AirSkyLightData = ("\xFF"*(8*16*16)).freeze
     
     attr_reader :id   # array of integers [x, z], e.g. [32,16]
 
@@ -28,6 +37,8 @@ module RedstoneBot
       # The default value of the metadata doesn't matter too much because block_type will be 0xFF before the metadata is set for the first time
       @block_type = 16.times.collect { DefaultBlockTypeIdData.dup }
       @metadata = 16.times.collect { DefaultMetadata.dup }
+      @light = 16.times.collect { DefaultLightData.dup }
+      @sky_light = 16.times.collect { DefaultSkyLightData.dup }
     end
 
     def x
@@ -60,13 +71,17 @@ module RedstoneBot
       included_sections = (0..15).select { |i| (p.primary_bit_map >> i & 1) == 1 }
       
       included_sections.each { |i| @block_type[i] = data.read(16*16*16) }
-      included_sections.each { |i| @metadata[i] = data.read(16*16*8) }
+      included_sections.each { |i| @metadata[i] = data.read(8*16*16) }
+      included_sections.each { |i| @light[i] = data.read(8*16*16) }
+      included_sections.each { |i| @sky_light[i] = data.read(8*16*16) }
       
       if p.ground_up_continuous
         other_sections = (0..15).to_a - included_sections
         other_sections.each do |i|
           @block_type[i] = AirBlockTypeIdData.dup
           @metadata[i] = AirMetadata.dup
+          @light[i] = AirLightData.dup
+          @sky_light[i] = AirSkyLightData.dup
         end
       end
     end
@@ -97,11 +112,17 @@ module RedstoneBot
     end
     
     def block_metadata(coords)
-      section_num, section_x, section_y, section_z = convert_coords(coords)
-      offset = 128*section_y + 8*section_z + section_x/2
-      @metadata[section_num][offset].ord >> ((section_x % 2) * 4) & 0x0F
+      get_nibble @metadata, coords      
     end
-        
+    
+    def light(coords)
+      get_nibble @light, coords
+    end
+
+    def sky_light(coords)
+      get_nibble @sky_light, coords
+    end
+    
     def block_type_raw_yslice(y)
       section_num, section_y = y.divmod 16
       @block_type[section_num][256*section_y, 256]
@@ -132,6 +153,19 @@ module RedstoneBot
     def block_type_data
       @block_type.join
     end
+    
+    def get_nibble(dataz, coords)
+      section_num, section_x, section_y, section_z = convert_coords(coords)
+      offset = 128*section_y + 8*section_z + section_x/2
+      section = dataz[section_num]
+      
+      if section.nil?
+        raise "NO SECTION #{section_num}"
+      end
+      
+      section[offset].ord >> ((section_x % 2) * 4) & 0x0F
+    end
+    
   end
 
   class ChunkTracker
