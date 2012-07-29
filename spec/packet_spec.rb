@@ -114,6 +114,14 @@ describe RedstoneBot::Packet::SpawnMob do
   end
 end
 
+describe RedstoneBot::Packet::DestroyEntity do
+  it "correctly parses binary data" do
+    eids = [12033, 39109013, -30]
+    p = described_class.create(eids)
+    p.eids.should == eids
+  end
+end
+
 describe RedstoneBot::Packet::SetWindowItems do
   it "correctly parses binary data" do
     slots = [ nil, RedstoneBot::Slot.new(RedstoneBot::ItemType::WheatItem, 31, 0, nil), RedstoneBot::Slot.new(RedstoneBot::ItemType::IronOre, 44, 0, "hehe") ]

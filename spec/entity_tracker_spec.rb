@@ -29,22 +29,31 @@ describe RedstoneBot::EntityTracker do
   end
   
   it "tracks mobs" do
-    eid = 45
+    # Add two mobs.
+    eid = -45
     type = 50   # Creeper
     coords = RedstoneBot::Coords[100.25, 200, 300.03125]
     yaw = -1
     pitch = -2
     head_yaw = -3
-    p = RedstoneBot::Packet::SpawnMob.create(eid, type, coords, yaw, pitch, head_yaw)
-    @client << p
+    @client << RedstoneBot::Packet::SpawnMob.create(eid, type, coords, yaw, pitch, head_yaw)
+    @client << RedstoneBot::Packet::SpawnMob.create(eid+1, type+1, coords, yaw, pitch, head_yaw)
+
+    # Verify two mobs
+    @entity_tracker.entities_of_type(RedstoneBot::Mob).size.should == 2
     
+    # Examine the creeper
     creepers = @entity_tracker.entities_of_type(RedstoneBot::Creeper)
     creepers.size.should == 1
     creeper = creepers.first
-    creeper.eid.should == 45
+    creeper.eid.should == -45
     creeper.should be_a_kind_of RedstoneBot::Mob
     creeper.position.should be_within(0.00001).of(coords)
-    creeper.to_s.should == "Creeper(45, ( 100.25, 200.00, 300.03))"
+    creeper.to_s.should == "Creeper(-45, ( 100.25, 200.00, 300.03))"
+    
+    # Destroy two mobs
+    @client << RedstoneBot::Packet::DestroyEntity.create([-45, -44])
+    @entity_tracker.entities_of_type(RedstoneBot::Mob).size.should == 0
   end
   
 end

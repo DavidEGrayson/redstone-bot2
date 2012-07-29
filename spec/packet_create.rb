@@ -59,6 +59,10 @@ module RedstoneBot
     receive_data test_stream binary_data
   end
   
+  def (Packet::DestroyEntity).create(eids)
+    receive_data test_stream [eids.size].pack("C") + eids.collect { |e| [e].pack("l>") }.join
+  end
+  
   def (Packet::SetWindowItems).create(window_id, slots)
     binary_data = [window_id, slots.size].pack("CS>")
     binary_data += slots.collect { |slot| Slot.encode_data(slot) }.join

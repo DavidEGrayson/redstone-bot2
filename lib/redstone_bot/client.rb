@@ -198,13 +198,10 @@ module RedstoneBot
     end  
   
     def receive_packet
-      @last_packet = packet = Packet.receive(@rx_stream)
-      puts "RX: #{packet.inspect}"
-      packet
+      @last_packet = Packet.receive(@rx_stream)
     end
 
     def send_packet(packet)
-      puts "TX: #{packet.inspect}"
       @tx_stream.write packet.encode
       nil
     end

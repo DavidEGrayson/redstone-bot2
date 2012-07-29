@@ -16,7 +16,7 @@ module RedstoneBot
       @debug_ignore = []
       
       client.listen do |p|
-        next unless p.respond_to? :eid
+        next unless p.respond_to?(:eid) || p.respond_to?(:eids)
         
         case p
         when Packet::SpawnNamedEntity
@@ -41,7 +41,7 @@ module RedstoneBot
         end
 
         if Packet::DestroyEntity === p
-          entities.delete p.eid
+          p.eids.each { |eid| entities.delete eid }
         end
       end
     end

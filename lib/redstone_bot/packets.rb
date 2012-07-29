@@ -604,10 +604,11 @@ module RedstoneBot
   
   class Packet::DestroyEntity < Packet
     packet_type 0x1D
-    attr_reader :eid
+    attr_reader :eids
     
     def receive_data(socket)
-      @eid = socket.read_int
+      count = socket.read_byte
+      @eids = count.times.collect { socket.read_int }
     end
   end
   
