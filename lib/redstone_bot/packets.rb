@@ -609,8 +609,7 @@ module RedstoneBot
   
   class Packet::EntityRelativeMove < Packet
     packet_type 0x1F
-    attr_reader :eid
-    attr_reader :dx, :dy, :dz
+    attr_reader :eid, :dx, :dy, :dz
     
     def coords_change
       Coords[@dx, @dy, @dz]
@@ -1115,7 +1114,6 @@ module RedstoneBot
     end
   end
   
-  # TODO: read http://wiki.vg/Protocol_Encryption  http://wiki.vg/Pre-release_protocol
   class Packet::EncryptionKeyRequest < Packet
     packet_type 0xFD
 

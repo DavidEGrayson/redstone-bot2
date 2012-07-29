@@ -51,18 +51,6 @@ module RedstoneBot
     def read_string
       read_string_raw.encode("UTF-8")
     end
-    
-    ENCHANTABLE = [0x103, 0x105, 0x15A, 0x167,
-								 0x10C, 0x10D, 0x10E, 0x10F, 0x122,
-								 0x110, 0x111, 0x112, 0x113, 0x123,
-								 0x10B, 0x100, 0x101, 0x102, 0x124,
-								 0x114, 0x115, 0x116, 0x117, 0x125,
-								 0x11B, 0x11C, 0x11D, 0x11E, 0x126,
-								 0x12A, 0x12B, 0x12C, 0x12D,
-								 0x12E, 0x12F, 0x130, 0x131,
-								 0x132, 0x133, 0x134, 0x135,
-								 0x136, 0x137, 0x138, 0x139,
-								 0x13A, 0x13B, 0x13C, 0x13D]
 
     def read_slot
       h = {}
@@ -70,11 +58,9 @@ module RedstoneBot
       return nil if h[:item_id] == -1
       h[:count] = read_byte
       h[:damage] = read_unsigned_short
-      if ENCHANTABLE.include?(h[:item_id])
-        enchant_data_len = read_unsigned_short
-        if enchant_data_len > 0
-          h[:enchant_data] = read(enchant_data_len)
-        end
+      enchant_data_len = read_short
+      if enchant_data_len > 0
+        h[:enchant_data] = read(enchant_data_len)
       end
       h
       

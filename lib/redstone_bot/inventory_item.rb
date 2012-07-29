@@ -4,23 +4,12 @@ module RedstoneBot
   class InventoryItem < Struct.new(:item_type, :count, :damage, :enchant_data)
     include DataEncoder
     
-    Enchantable = [0x103, 0x105, 0x15A, 0x167,
-								 0x10C, 0x10D, 0x10E, 0x10F, 0x122,
-								 0x110, 0x111, 0x112, 0x113, 0x123,
-								 0x10B, 0x100, 0x101, 0x102, 0x124,
-								 0x114, 0x115, 0x116, 0x117, 0x125,
-								 0x11B, 0x11C, 0x11D, 0x11E, 0x126,
-								 0x12A, 0x12B, 0x12C, 0x12D,
-								 0x12E, 0x12F, 0x130, 0x131,
-								 0x132, 0x133, 0x134, 0x135,
-								 0x136, 0x137, 0x138, 0x139,
-								 0x13A, 0x13B, 0x13C, 0x13D]
-    
     def encode_data
       binary_data = [item_type.id, count, damage].pack("s>CS>")
-      if Enchantable.include?(item_type.id)
-        data = enchant_data.to_s
-        binary_data += [data.size].pack("S>") + data
+      binary_data += if enchant_data
+        [enchant_data.size].pack("S>") + enchant_data
+      else
+        short(-1)
       end
       binary_data
     end
