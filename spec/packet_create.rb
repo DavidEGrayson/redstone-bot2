@@ -2,7 +2,7 @@ require "redstone_bot/packets"
 
 module RedstoneBot
   def (Packet::BlockChange).create(coords, block_type_id, block_metadata)
-    receive_data test_stream (coords + [block_type_id, block_metadata]).pack('l>Cl>CC')
+    p = receive_data test_stream (coords + [block_type_id, block_metadata]).pack('l>Cl>S>C')
   end
   
   def (Packet::MultiBlockChange).create(block_changes)
@@ -51,9 +51,11 @@ module RedstoneBot
     receive_data test_stream binary_data
   end
   
-  def (Packet::SpawnMob).create(eid, type, coords, yaw, pitch, head_yaw, metadata="\x7F")
+  def (Packet::SpawnMob).create(eid, type, coords, yaw, pitch, head_yaw, velocity=Coords[0,0,0], metadata="\x7F")
     binary_data = [eid, type.to_i, (coords[0]*32).round, (coords[1]*32).round, (coords[2]*32).round,
-      yaw.to_i, pitch.to_i, head_yaw.to_i].pack("l>Cl>l>l>ccc") + metadata
+      yaw.to_i, pitch.to_i, head_yaw.to_i,
+      (velocity[2]*32).round, (velocity[0]*32).round, (velocity[1]*32).round
+      ].pack("l>Cl>l>l>cccs>s>s>") + metadata
     receive_data test_stream binary_data
   end
   

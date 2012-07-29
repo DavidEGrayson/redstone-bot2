@@ -22,7 +22,9 @@ module RedstoneBot
     end
     
     def write(str)
-      @writeable.write @cipher.update(str)
+      if !str.empty?
+        @writeable.write @cipher.update(str)
+      end
     end
     
   end
@@ -38,7 +40,11 @@ module RedstoneBot
     end
 
     def read(num_bytes)
-      @cipher.update @readable.read(num_bytes)
+      if num_bytes.zero?
+        ""
+      else
+        @cipher.update @readable.read(num_bytes)
+      end
     end
   end
 
@@ -187,7 +193,7 @@ module RedstoneBot
       error_message = "WHAT'S 0x%02X PRECIOUSSS?" % [e.packet_type]
       $stderr.puts error_message
       $stderr.puts "Last packet: #{@last_packet}"      
-      #chat error_message
+      chat error_message
       abort
     end  
   
