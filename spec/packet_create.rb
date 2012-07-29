@@ -30,6 +30,10 @@ module RedstoneBot
     receive_data test_stream binary_data
   end
   
+  def (Packet::ChunkData).create_deallocation(chunk_id)
+    receive_data test_stream [chunk_id[0]/16,chunk_id[1]/16,1,0,0,12,0].pack("l>l>CS>S>l>l>") + "\x78\x9C\x63\x64\x1C\xD9\x00\x00\x81\x80\x01\x01"
+  end
+  
   def (Packet::SpawnDroppedItem).create(eid, item, count, metadata, coords, yaw, pitch, roll)
     binary_data = [eid, item, count, metadata,
      (coords[0]*32).round, (coords[1]*32).round, (coords[2]*32).round,

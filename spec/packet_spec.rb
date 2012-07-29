@@ -53,7 +53,7 @@ describe RedstoneBot::Packet::ChunkData do
   end
   
   it "sometimes indicates deallocation" do
-    p = described_class.receive_data test_stream [2,1,1,0,0,12,0].pack("l>l>CS>S>l>l>") + "\x78\x9C\x63\x64\x1C\xD9\x00\x00\x81\x80\x01\x01"
+    p = described_class.create_deallocation [32, 16]
     p.chunk_id.should == [32, 16]
     p.ground_up_continuous.should == true
     p.primary_bit_map.should == 0
