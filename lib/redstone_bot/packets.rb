@@ -750,11 +750,7 @@ module RedstoneBot
       @add_bit_map = socket.read_unsigned_short
       compressed_size = socket.read_int
       socket.read_int
-      @compressed_data = socket.read(compressed_size)
-    end
-    
-    def data
-      @data ||= Zlib::Inflate.inflate @compressed_data
+      @data = Zlib::Inflate.inflate socket.read(compressed_size)
     end
     
     # Avoid showing all the data when we inspect this packet.
