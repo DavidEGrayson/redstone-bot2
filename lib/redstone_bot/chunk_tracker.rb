@@ -147,29 +147,9 @@ module RedstoneBot
         next unless p.respond_to?(:chunk_id)
       
         # puts Time.now.strftime("%M:%S.%L") + " " + p.inspect
-
-        chunk_id = p.chunk_id
-        
-        if p.is_a?(Packet::ChunkAllocation)
-          if p.mode
-            allocate_chunk chunk_id
-          else
-            unload_chunk chunk_id
-          end
-        else
-          if chunk = @chunks[chunk_id]
-            chunk.apply_change p
-          else
-            handle_update_for_unloaded_chunk chunk_id
-          end
-        end
-        
-        notify_change_listeners chunk_id, p
+        get_or_create_chunk(p.chunk_id).apply_change p        
+        notify_change_listeners p.chunk_id, p
       end
-    end
-
-    def handle_update_for_unloaded_chunk(chunk_id)
-      $stderr.puts "warning: received update for a chunk that is not loaded: #{chunk_id.inspect}"
     end
     
     # coords is a RedstoneBot::Coords object or an array of numbers
@@ -209,15 +189,13 @@ module RedstoneBot
     end
 
     protected
-    
-    def allocate_chunk(chunk_coords)
-      unload_chunk chunk_coords    # make sure the state stays consistent
 
-      @chunks[chunk_coords] = Chunk.new(chunk_coords)
+    def get_or_create_chunk(chunk_id)
+      @chunks[chunk_id] ||= Chunk.new(chunk_id)
     end
-
-    def unload_chunk(chunk_coords)
-      chunk = @chunks.delete(chunk_coords)
+    
+    def unload_chunk(chunk_id)
+      chunk = @chunks.delete(chunk_id)
       chunk.unload if chunk
     end
     

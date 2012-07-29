@@ -730,21 +730,6 @@ module RedstoneBot
     end
   end
   
-  class Packet::ChunkAllocation < Packet
-    packet_type 0x32
-    attr_reader :mode
-    
-    def chunk_id
-      [@x, @z]
-    end
-    
-    def receive_data(socket)
-      @x = socket.read_int*16
-      @z = socket.read_int*16
-      @mode = socket.read_bool
-    end
-  end
-  
   class Packet::ChunkData < Packet
     packet_type 0x33
     attr_reader :ground_up_continuous

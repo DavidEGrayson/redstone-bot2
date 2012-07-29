@@ -61,7 +61,6 @@ describe RedstoneBot::ChunkTracker do
   before do
     @client = TestClient.new
     @chunk_tracker = RedstoneBot::ChunkTracker.new(@client)
-    @client << RedstoneBot::Packet::ChunkAllocation.create(testdata1.chunk_id, true)
     @client << testdata1
   end
   
@@ -130,23 +129,10 @@ describe RedstoneBot::ChunkTracker do
         @receiver.info(coords,packet)
       end
     end
-    
-    it "reports chunk allocation" do
-      p = RedstoneBot::Packet::ChunkAllocation.create(testdata1.chunk_id, true)
-      @receiver.should_receive(:info).with([32,16], p)
-      @client << p
-    end
-    
+        
     it "reports chunk changes" do
       @receiver.should_receive(:info).with([32,16], testdata1)
       @client << testdata1
     end
-    
-    it "reports chunk deallocation" do
-      p = RedstoneBot::Packet::ChunkAllocation.create(testdata1.chunk_id, false)
-      @receiver.should_receive(:info).with([32,16], p)
-      @client << p
-    end
-
   end
 end 

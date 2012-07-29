@@ -5,10 +5,6 @@ module RedstoneBot
     receive_data test_stream (coords + [block_type_id, block_metadata]).pack('l>Cl>CC')
   end
   
-  def (Packet::ChunkAllocation).create(chunk_id, mode)
-    receive_data test_stream [chunk_id[0]/16, chunk_id[1]/16, mode ? 1 : 0].pack('l>l>C')
-  end
-  
   def (Packet::MultiBlockChange).create(block_changes)
     block_changes = block_changes.collect do |c|
       c = RedstoneBot::Packet::BlockChange.create(*c) unless c.respond_to?(:x)

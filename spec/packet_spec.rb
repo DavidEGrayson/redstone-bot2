@@ -14,17 +14,6 @@ describe RedstoneBot::Packet::BlockChange do
   end
 end
 
-describe RedstoneBot::Packet::ChunkAllocation do
-  it "correctly parses binary data" do
-    ca = described_class.create([7*16, 8*16], true)
-    ca.mode.should == true
-    ca.chunk_id.should == [7*16, 8*16]
-
-    ca = described_class.create([7*16, 8*16], false)
-    ca.mode.should == false
-  end
-end
-
 describe RedstoneBot::Packet::MultiBlockChange do
   it "correctly parses binary data" do
     mbc = described_class.create([
