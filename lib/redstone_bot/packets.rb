@@ -2,7 +2,7 @@
 raise "Please use Ruby 1.9.3 or later." if RUBY_VERSION < "1.9.3"
 
 require_relative "pack"
-require_relative "inventory_item"
+require_relative "slot"
 require "zlib"
 
 # TODO: to be more consistent, change all Coords var names to 'position or 'position_change' if that's what they represent?
@@ -248,13 +248,13 @@ module RedstoneBot
   class Packet::EntityEquipment < Packet
     packet_type 0x05
     attr_reader :eid
+    attr_reader :slot_id
     attr_reader :slot
-    attr_reader :item
     
     def receive_data(socket)
       @eid = socket.read_int
       @slot = socket.read_short
-      @item = socket.read_slot   # TODO: make this thing be an InventorySlot?
+      @slot = Slot.receive_data(socket)
     end
   end
   
@@ -931,19 +931,19 @@ module RedstoneBot
     def receive_data(socket)
       @window_id = socket.read_byte
       @slot_id = socket.read_short
-      @slot_data = socket.read_slot
+      @slot = Slot.receive_data(socket)
     end
   end
   
   class Packet::SetWindowItems < Packet
     packet_type 0x68
-    attr_reader :window_id, :slots_data
+    attr_reader :window_id, :slots
     
     def receive_data(socket)
       @window_id = socket.read_byte
       count = socket.read_short
-      @slots_data = count.times.collect do
-        socket.read_slot
+      @slots = count.times.collect do
+        Slot.receive_data(socket)
       end
     end
   end

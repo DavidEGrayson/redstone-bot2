@@ -52,21 +52,6 @@ module RedstoneBot
       read_string_raw.encode("UTF-8")
     end
 
-    def read_slot
-      h = {}
-      h[:item_id] = read_short
-      return nil if h[:item_id] == -1
-      h[:count] = read_byte
-      h[:damage] = read_unsigned_short
-      enchant_data_len = read_short
-      if enchant_data_len > 0
-        h[:enchant_data] = read(enchant_data_len)
-      end
-      h
-      
-      # TODO: move this InventoryItem.receive_data
-    end
-
     def read_metadata
       buf = {}
       while (b = read(1).ord) != 0x7F

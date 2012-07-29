@@ -23,16 +23,10 @@ module RedstoneBot
         case p
         when Packet::SetWindowItems
           if p.window_id == 0
-            if p.slots_data.size != 45
+            if p.slots.size != 45
               raise "Error: Expected 44 slots in inventory, received #{p.slots_data.size}."
             end
-            @slots = p.slots_data.collect do |slot_data|
-              if slot_data
-                item_type = ItemType.from_id(slot_data[:item_id])
-                raise "Unknown item type #{slot_data[:item_id]}." if !item_type
-                InventoryItem.new(item_type, slot_data[:count], slot_data[:damage])
-              end
-            end
+            @slots = p.slots
             @loaded = true
           end
         end
