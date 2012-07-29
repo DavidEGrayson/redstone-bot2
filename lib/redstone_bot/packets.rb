@@ -8,6 +8,8 @@ require "zlib"
 # TODO: to be more consistent, change all Coords var names to 'position or 'position_change' if that's what they represent?
 # start with the eid-related packets here
 
+# TODO: add LocaleAndViewDistance and see if that lets us get more chunks loaded
+
 class String
   def inspect_hex
      '"' + bytes.collect { |b| '\x%02X' % [b] }.join + '"'
@@ -762,15 +764,15 @@ module RedstoneBot
       @primary_bit_map = socket.read_unsigned_short
       @add_bit_map = socket.read_unsigned_short
       compressed_size = socket.read_int
-      socket.read_int
-      @data = Zlib::Inflate.inflate socket.read(compressed_size)
+      compressed_data = socket.read(compressed_size)
+      @data = Zlib::Inflate.inflate compressed_data
     end
     
     # Avoid showing all the data when we inspect this packet.
     def inspect
       tmp = @data
       begin
-        @data = "#{tmp.size}..."
+        @data = "#{tmp.size}..." if tmp
         return super
       ensure
         @data = tmp
@@ -864,7 +866,7 @@ module RedstoneBot
     packet_type 0x37
     attr_reader :eid, :coords
     
-    def recieve_data(stream)
+    def receive_data(stream)
       @eid = stream.read_int   # TODO: is this really an EID?
       @coords = Coords[stream.read_int, stream.read_int, stream.read_int]
       stream.read_byte    # TODO: what is this byte?

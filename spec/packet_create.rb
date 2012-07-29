@@ -25,13 +25,13 @@ module RedstoneBot
     binary_data = [chunk_id[0]/16, chunk_id[1]/16,
       ground_up_continuous ? 1 : 0,
       primary_bit_map, add_bit_map,
-      compressed.size, 0
-    ].pack("l>l>CS>S>l>l>") + compressed
+      compressed.size
+    ].pack("l>l>CS>S>l>") + compressed
     receive_data test_stream binary_data
   end
   
   def (Packet::ChunkData).create_deallocation(chunk_id)
-    receive_data test_stream [chunk_id[0]/16,chunk_id[1]/16,1,0,0,12,0].pack("l>l>CS>S>l>l>") + "\x78\x9C\x63\x64\x1C\xD9\x00\x00\x81\x80\x01\x01"
+    receive_data test_stream [chunk_id[0]/16,chunk_id[1]/16,1,0,0,12].pack("l>l>CS>S>l>") + "\x78\x9C\x63\x64\x1C\xD9\x00\x00\x81\x80\x01\x01"
   end
   
   def (RedstoneBot::Packet::MapChunkBulk).create(metadata, data)

@@ -10,6 +10,9 @@ require "net/http"
 require "openssl"
 require "uri"
 
+# TODO: fix respawning!
+# TODO: fix logging in to online servers
+
 Thread.abort_on_exception = true
 
 module RedstoneBot
@@ -177,6 +180,9 @@ module RedstoneBot
           end
         rescue UnknownPacketError => e
           handle_unknown_packet(e)
+        rescue
+          report_last_packet
+          raise
         end
       end
 
@@ -191,12 +197,16 @@ module RedstoneBot
 
     def handle_unknown_packet(e)
       error_message = "WHAT'S 0x%02X PRECIOUSSS?" % [e.packet_type]
+      report_last_packet
       $stderr.puts error_message
-      $stderr.puts "Last packet: #{@last_packet}"      
       chat error_message
       abort
     end  
-  
+
+    def report_last_packet
+      $stderr.puts "Last packet: #{@last_packet}"
+    end
+    
     def receive_packet
       @last_packet = Packet.receive(@rx_stream)
     end

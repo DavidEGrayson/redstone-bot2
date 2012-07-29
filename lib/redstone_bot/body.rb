@@ -104,6 +104,7 @@ module RedstoneBot
     
     def start(&proc)
       @current_fiber = proc
+      nil
     end
     
     def stop
