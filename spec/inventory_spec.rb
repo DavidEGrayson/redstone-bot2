@@ -8,7 +8,9 @@ describe RedstoneBot::Inventory do
   end
   
   it "ignores SetWindowItems packets for non-0 windows" do
-    @client << RedstoneBot::Packet::SetWindowItems.create(2, [{item_id: 296, count: 31, damage: 0}]*45)
+    RedstoneBot::Slot.new(RedstoneBot::ItemType::Bread, 44).encode_data
+  
+    @client << RedstoneBot::Packet::SetWindowItems.create(2, [RedstoneBot::Slot.new(RedstoneBot::ItemType::Bread, 44)]*45)
     @inventory.slots.should == [nil]*45
     @inventory.should_not be_loaded
   end
@@ -29,11 +31,11 @@ describe RedstoneBot::Inventory do
   
   context "after being loaded" do
     before do
-      slots_data = [nil]*45
-      slots_data[10] = {item_id: RedstoneBot::ItemType::IronShovel.id, count: 1, damage: 2}
-      slots_data[36] = {item_id: RedstoneBot::ItemType::WheatItem.id, count: 31, damage: 0}
-      slots_data[37] = {item_id: RedstoneBot::ItemType::Bread.id, count: 46, damage: 10}
-      @client << RedstoneBot::Packet::SetWindowItems.create(0, slots_data)
+      slots = [nil]*45
+      slots[10] = RedstoneBot::Slot.new(RedstoneBot::ItemType::IronShovel, 1, 2, "fake enchant data")
+      slots[36] = RedstoneBot::Slot.new(RedstoneBot::ItemType::WheatItem, 31)
+      slots[37] = RedstoneBot::Slot.new(RedstoneBot::ItemType::Bread, 44)
+      @client << RedstoneBot::Packet::SetWindowItems.create(0, slots)
     end
 
     it "is loaded" do

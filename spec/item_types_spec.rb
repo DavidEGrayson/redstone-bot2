@@ -36,7 +36,7 @@ describe RedstoneBot::ItemType do
     RedstoneBot::ItemType::IronShovel.should === s
     RedstoneBot::ItemType::IronShovel.should === RedstoneBot::ItemType::IronShovel
     RedstoneBot::ItemType::IronShovel.should === RedstoneBot::Item.new(44, RedstoneBot::ItemType::IronShovel, 1, nil)
-    RedstoneBot::ItemType::WheatItem.should === RedstoneBot::InventoryItem.new(RedstoneBot::ItemType::WheatItem, 2, 0)
+    RedstoneBot::ItemType::WheatItem.should === RedstoneBot::Slot.new(RedstoneBot::ItemType::WheatItem)
   end
   
   it "tells you if it is a block or not" do

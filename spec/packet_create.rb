@@ -48,19 +48,9 @@ module RedstoneBot
     receive_data test_stream binary_data
   end
   
-  def (Packet::SetWindowItems).create(window_id, slots_data)
-    binary_data = [window_id, slots_data.size].pack("CS>")
-    slots_data.collect do |slot|
-      if slot
-        binary_data += [slot[:item_id], slot[:count], slot[:damage]].pack("s>CS>")
-        if DataReader::ENCHANTABLE.include?(slot[:item_id])
-          enchant_data = slot[:enchant_data].to_s
-          binary_data += [enchant_data.size].pack("S>") + enchant_data
-        end
-      else
-        binary_data += [-1].pack("s>")
-      end
-    end
+  def (Packet::SetWindowItems).create(window_id, slots)
+    binary_data = [window_id, slots.size].pack("CS>")
+    binary_data += slots.collect { |slot| Slot.encode_data(slot) }.join
     receive_data test_stream binary_data
   end
 end
