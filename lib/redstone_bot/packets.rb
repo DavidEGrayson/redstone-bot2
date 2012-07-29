@@ -527,6 +527,7 @@ module RedstoneBot
     attr_reader :x, :y, :z
     attr_reader :yaw, :pitch, :head_yaw
     attr_reader :metadata
+    attr_reader :vx, :vy, :vz
     
     def coords
       Coords[@x, @y, @z]
@@ -541,6 +542,9 @@ module RedstoneBot
       @yaw = socket.read_signed_byte
       @pitch = socket.read_signed_byte
       @head_yaw = socket.read_signed_byte
+      @vz = socket.read_short   # TODO: is the velocity REALLY in Z,X,Y order?
+      @vx = socket.read_short
+      @vy = socket.read_short
       @metadata = socket.read_metadata
     end
   end
@@ -865,6 +869,9 @@ module RedstoneBot
       end
     end
     
+    def inspect
+      "MapChunkBulk<@metadata=#{@metadata.inspect} @data.size=#{@data.size}>"
+    end
   end
   
   class Packet::Explosion < Packet
