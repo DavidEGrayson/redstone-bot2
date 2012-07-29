@@ -23,13 +23,17 @@ metadata = metadata.ljust(16*128, "\x00")   # the rest of the metadata is 0
 light = "\x01"*2048
 # Sky light: 2048 per section
 sky_light = "\x02"*2048
-data = bt + metadata + light + sky_light
-testdata1 = RedstoneBot::Packet::ChunkData.create([32,16], false, 1, 0, data)
+# Biome: plains
+biome_data = "\x01"*256
+data1 = bt + metadata + light + sky_light + biome_data
+testdata1 = RedstoneBot::Packet::ChunkData.create([32,16], false, 1, 0, data1)
+bulkdata1 = (bt*16 + metadata*16 + light*16 + sky_light*16 + biome_data)*2
+map_chunk_bulk1 = RedstoneBot::Packet::MapChunkBulk.create([[[48,16], 0xFFFF, 0], [[64, 16], 0xFFFF, 0]], bulkdata1)
 
 describe RedstoneBot::Chunk do
   before do
     @chunk = RedstoneBot::Chunk.new([32,16])    
-    @chunk.apply_change testdata1
+    @chunk.apply_packet testdata1
   end
   
   it "should report farmland at y = 0" do
@@ -108,7 +112,7 @@ describe RedstoneBot::ChunkTracker do
   end
   
   it "handles ground-up-continuous updates" do
-    testdata2 = RedstoneBot::Packet::ChunkData.create(testdata1.chunk_id, true, testdata1.primary_bit_map, testdata1.add_bit_map, data)
+    testdata2 = RedstoneBot::Packet::ChunkData.create(testdata1.chunk_id, true, testdata1.primary_bit_map, testdata1.add_bit_map, data1)
     @client << testdata2
     (16..255).step(30).each do |y|
       @chunk_tracker.block_type([42, y, 20]).should == RedstoneBot::ItemType::Air
@@ -153,6 +157,22 @@ describe RedstoneBot::ChunkTracker do
     it "reports chunk changes" do
       @receiver.should_receive(:info).with([32,16], testdata1)
       @client << testdata1
+    end
+  end
+  
+  context "after receiving a MapChunkBulk packet" do
+    before do
+      bulkdata1.size.should == 2*(10240*16 + 256)
+      @client << map_chunk_bulk1
+    end
+    
+    it "should have all three chunks loaded" do
+      @chunk_tracker.loaded_chunks.collect(&:id).sort.should == [[32, 16], [48, 16], [64, 16]]
+    end
+    
+    it "should have the new data" do
+      @chunk_tracker.block_type([50,1,20]).should == RedstoneBot::ItemType::WheatBlock
+      @chunk_tracker.block_type([70,1,20]).should == RedstoneBot::ItemType::WheatBlock
     end
   end
 end 

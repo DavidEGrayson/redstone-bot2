@@ -14,6 +14,7 @@ module RedstoneBot
 
     DefaultBlockTypeIdData = ("\xFF"*(16*16*16)).freeze
     DefaultMetadata = DefaultLightData = DefaultSkyLightData = ("\x00"*(8*16*16)).freeze
+    DefaultBiome = "\x00"*(16*16)
     
     AirBlockTypeIdData = ("\x00"*(16*16*16)).freeze
     AirMetadata = DefaultMetadata
@@ -37,6 +38,7 @@ module RedstoneBot
       @metadata = 16.times.collect { DefaultMetadata.dup }
       @light = 16.times.collect { DefaultLightData.dup }
       @sky_light = 16.times.collect { DefaultSkyLightData.dup }
+      @biome = DefaultBiome.dup
     end
 
     def x
@@ -51,10 +53,10 @@ module RedstoneBot
       @unloaded = true
     end
 
-    def apply_change(p)
+    def apply_packet(p)
       case p
       when Packet::ChunkData
-        apply_broad_change p
+        apply_broad_change p.ground_up_continuous, p.primary_bit_map, p.add_bit_map, StringIO.new(p.data)
       when Packet::BlockChange
         apply_block_change p
       when Packet::MultiBlockChange
@@ -62,20 +64,20 @@ module RedstoneBot
       end
     end  
       
-    def apply_broad_change(p)
-      data = StringIO.new(p.data)
+    def apply_broad_change(ground_up_continuous, primary_bit_map, add_bit_map, stream)
+      raise "sorry, dunno about add_bit_map yet" if add_bit_map != 0
 
-      included_sections = (0..15).select { |i| (p.primary_bit_map >> i & 1) == 1 }
+      included_sections = (0..15).select { |i| (primary_bit_map >> i & 1) == 1 }
       
       # WARNING: If not enough data is provided in the packet then the code below
       # could set some data sections to be short strings or nil.  We could pretty easily
       # check for that, but it's probably not worht the CPU time.
-      included_sections.each { |i| @block_type[i] = data.read(16*16*16) }
-      included_sections.each { |i| @metadata[i] = data.read(8*16*16) }
-      included_sections.each { |i| @light[i] = data.read(8*16*16) }
-      included_sections.each { |i| @sky_light[i] = data.read(8*16*16) }
+      included_sections.each { |i| @block_type[i] = stream.read(16*16*16) or raise }
+      included_sections.each { |i| @metadata[i] = stream.read(8*16*16) or raise }
+      included_sections.each { |i| @light[i] = stream.read(8*16*16) or raise }
+      included_sections.each { |i| @sky_light[i] = stream.read(8*16*16) or raise }
       
-      if p.ground_up_continuous
+      if ground_up_continuous
         other_sections = (0..15).to_a - included_sections
         other_sections.each do |i|
           @block_type[i] = AirBlockTypeIdData.dup
@@ -84,6 +86,8 @@ module RedstoneBot
           @sky_light[i] = AirSkyLightData.dup
         end
       end
+      
+      @biome = stream.read(16*16)
     end
     
     def apply_block_change(p)
@@ -184,11 +188,14 @@ module RedstoneBot
           if p.deallocation?
             unload_chunk p.chunk_id
           else
-            get_or_create_chunk(p.chunk_id).apply_change p
+            get_or_create_chunk(p.chunk_id).apply_packet p
           end
           notify_change_listeners p.chunk_id, p
         elsif p.is_a?(Packet::MapChunkBulk)
-          
+          stream = StringIO.new(p.data)
+          p.metadata.each do |chunk_id, primary_bit_map, add_bit_map|
+            get_or_create_chunk(chunk_id).apply_broad_change(true, primary_bit_map, add_bit_map, stream)
+          end
         end
       end
     end
