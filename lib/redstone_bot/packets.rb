@@ -1125,6 +1125,28 @@ module RedstoneBot
     end    
   end
   
+  class Packet::ClientSettings < Packet  # AKA Locale and View Distance
+    packet_type 0xCC
+    
+    attr_reader :locale, :view_distance, :chat_mode, :colors_enabled, :difficulty
+    
+    def initialize(locale, view_distance, chat_mode, colors_enabled, difficulty)
+      @locale = locale
+      @view_distance = view_distance
+      @chat_mode = chat_mode
+      @colors_enabled = colors_enabled
+      @difficulty = difficulty
+    end
+    
+    def encode_data
+      string(locale) +
+        byte([:far, :normal, :short, :tiny].index view_distance) +
+        byte([:enabled, :commands_only, :hidden].index(chat_mode) | (colors_enabled ? 8 : 0)) +
+        byte(difficulty)
+    end
+
+  end
+  
   class Packet::ClientStatuses < Packet
     packet_type 0xCD
     
