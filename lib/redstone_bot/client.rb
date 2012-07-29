@@ -10,7 +10,6 @@ require "net/http"
 require "openssl"
 require "uri"
 
-# TODO: fix respawning!
 # TODO: fix logging in to online servers
 
 Thread.abort_on_exception = true

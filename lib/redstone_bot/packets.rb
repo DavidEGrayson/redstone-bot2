@@ -751,8 +751,6 @@ module RedstoneBot
     attr_reader :primary_bit_map, :add_bit_map
     attr_reader :data
     
-    DeallocationData = ("\x01"*256).freeze
-    
     def chunk_id
       [@x, @z]
     end
@@ -815,10 +813,6 @@ module RedstoneBot
       end
     end
     
-    # This packet does NOT deallocate/unload a chunk.
-    def deallocation?
-      false
-    end
   end
   
   class Packet::BlockChange < Packet
@@ -840,10 +834,6 @@ module RedstoneBot
       @block_metadata = socket.read_byte
     end
     
-    # This packet does NOT deallocate/unload a chunk.
-    def deallocation?
-      false
-    end
   end
   
   class Packet::BlockAction < Packet
