@@ -178,15 +178,18 @@ module RedstoneBot
       @chunks = {}
 
       client.listen do |p|
-        next unless p.respond_to?(:chunk_id)
-      
         # puts Time.now.strftime("%M:%S.%L") + " " + p.inspect
-        if p.deallocation?
-          unload_chunk p.chunk_id
-        else
-          get_or_create_chunk(p.chunk_id).apply_change p
+
+        if p.respond_to?(:chunk_id)
+          if p.deallocation?
+            unload_chunk p.chunk_id
+          else
+            get_or_create_chunk(p.chunk_id).apply_change p
+          end
+          notify_change_listeners p.chunk_id, p
+        elsif p.is_a?(Packet::MapChunkBulk)
+          
         end
-        notify_change_listeners p.chunk_id, p
       end
     end
     

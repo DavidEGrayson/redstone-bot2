@@ -34,6 +34,15 @@ module RedstoneBot
     receive_data test_stream [chunk_id[0]/16,chunk_id[1]/16,1,0,0,12,0].pack("l>l>CS>S>l>l>") + "\x78\x9C\x63\x64\x1C\xD9\x00\x00\x81\x80\x01\x01"
   end
   
+  def (RedstoneBot::Packet::MapChunkBulk).create(metadata, data)
+    binary_metadata = metadata.collect do |chunk_id, primary_bit_map, add_bit_map|
+      [chunk_id[0]/16, chunk_id[1]/16, primary_bit_map, add_bit_map].pack("l>l>S>S>")
+    end.join
+    compressed_data = Zlib::Deflate.deflate(data)
+    
+    receive_data test_stream [metadata.size, compressed_data.size].pack("S>L>") + compressed_data + binary_metadata
+  end
+  
   def (Packet::SpawnDroppedItem).create(eid, item, count, metadata, coords, yaw, pitch, roll)
     binary_data = [eid, item, count, metadata,
      (coords[0]*32).round, (coords[1]*32).round, (coords[2]*32).round,

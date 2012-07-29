@@ -63,6 +63,16 @@ describe RedstoneBot::Packet::ChunkData do
   end
 end
 
+describe RedstoneBot::Packet::MapChunkBulk do
+  it "correctly parses binary data" do
+    metadata = [[[16,256], 0xAAAA, 0], [[16,256], 0xAAAA, 0]]
+    data = "whatevers"
+    p = described_class.create metadata, data
+    p.metadata.should == metadata
+    p.data.should == data
+  end
+end
+
 describe RedstoneBot::Packet::SpawnDroppedItem do
   it "correctly parses binary data" do
      eid = 44

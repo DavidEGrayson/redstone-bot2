@@ -847,6 +847,26 @@ module RedstoneBot
     end
   end
   
+  class Packet::MapChunkBulk < Packet
+    packet_type 0x38
+    
+    attr_reader :data, :metadata
+    
+    def receive_data(stream)
+      chunk_column_count = stream.read_unsigned_short
+      data_size = stream.read_unsigned_int
+      @data = Zlib::Inflate.inflate stream.read(data_size)
+      @metadata = chunk_column_count.times.collect do
+        chunk_id = [stream.read_int*16, stream.read_int*16]
+        primary_bit_map = stream.read_unsigned_short
+        add_bit_map = stream.read_unsigned_short
+        raise "Unexpected: MapChunkBulk has a non-zero add_bit_map. what does this mean?" if add_bit_map != 0
+        [chunk_id, primary_bit_map, add_bit_map]
+      end
+    end
+    
+  end
+  
   class Packet::Explosion < Packet
     packet_type 0x3C
     attr_reader :x, :y, :z
