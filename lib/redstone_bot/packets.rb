@@ -10,7 +10,7 @@ require "zlib"
 
 class String
   def inspect_hex
-     '"' + bytes.collect { |b| '\x%02X' % [b]}.join + '"'
+     '"' + bytes.collect { |b| '\x%02X' % [b] }.join + '"'
   end
 end
 
@@ -253,7 +253,7 @@ module RedstoneBot
     
     def receive_data(socket)
       @eid = socket.read_int
-      @slot = socket.read_short
+      @slot_id = socket.read_short
       @slot = Slot.receive_data(socket)
     end
   end
