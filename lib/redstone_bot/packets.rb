@@ -823,7 +823,7 @@ module RedstoneBot
       @x = socket.read_int
       @y = socket.read_byte
       @z = socket.read_int
-      @block_type = socket.read_byte
+      @block_type = socket.read_unsigned_short
       @block_metadata = socket.read_byte
     end
     
@@ -1023,16 +1023,14 @@ module RedstoneBot
   class Packet::UpdateTileEntity < Packet
     packet_type 0x84
     attr_reader :x, :y, :z
-    attr_reader :action, :custom1, :custom2, :custom3
+    attr_reader :action, :nbt_data
     
     def receive_data(socket)
       @x = socket.read_int
       @y = socket.read_short
       @z = socket.read_int
       @action = socket.read_byte
-      @custom1 = socket.read_int
-      @custom2 = socket.read_int
-      @custom3 = socket.read_int
+      @nbt_data = socket.read_byte_array
     end
   end
   

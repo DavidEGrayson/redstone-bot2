@@ -13,7 +13,12 @@ module RedstoneBot
     end
 
     def read_byte_array
-      read(read_unsigned_short)
+      len = read_short      
+      if len < 0
+        nil
+      else
+        read(len)
+      end
     end
     
     def read_short
