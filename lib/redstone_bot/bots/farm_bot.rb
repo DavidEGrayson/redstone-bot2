@@ -1,6 +1,8 @@
 require_relative 'david_bot'
 require 'redstone_bot/simple_cache'
 
+# TODO: see if we can run an IRB thing in the console instead of using ChatEvaluator
+
 module RedstoneBot
   class Bots::FarmBot < Bots::DavidBot
   
@@ -59,7 +61,7 @@ module RedstoneBot
     end
     
     def wheat_count
-      farm_chunks.inject(0) { |sum, chunk_id| sum + @wheat_count[chunk_id] }
+      farm_chunks.inject(0) { |sum, chunk_id| sum + (@wheat_count[chunk_id] || 0) }
     end
     
     def count_unloaded

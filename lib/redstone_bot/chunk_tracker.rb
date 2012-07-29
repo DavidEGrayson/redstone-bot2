@@ -185,16 +185,27 @@ module RedstoneBot
         # puts Time.now.strftime("%M:%S.%L") + " " + p.inspect
 
         if p.respond_to?(:chunk_id)
+          # Apply change
           if p.deallocation?
             unload_chunk p.chunk_id
           else
             get_or_create_chunk(p.chunk_id).apply_packet p
           end
+          
+          # Notify listeners
           notify_change_listeners p.chunk_id, p
+          
         elsif p.is_a?(Packet::MapChunkBulk)
+
+          # Apply all changes
           stream = StringIO.new(p.data)
           p.metadata.each do |chunk_id, primary_bit_map, add_bit_map|
             get_or_create_chunk(chunk_id).apply_broad_change(true, primary_bit_map, add_bit_map, stream)
+          end
+          
+          # Notify the listeners for each chunk that changed
+          p.metadata.each do |chunk_id, _1, _2|
+            notify_change_listeners chunk_id, p
           end
         end
       end

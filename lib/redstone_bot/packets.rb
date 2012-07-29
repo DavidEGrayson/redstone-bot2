@@ -772,15 +772,17 @@ module RedstoneBot
     def inspect
       tmp = @data
       begin
-        @data = "#{tmp.size}..." if tmp
+        @data = nil
+        @data_summary = ("#{tmp.size},#{tmp[0,256]}" if tmp)
         return super
       ensure
         @data = tmp
+        @data_summary = nil
       end
     end
 
     def deallocation?
-      ground_up_continuous && primary_bit_map == 0 && add_bit_map == 0 && data == DeallocationData
+      ground_up_continuous && primary_bit_map == 0 && add_bit_map == 0
     end
   end
   
