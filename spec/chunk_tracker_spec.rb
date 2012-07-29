@@ -137,6 +137,11 @@ describe RedstoneBot::ChunkTracker do
     @chunk_tracker.loaded_chunks.collect(&:id).should == [testdata1.chunk_id]
   end
   
+  it "handles deallocation" do
+    @client << RedstoneBot::Packet::ChunkData.create_deallocation([32,16])
+    @chunk_tracker.chunks[[32,16]].should == nil
+  end
+  
   context "when reporting chunk changes" do
     before do
       @receiver = double("receiver")

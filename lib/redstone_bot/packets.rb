@@ -797,6 +797,11 @@ module RedstoneBot
         yield [x, y, z], block_type_id, metadata
       end
     end
+    
+    # This packet does NOT deallocate/unload a chunk.
+    def deallocation?
+      false
+    end
   end
   
   class Packet::BlockChange < Packet
@@ -816,6 +821,11 @@ module RedstoneBot
       @z = socket.read_int
       @block_type = socket.read_byte
       @block_metadata = socket.read_byte
+    end
+    
+    # This packet does NOT deallocate/unload a chunk.
+    def deallocation?
+      false
     end
   end
   
