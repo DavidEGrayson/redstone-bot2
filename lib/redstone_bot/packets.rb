@@ -734,7 +734,9 @@ module RedstoneBot
     packet_type 0x33
     attr_reader :ground_up_continuous
     attr_reader :primary_bit_map, :add_bit_map
-    attr_reader :compressed_data
+    attr_reader :data
+    
+    DeallocationData = ("\x01"*256).freeze
     
     def chunk_id
       [@x, @z]
@@ -748,20 +750,23 @@ module RedstoneBot
       @add_bit_map = socket.read_unsigned_short
       compressed_size = socket.read_int
       socket.read_int
-      @compressed_data = socket.read(compressed_size)
+      @data = Zlib::Inflate.inflate socket.read(compressed_size)
     end
     
     # Avoid showing all the data when we inspect this packet.
     def inspect
-      tmp = @compressed_data
+      tmp = @data
       begin
-        @compressed_data = "#{tmp.size}..."
+        @data = "#{tmp.size}..."
         return super
       ensure
-        @compressed_data = tmp
+        @data = tmp
       end
     end
 
+    def deallocation?
+      ground_up_continuous && primary_bit_map == 0 && add_bit_map == 0 && data == DeallocationData
+    end
   end
   
   class Packet::MultiBlockChange < Packet

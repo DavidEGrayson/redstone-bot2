@@ -2,8 +2,6 @@
 # Chunk = 16x256x16
 # Section = 16x16x16 
 
-
-require 'zlib'
 require 'stringio'
 require_relative 'item_types'
 require_relative 'uninspectable'
@@ -65,11 +63,13 @@ module RedstoneBot
     end  
       
     def apply_broad_change(p)
-      data_string = Zlib::Inflate.inflate(p.compressed_data)      
-      data = StringIO.new(data_string)
+      data = StringIO.new(p.data)
 
       included_sections = (0..15).select { |i| (p.primary_bit_map >> i & 1) == 1 }
       
+      # WARNING: If not enough data is provided in the packet then the code below
+      # could set some data sections to be short strings or nil.  We could pretty easily
+      # check for that, but it's probably not worht the CPU time.
       included_sections.each { |i| @block_type[i] = data.read(16*16*16) }
       included_sections.each { |i| @metadata[i] = data.read(8*16*16) }
       included_sections.each { |i| @light[i] = data.read(8*16*16) }

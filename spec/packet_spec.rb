@@ -1,6 +1,6 @@
-require_relative 'spec_helper'
-require 'zlib'
-require 'redstone_bot/coords'
+require_relative "spec_helper"
+require_relative "packet_create"
+require "redstone_bot/coords"
 
 describe RedstoneBot::Packet::BlockChange do
   it "correctly parses binary data" do
@@ -40,15 +40,26 @@ describe RedstoneBot::Packet::ChunkData do
     p.ground_up_continuous.should == true
     p.primary_bit_map.should == 0xFFFF
     p.add_bit_map.should == 5
-    Zlib::Inflate.inflate(p.compressed_data).should == data
+    p.data.should == data
     p.chunk_id.should == chunk_id
-
+    p.should_not be_deallocation
+    
     q = RedstoneBot::Packet::ChunkData.create(chunk_id, true, 6, 0xAAAA, data)
     q.ground_up_continuous.should == true
     q.primary_bit_map.should == 6
     q.add_bit_map.should == 0xAAAA
-    Zlib::Inflate.inflate(q.compressed_data).should == data
+    q.data.should == data
     q.chunk_id.should == chunk_id
+  end
+  
+  it "sometimes indicates deallocation" do
+    p = described_class.receive_data test_stream [2,1,1,0,0,12,0].pack("l>l>CS>S>l>l>") + "\x78\x9C\x63\x64\x1C\xD9\x00\x00\x81\x80\x01\x01"
+    p.chunk_id.should == [32, 16]
+    p.ground_up_continuous.should == true
+    p.primary_bit_map.should == 0
+    p.add_bit_map.should == 0
+    p.data.should == "\x01"*256
+    p.should be_deallocation
   end
 end
 
