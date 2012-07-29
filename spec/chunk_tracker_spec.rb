@@ -175,4 +175,10 @@ describe RedstoneBot::ChunkTracker do
       @chunk_tracker.block_type([70,1,20]).should == RedstoneBot::ItemType::WheatBlock
     end
   end
+  
+  context "when teleported to a new dimension with Packet::Respawn" do
+    # TODO: it "unloads old chunks" do
+    # @chunk_tracker.loaded_chunks.should be_empty
+    #end
+  end
 end 

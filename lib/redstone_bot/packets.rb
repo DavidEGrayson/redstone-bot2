@@ -290,14 +290,6 @@ module RedstoneBot
     attr_reader :world_height
     attr_reader :level_type
     
-    def initialize(dimension=0, difficulty=1, game_mode=0, world_height=256, level_type='DEFAULT')
-      @dimension = dimension
-      @difficulty = difficulty
-      @game_mode = game_mode
-      @world_height = world_height
-      @level_type = level_type
-    end
-    
     def receive_data(socket)
       @dimension = socket.read_int
       @difficulty = socket.read_byte
@@ -306,9 +298,6 @@ module RedstoneBot
       @level_type = socket.read_string
     end
     
-    def encode_data
-      int(dimension) + byte(difficulty) + byte(game_mode) + short(world_height) + string(level_type)
-    end
   end
   
   class Packet::Player < Packet
@@ -382,7 +371,24 @@ module RedstoneBot
       p.send :initialize, 0, intcoords, face
       p
     end
+  end
+  
+  class Packet::PlayerBlockPlacement < Packet
+    packet_type 0x0F
     
+    attr_reader :coords, :direction, :held_item, :cursor_x, :cursor_y, :cursor_z
+    
+    def initialize(coords, direction, held_item, cursor_x=8, cursor_y=8, cursor_z=8)
+      @coords = coords
+      @direction = direction
+      @held_item = held_item
+      @cursor_x, @cursor_y, @cursor_z = cursor_x, cursor_y, cursor_z
+    end
+    
+    def encode_data
+      int(coords[0]) + unsigned_byte(coords[1]) + int(coords[2]) + byte(direction) +
+        Slot.encode_data(held_item) + byte(cursor_x) + byte(cursor_y) + byte(cursor_z)
+    end
   end
   
   class Packet::HeldItemChange < Packet
@@ -438,6 +444,7 @@ module RedstoneBot
     attr_reader :x, :y, :z
     attr_reader :yaw, :pitch
     attr_reader :current_item
+    attr_reader :metadata
     
     def coords
       Coords[@x, @y, @z]
@@ -452,6 +459,7 @@ module RedstoneBot
       @yaw = socket.read_signed_byte
       @pitch = socket.read_signed_byte
       @current_item = socket.read_short
+      @metadata = socket.read_metadata
     end
   end
   
@@ -498,8 +506,8 @@ module RedstoneBot
     attr_reader :eid
     attr_reader :type
     attr_reader :x, :y, :z
-    attr_reader :fireball_thrower_eid
-    attr_reader :fireball_speed_x, :fireball_speed_y, :fireball_speed_z
+    attr_reader :thrower_eid
+    attr_reader :speed_x, :speed_y, :speed_z
   
     def coords
       Coords[@x, @y, @z]
@@ -511,11 +519,11 @@ module RedstoneBot
       @x = socket.read_int/32.0
       @y = socket.read_int/32.0
       @z = socket.read_int/32.0
-      @fireball_thrower_eid = socket.read_int
-      if @fireball_thrower_eid != 0
-        @fireball_speed_x = socket.read_short
-        @fireball_speed_y = socket.read_short
-        @fireball_speed_z = socket.read_short
+      @thrower_eid = socket.read_int
+      if @thrower_eid != 0
+        @speed_x = socket.read_short
+        @speed_y = socket.read_short
+        @speed_z = socket.read_short
       end
     end
   end
@@ -526,8 +534,8 @@ module RedstoneBot
     attr_reader :type
     attr_reader :x, :y, :z
     attr_reader :yaw, :pitch, :head_yaw
-    attr_reader :metadata
     attr_reader :vx, :vy, :vz
+    attr_reader :metadata
     
     def coords
       Coords[@x, @y, @z]
@@ -837,7 +845,7 @@ module RedstoneBot
   class Packet::BlockAction < Packet
     packet_type 0x36
     attr_reader :x, :y, :z
-    #attr_reader :byte_1, :byte_2
+    attr_reader :data_bytes, :block_id
     
     def chunk_id
       [@x/16*16, @z/16*16]
@@ -847,8 +855,19 @@ module RedstoneBot
       @x = socket.read_int
       @y = socket.read_short
       @z = socket.read_int
-      @byte_1 = socket.read_byte
-      @byte_2 = socket.read_byte
+      @data_bytes = [socket.read_byte, socket.read_byte]
+      @block_id = socket.read_byte
+    end
+  end
+  
+  class Packet::BlockBreakAnimation < Packet
+    packet_type 0x37
+    attr_reader :eid, :coords
+    
+    def recieve_data(stream)
+      @eid = stream.read_int   # TODO: is this really an EID?
+      @coords = Coords[stream.read_int, stream.read_int, stream.read_int]
+      stream.read_byte    # TODO: what is this byte?
     end
   end
   
@@ -889,6 +908,9 @@ module RedstoneBot
       @records = @record_count.times.collect do
         [socket.read_signed_byte, socket.read_signed_byte, socket.read_signed_byte]
       end
+      socket.read_float  #unknown
+      socket.read_float  #unknown
+      socket.read_float  #unknown
     end
   end
   
@@ -902,6 +924,19 @@ module RedstoneBot
       @y = socket.read_byte
       @z = socket.read_int
       @data = socket.read_int
+    end
+  end
+  
+  class Packet::NamedSoundEffect < Packet
+    packet_type 0x3E
+    
+    attr_reader :name, :coords, :volume, :pitch
+    
+    def receive_data(socket)
+      @name = socket.read_string
+      @coords = Coords[socket.read_int/8.0, socket.read_int/8.0, socket.read_int/8.0]
+      @volume = socket.read_float
+      @pitch = socket.read_byte
     end
   end
   
