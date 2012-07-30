@@ -41,7 +41,13 @@ module RedstoneBot
       while true
         target = yield
         break if target.nil?
-        path_to target, opts
+        case path_to target, opts
+        when :solid
+          body.wait_for_next_position_update        
+        when :no_path
+          chat "cant get to U"
+          body.delay 10
+        end
       end
       chat "lost U"
     end
@@ -49,14 +55,19 @@ module RedstoneBot
     def path_to(target, opts={})
       target = target.to_coords
       
+      return :solid if @chunk_tracker.block_type(target).solid?
+      
       @pathfinder.start = @body.position.collect(&:floor)
       @pathfinder.goal = target.collect(&:floor)
       path = @pathfinder.find_path
+      return :no_path unless path
       
       path.each do |waypoint|
         center = Coords[*waypoint] + Coords[0.5,0,0.5]
         move_to center, opts
       end
+      
+      return nil
     end
     
     def move_to(target, opts={})

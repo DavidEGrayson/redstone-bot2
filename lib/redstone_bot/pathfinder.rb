@@ -49,5 +49,9 @@ module RedstoneBot
         
       end
     end    
+    
+    def timeout
+      1
+    end
   end
 end

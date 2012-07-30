@@ -899,7 +899,7 @@ module RedstoneBot
       @z = socket.read_double
       @radius_maybe = socket.read_float
       count = socket.read_int
-      @records = @record_count.times.collect do
+      @records = count.times.collect do
         [socket.read_signed_byte, socket.read_signed_byte, socket.read_signed_byte]
       end
       socket.read_float  #unknown

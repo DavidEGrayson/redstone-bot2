@@ -62,6 +62,14 @@ module RedstoneBot
         next unless p.is_a?(Packet::ChatMessage) && p.player_chat?
         
         case p.chat
+        when /ground report/
+          coords = @body.position.dup
+          coords.y = find_nearby_ground-1
+          columns = [[coords.x+0.3,coords.y,coords.z+0.3],
+                     [coords.x-0.3,coords.y,coords.z+0.3],
+                     [coords.x+0.3,coords.y,coords.z-0.3],                     
+                     [coords.x-0.3,coords.y,coords.z-0.3]]
+          chat "The grnd is #{columns.collect { |col| @chunk_tracker.block_type(col)}}"
         when /how much (.+)/
           # TODO: perhaps cache these results using a SimpleCache
           name = $1
