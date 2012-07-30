@@ -46,8 +46,6 @@ module RedstoneBot
         end
       end
       
-      @pathfinder = Pathfinder.new(@chunk_tracker)
-      
       @client.listen do |p|
         case p
         when Packet::ChatMessage

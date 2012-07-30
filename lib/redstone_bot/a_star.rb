@@ -1,7 +1,7 @@
 require 'set'
 
 module AStar
-  def run_a_star
+  def run_a_star   
     closed_set = Set[]
     open_set = Set[start]
     
@@ -28,7 +28,7 @@ module AStar
       neighbors(current).each do |neighbor|
         next if closed_set.include?(neighbor)
         
-        tentative_g_score = g_score[current] + distance(current, neighbor)
+        tentative_g_score = g_score[current] + cost(current, neighbor)
         
         old_g_score = g_score[neighbor]
         

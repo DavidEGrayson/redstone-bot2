@@ -11,7 +11,11 @@ module RedstoneBot
   module BodyMovers
     
     def start_path_to(*args)
-      body.start { path_to *args }
+      body.start do
+        if error = path_to(*args)
+          chat "cant get to U #{error}"
+        end
+      end  
     end
     
     def start_follow(*args, &block)
@@ -38,15 +42,23 @@ module RedstoneBot
     end
     
     def follow(opts={}, &block)
+      opts = opts.dup
+      opts[:pathfinder] ||= Pathfinder.new(chunk_tracker, 1.1)
       while true
         target = yield
         break if target.nil?
-        case path_to target, opts
-        when :solid
-          body.wait_for_next_position_update        
-        when :no_path
-          chat "cant get to U"
-          body.delay 10
+        if (body.position - target).abs <= 1
+          #TODO maybe fall_update here instead
+          body.wait_for_next_position_update 
+        else
+          case path_to target, opts
+          when :solid, nil
+            #TODO maybe fall_update here instead
+            body.wait_for_next_position_update        
+          when :no_path
+            chat "cant get to U"
+            body.delay 10
+          end
         end
       end
       chat "lost U"
@@ -54,12 +66,13 @@ module RedstoneBot
     
     def path_to(target, opts={})
       target = target.to_coords
+      pathfinder = opts[:pathfinder] || Pathfinder.new(chunk_tracker)
       
-      return :solid if @chunk_tracker.block_type(target).solid?
+      return :solid if chunk_tracker.block_type(target).solid?
       
-      @pathfinder.start = @body.position.collect(&:floor)
-      @pathfinder.goal = target.collect(&:floor)
-      path = @pathfinder.find_path
+      pathfinder.start = body.position.collect(&:floor)
+      pathfinder.goal = target.collect(&:floor)
+      path = pathfinder.find_path
       return :no_path unless path
       
       path.each do |waypoint|
@@ -72,7 +85,6 @@ module RedstoneBot
     
     def move_to(target, opts={})
       target = target.to_coords
-      puts "move to: #{target}"
     
       tolerance = opts[:tolerance] || 0.2
       speed = opts[:speed] || 10

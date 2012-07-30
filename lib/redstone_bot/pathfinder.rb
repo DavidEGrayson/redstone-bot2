@@ -7,14 +7,17 @@ module RedstoneBot
   
     attr_reader :chunk_tracker
     
+    attr_accessor :tolerance
+        
     # triplets of integers representing [x,y,z] coords
     attr_accessor :start, :goal
     
     # [xmin..xmax, ymin..ymax, zmin..zmax]
     attr_accessor :bounds
   
-    def initialize(chunk_tracker)
+    def initialize(chunk_tracker, tolerance = 0.1)
       @chunk_tracker = chunk_tracker
+      @tolerance = tolerance
     end
     
     def find_path
@@ -22,12 +25,14 @@ module RedstoneBot
     end
     
     def is_goal?(coords)
-      coords == goal
+      distance(coords, goal) <= tolerance and on_ground?(coords)
     end
     
     def cost(from_coords, to_coords)
       # TODO: add a little something here to discourage flying and jumping and going through 1-tall holes
-      distance from_coords, to_coords      
+      cost = distance(from_coords, to_coords)
+      cost += 10 if !on_ground?(from_coords) && !on_ground?(to_coords)
+      cost
     end
     
     def heuristic_cost_estimate(from_coords)
@@ -51,7 +56,12 @@ module RedstoneBot
     end    
     
     def timeout
-      1
+      2
+    end
+    
+    def on_ground?(coords)
+      below = [coords[0],coords[1]-1,coords[2]]
+      @chunk_tracker.block_type(below).solid?
     end
   end
 end
