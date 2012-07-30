@@ -56,11 +56,22 @@ module RedstoneBot
         z = $2.to_f
         chat "coming to #{x}, #{z}!"
         start_miracle_jump x, z
+      when "follow me"
+        player = @entity_tracker.player(p.username)
+        if player
+          chat "coming!"
+          start_follow(speed: 20) do 
+            leader = @entity_tracker.player(p.username)
+            leader and leader.position
+          end
+        else
+          chat "dunno where U r"
+        end        
       when "h"
         player = @entity_tracker.player(p.username)
         if player
           chat "coming!"
-          start_move_to player.position + Coords::Y*0.2
+          start_path_to player.position
         else
           chat "dunno where U r"
         end
@@ -69,7 +80,7 @@ module RedstoneBot
     
     protected
     
-    def_delegators :@body_mover, :start_move_to, :start_jump, :start_miracle_jump, :position, :stop
+    def_delegators :@body_mover, :start_move_to, :start_jump, :start_miracle_jump, :position, :stop, :start_path_to, :start_follow
     def_delegators :@chatter, :chat
   end
 end

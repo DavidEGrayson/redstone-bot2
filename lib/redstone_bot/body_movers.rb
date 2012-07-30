@@ -10,6 +10,14 @@
 module RedstoneBot
   module BodyMovers
     
+    def start_path_to(*args)
+      body.start { path_to *args }
+    end
+    
+    def start_follow(*args, &block)
+      body.start { follow *args, &block }
+    end
+      
     def start_move_to(*args)
       body.start { move_to *args }
     end
@@ -29,8 +37,31 @@ module RedstoneBot
       fall opts
     end
     
+    def follow(opts={}, &block)
+      while true
+        target = yield
+        break if target.nil?
+        path_to target, opts
+      end
+      chat "lost U"
+    end
+    
+    def path_to(target, opts={})
+      target = target.to_coords
+      
+      @pathfinder.start = @body.position.collect(&:floor)
+      @pathfinder.goal = target.collect(&:floor)
+      path = @pathfinder.find_path
+      
+      path.each do |waypoint|
+        center = Coords[*waypoint] + Coords[0.5,0,0.5]
+        move_to center, opts
+      end
+    end
+    
     def move_to(target, opts={})
       target = target.to_coords
+      puts "move to: #{target}"
     
       tolerance = opts[:tolerance] || 0.2
       speed = opts[:speed] || 10
