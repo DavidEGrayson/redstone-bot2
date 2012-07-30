@@ -7,9 +7,9 @@
 6	Saplings	solid
 7	Bedrock	solid
 8	Water	fluid
-9	StationaryWater	solid
-10	Lava	solid
-11	StationaryLava	solid
+9	StationaryWater	fluid
+10	Lava	fluid
+11	StationaryLava	fluid
 12	Sand	solid
 13	Gravel	solid
 14	GoldOre	solid

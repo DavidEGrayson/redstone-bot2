@@ -11,7 +11,8 @@ module AStar
     f_score = {}
     f_score[start] = g_score[start] + heuristic_cost_estimate(start)
     
-    while !open_set.empty?
+    end_time = Time.now + timeout
+    while !open_set.empty? and Time.now < end_time
       current = open_set.min_by { |n| f_score[n] }
       
       #puts "current = #{current.inspect} d=#{heuristic_cost_estimate(current)} f=#{f_score[current]}"

@@ -45,9 +45,13 @@ module RedstoneBot
         # TODO: reject points that are out of bounds
 
         #puts "#{n} #{@chunk_tracker.block_type(n)}"
-        !@chunk_tracker.block_type(n).solid?
-        
+        one_up = [n[0],n[1]+1,n[2]]
+        !@chunk_tracker.block_type(n).solid? && !@chunk_tracker.block_type(one_up).solid?
       end
     end    
+    
+    def timeout
+      1
+    end
   end
 end

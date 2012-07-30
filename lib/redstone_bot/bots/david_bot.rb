@@ -62,18 +62,26 @@ module RedstoneBot
         next unless p.is_a?(Packet::ChatMessage) && p.player_chat?
         
         case p.chat
+        when /ground report/
+          coords = @body.position.dup
+          coords.y = find_nearby_ground-1
+          columns = [[coords.x+0.3,coords.y,coords.z+0.3],
+                     [coords.x-0.3,coords.y,coords.z+0.3],
+                     [coords.x+0.3,coords.y,coords.z-0.3],                     
+                     [coords.x-0.3,coords.y,coords.z-0.3]]
+          chat "The grnd is #{columns.collect { |col| @chunk_tracker.block_type(col)}}"
         when /how much (.+)/
           # TODO: perhaps cache these results using a SimpleCache
           name = $1
-          block_type = BlockType.from name
-          if block_type.nil? && name != "nil" && name != "unloaded"
+          item_type = ItemType.from name
+          if item_type.nil? && name != "nil" && name != "unloaded"
             chat "dunno what #{name} is"
             next
           end          
           
-          chat "counting #{block_type && block_type.inspect || 'unloaded blocks'}..."
+          chat "counting #{item_type && item_type.inspect || 'unloaded blocks'}..."
           result = @chunk_tracker.loaded_chunks.inject(0) do |sum, chunk|
-            sum + chunk.count_block_type(block_type)
+            sum + chunk.count_block_type(item_type)
           end
           chat "there are #{result}"
         end
