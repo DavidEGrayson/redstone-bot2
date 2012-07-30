@@ -45,8 +45,7 @@ module RedstoneBot
           when Packet::UpdateHealth
             @health = p.health
             if @health <= 0
-              packet = Packet::Respawn.new
-              @client.send_packet packet
+              @client.send_packet Packet::ClientStatuses.respawn
             end
         end
       end

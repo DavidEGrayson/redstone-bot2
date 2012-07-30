@@ -130,3 +130,10 @@ describe RedstoneBot::Packet::SetWindowItems do
     p.slots.should == slots
   end
 end
+
+describe RedstoneBot::Packet::ClientSettings do
+  it "encodes binary data correctly" do
+    described_class.new("en_US", :far, :enabled, true, 2).encode_data.should == "\x00\x05\x00e\x00n\x00_\x00U\x00S\x00\x08\x02"
+    described_class.new("en_US", :tiny, :enabled, true, 2).encode_data.should == "\x00\x05\x00e\x00n\x00_\x00U\x00S\x03\x08\x02"
+  end
+end

@@ -751,8 +751,6 @@ module RedstoneBot
     attr_reader :primary_bit_map, :add_bit_map
     attr_reader :data
     
-    DeallocationData = ("\x01"*256).freeze
-    
     def chunk_id
       [@x, @z]
     end
@@ -815,10 +813,6 @@ module RedstoneBot
       end
     end
     
-    # This packet does NOT deallocate/unload a chunk.
-    def deallocation?
-      false
-    end
   end
   
   class Packet::BlockChange < Packet
@@ -840,10 +834,6 @@ module RedstoneBot
       @block_metadata = socket.read_byte
     end
     
-    # This packet does NOT deallocate/unload a chunk.
-    def deallocation?
-      false
-    end
   end
   
   class Packet::BlockAction < Packet
@@ -1123,6 +1113,28 @@ module RedstoneBot
     def creative_mode?
       (flags & 4) != 0
     end    
+  end
+  
+  class Packet::ClientSettings < Packet  # AKA Locale and View Distance
+    packet_type 0xCC
+    
+    attr_reader :locale, :view_distance, :chat_mode, :colors_enabled, :difficulty
+    
+    def initialize(locale, view_distance, chat_mode, colors_enabled, difficulty)
+      @locale = locale
+      @view_distance = view_distance
+      @chat_mode = chat_mode
+      @colors_enabled = colors_enabled
+      @difficulty = difficulty
+    end
+    
+    def encode_data
+      string(locale) +
+        byte([:far, :normal, :short, :tiny].index view_distance) +
+        byte([:enabled, :commands_only, :hidden].index(chat_mode) | (colors_enabled ? 8 : 0)) +
+        byte(difficulty)
+    end
+
   end
   
   class Packet::ClientStatuses < Packet

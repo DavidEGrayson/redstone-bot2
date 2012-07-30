@@ -186,7 +186,7 @@ module RedstoneBot
 
         if p.respond_to?(:chunk_id)
           # Apply change
-          if p.deallocation?
+          if p.respond_to?(:deallocation?) && p.deallocation?
             unload_chunk p.chunk_id
           else
             get_or_create_chunk(p.chunk_id).apply_packet p

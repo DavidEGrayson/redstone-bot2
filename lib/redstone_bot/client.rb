@@ -10,7 +10,6 @@ require "net/http"
 require "openssl"
 require "uri"
 
-# TODO: fix respawning!
 # TODO: fix logging in to online servers
 
 Thread.abort_on_exception = true
@@ -126,7 +125,7 @@ module RedstoneBot
       
       # Get the encryption request.
       packet = receive_packet
-      if !packet.is_a? RedstoneBot::Packet::EncryptionKeyRequest
+      if !packet.is_a? Packet::EncryptionKeyRequest
         raise "Unexpected packet when handshaking: #{packet.inspect}"
       end
       @connection_hash = packet.connection_hash
@@ -148,7 +147,7 @@ module RedstoneBot
       
       send_packet Packet::EncryptionKeyResponse.new(encrypted_secret, encrypted_token)
       packet = receive_packet
-      if !packet.is_a? RedstoneBot::Packet::EncryptionKeyResponse
+      if !packet.is_a? Packet::EncryptionKeyResponse
         raise "Unexpected packet when handshaking: #{packet.inspect}"
       end
       if packet.shared_secret != "" || packet.verify_token_response != ""
@@ -160,12 +159,16 @@ module RedstoneBot
       @tx_stream = EncryptionStream.new(@socket, secret)
       @rx_stream = DecryptionStream.new(@socket, secret)      
       
-      send_packet RedstoneBot::Packet::ClientStatuses.initial_spawn
+      send_packet Packet::ClientStatuses.initial_spawn
       
       packet = receive_packet
-      if !packet.is_a?(RedstoneBot::Packet::LoginRequest)
+      if !packet.is_a?(Packet::LoginRequest)
         raise "Expected login packet, but got #{packet.inspect}."
       end
+      
+      # Report settings to the server.  There is some chance that the "far" render
+      # distance will let us see more chunks.
+      send_packet Packet::ClientSettings.new("en_US", :far, :enabled, true, 2)
       
       @connected = true
       @mutex = Mutex.new
