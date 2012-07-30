@@ -100,15 +100,21 @@ module RedstoneBot
       return (body.position.y - ground).abs < 0.2
     end
     
-    # TODO: clean this up to do proper collision detecting, probably need to check multiple columns
-    # and to_i is not the right thing to use
     def find_nearby_ground
       x,y,z = body.position.to_a
+      # the body is a 0.6 x 0.6 square centered around the body.position
+      # need to check all of the columns for a possible solid block we could be standing on
+      columns = [[x+0.3,z+0.3],
+                 [x-0.3,z+0.3],
+                 [x+0.3,z-0.3],
+                 [x-0.3,z-0.3]]
       y.ceil.downto(y.ceil-10).each do |test_y|
-        block_type = chunk_tracker.block_type([x.to_i, test_y, z.to_i])
-        block_type ||= ItemType::Air    # block_type is nil if it is in an unloaded chunk
-        if block_type.solid?
-          return test_y + 1
+        columns.each do |column_x,column_z|
+          block_type = chunk_tracker.block_type([column_x.floor, test_y, column_z.floor])
+          block_type ||= ItemType::Air    # block_type is nil if it is in an unloaded chunk
+          if block_type.solid?
+            return test_y + 1
+          end
         end
       end
       nil
