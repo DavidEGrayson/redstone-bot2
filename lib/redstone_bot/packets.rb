@@ -836,34 +836,6 @@ module RedstoneBot
     
   end
   
-  # Last packets: [#<RedstoneBot::Packet::EntityHeadLook:0x4679148 @eid=3817258, @he
-  # ad_yaw=116>, #<RedstoneBot::Packet::BlockAction:0x46718a0 @x=-150, @y=64, @z=832
-  # , @data_bytes=[1, 0], @block_id=0>, #<RedstoneBot::Packet::BlockAction:0x4671540
-  # @x=922746879, @y=27136, @z=1073741827, @data_bytes=[65, 1], @block_id=0>, #<Red
-  # stoneBot::Packet::KeepAlive:0x4670850 @id=909508607>]
-  # WHAT'S 0xFE PRECIOUSSS?
-  
-  #<RedstoneBot::Packet::KeepAlive:0x483b6a0 @id=897783244>
-  # Last packets: [#<RedstoneBot::Packet::BlockAction:0x4a685c0 @x=-148, @y=64, @z=8
-  # 31, @data_bytes=[1, 1], @block_id=0>, #<RedstoneBot::Packet::BlockAction:0x4a682
-  # 60 @x=905969662, @y=-8642, @z=764, @data_bytes=[0, 60], @block_id=6>, #<Redstone
-  # Bot::Packet::BlockAction:0x4a67708 @x=-148, @y=64, @z=832, @data_bytes=[1, 1], @
-  # block_id=0>, #<RedstoneBot::Packet::BlockAction:0x4a673a8 @x=83900808, @y=-10240
-  # , @z=22798, @data_bytes=[0, 0], @block_id=255>]
-  # C:/Users/David/Documents/minecraft/redstone-bot2/lib/redstone_bot/pack.rb:57:in
-  # 'encode': "\xDAB" followed by " " on UTF-16BE (Encoding::InvalidByteSequenceError)
-  
-  # TODO: fix this crash that happens when I open a chest in cesspool:
-  #<RedstoneBot::Packet::KeepAlive:0x2d6d818 @id=909967360>
-  # Last packets: [#<RedstoneBot::Packet::Animation:0x50e5f60 @eid=3827043, @animati
-  # on=1>, #<RedstoneBot::Packet::BlockAction:0x50e5de0 @x=-148, @y=64, @z=831, @dat
-  # a_bytes=[1, 1], @block_id=0>, #<RedstoneBot::Packet::BlockAction:0x50e5a80 @x=92
-  # 2746879, @y=27648, @z=1073741827, @data_bytes=[64, 1], @block_id=1>, #<RedstoneB
-  # ot::Packet::KeepAlive:0x2d6d818 @id=909967360>]
-  # C:/Users/David/Documents/minecraft/redstone-bot2/lib/redstone_bot/client.rb:48:i
-  # n `read': negative length -10242 given (ArgumentError)
-  # from C:/Users/David/Documents/minecraft/redstone-bot2/lib/redstone_bot/c
-  
   class Packet::BlockAction < Packet
     packet_type 0x36
     attr_reader :x, :y, :z
@@ -873,12 +845,49 @@ module RedstoneBot
       [@x/16*16, @z/16*16]
     end
     
-    def receive_data(socket) 
+    def receive_data(socket)
       @x = socket.read_int
       @y = socket.read_short
       @z = socket.read_int
       @data_bytes = [socket.read_byte, socket.read_byte]
-      @block_id = socket.read_byte
+      @block_id = socket.read_unsigned_short
+    end
+    
+    def item_type
+      ItemType.from_id @block_id
+    end
+    
+    # Only valid for chests
+    def open?
+      @data_bytes[1] != 0
+    end
+    
+    # Only valid for pistons.  Says if the piston is pushing or pulling.
+    def pull?
+      @data_bytes[1] != 0
+    end
+    
+    # Only valid for noteblocks/
+    def instrument
+      [:harp, :double_bass, :snare_drum, :clicks, :bass][@data_bytes[0]] || :unknown
+    end
+    
+    # Only valid for noteblocks.
+    def pitch
+      @data_bytes[1]
+    end
+    
+    def to_s
+      case item_type
+      when ItemType::Piston
+        "piston #{pull? ? 'pull' : 'push'}: (#{x}, #{y}, #{z})"
+      when ItemType::Chest
+        "chest #{open? ? 'open' : 'close'}: (#{x},#{y},#{z})"
+      when ItemType::NoteBlock
+        "note: (#{x},#{y},#{z}) instrument=#{instrument}, pitch=#{pitch}"
+      else
+        inspect
+      end
     end
   end
   
@@ -911,7 +920,7 @@ module RedstoneBot
       end
     end
     
-    def inspect
+    def to_s
       "MapChunkBulk<@metadata=#{@metadata.inspect} @data.size=#{@data.size}>"
     end
   end

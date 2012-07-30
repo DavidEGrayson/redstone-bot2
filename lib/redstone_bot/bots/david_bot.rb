@@ -8,6 +8,7 @@ require "redstone_bot/body_movers"
 require "redstone_bot/chat_filter"
 require "redstone_bot/chat_mover"
 require "redstone_bot/profiler"
+require "redstone_bot/packet_printer"
 
 module RedstoneBot
   module Bots; end
@@ -22,6 +23,10 @@ module RedstoneBot
       "mpl" => "m 99.5 225.5",
       "mkn" => "m -211 785",
       }
+    
+    PrintPacketClasses = [
+      Packet::ChatMessage,
+    ]
     
     attr_reader :body, :chunk_tracker
     
@@ -46,10 +51,10 @@ module RedstoneBot
         end
       end
       
+      @packet_printer = PacketPrinter.new(@client, PrintPacketClasses)
+      
       @client.listen do |p|
         case p
-        when Packet::ChatMessage
-          puts p
         when Packet::Disconnect
           puts "Position = #{@body.position}"
           exit 2
