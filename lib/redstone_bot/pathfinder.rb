@@ -41,7 +41,8 @@ module RedstoneBot
     end
     
     def distance(a, b)
-      (a - b).magnitude
+      # Manhattan distance
+      (a.x - b.x).abs + (a.y - b.y).abs + (a.z - b.z).abs
     end
     
     def neighbors(coords)

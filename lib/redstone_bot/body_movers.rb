@@ -65,13 +65,13 @@ module RedstoneBot
     end
     
     def path_to(target, opts={})
-      target = target.to_coords
+      target = target.to_int_coords
       pathfinder = opts[:pathfinder] || Pathfinder.new(chunk_tracker)
       
       return :solid if chunk_tracker.block_type(target).solid?
       
       pathfinder.start = body.position.to_int_coords
-      pathfinder.goal = target.to_int_coords
+      pathfinder.goal = target
       path = pathfinder.find_path
       return :no_path unless path
       
