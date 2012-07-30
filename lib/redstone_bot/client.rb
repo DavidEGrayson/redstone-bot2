@@ -68,6 +68,7 @@ module RedstoneBot
       @connected = false
       @session_id = nil
       @connection_hash = nil
+      @last_packets = [nil]*4   # keep track of last 4 packets
 
       listen { |packet| handle_packet(packet) }
     end
@@ -184,7 +185,7 @@ module RedstoneBot
         rescue UnknownPacketError => e
           handle_unknown_packet(e)
         rescue
-          report_last_packet
+          report_last_packets
           raise
         end
       end
@@ -194,24 +195,25 @@ module RedstoneBot
         send_packet Packet::KeepAlive.new
       end
 
-    rescue UnknownPacketError => e
-      handle_unknown_packet(e)
     end
 
     def handle_unknown_packet(e)
       error_message = "WHAT'S 0x%02X PRECIOUSSS?" % [e.packet_type]
-      report_last_packet
+      report_last_packets
       $stderr.puts error_message
       chat error_message
       abort
     end  
 
-    def report_last_packet
-      $stderr.puts "Last packet: #{@last_packet}"
+    def report_last_packets
+      $stderr.puts "Last packets: #{@last_packets.inspect}"
     end
     
     def receive_packet
-      @last_packet = Packet.receive(@rx_stream)
+      packet = Packet.receive(@rx_stream)
+      @last_packets.shift
+      @last_packets.push packet
+      packet
     end
 
     def send_packet(packet)
