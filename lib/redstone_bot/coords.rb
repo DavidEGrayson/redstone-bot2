@@ -64,7 +64,15 @@ module RedstoneBot
     def to_s
       "(%7.2f,%7.2f,%7.2f)" % [x, y, z]
     end
-
+    
+    def int_coords?
+      Integer === x && Integer === y && Integer === z
+    end
+    
+    def to_int_coords
+      Coords[x.floor, y.floor, z.floor]
+    end
+    
     def to_coords
       self
     end

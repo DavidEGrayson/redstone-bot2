@@ -43,7 +43,7 @@ module RedstoneBot
     
     def follow(opts={}, &block)
       opts = opts.dup
-      opts[:pathfinder] ||= Pathfinder.new(chunk_tracker, 1.1)
+      opts[:pathfinder] ||= Pathfinder.new(chunk_tracker, tolerance: 3, flying_aversion: 2)
       while true
         target = yield
         break if target.nil?
@@ -70,13 +70,13 @@ module RedstoneBot
       
       return :solid if chunk_tracker.block_type(target).solid?
       
-      pathfinder.start = body.position.collect(&:floor)
-      pathfinder.goal = target.collect(&:floor)
+      pathfinder.start = body.position.to_int_coords
+      pathfinder.goal = target.to_int_coords
       path = pathfinder.find_path
       return :no_path unless path
       
       path.each do |waypoint|
-        center = Coords[*waypoint] + Coords[0.5,0,0.5]
+        center = waypoint + Coords[0.5,0,0.5]
         move_to center, opts
       end
       

@@ -2,6 +2,7 @@ require_relative "spec_helper"
 
 require "redstone_bot/item_types"
 require "redstone_bot/pathfinder"
+require "set"
 
 class TestMap
   def block_type(coords)
@@ -16,9 +17,9 @@ end
 describe RedstoneBot::Pathfinder do
   let(:pathfinder) do
     p = RedstoneBot::Pathfinder.new(TestMap.new)
-    p.start = [1,71,1]
-    p.bounds = [0..16, 68..78, 0..16]
-    p.goal = [5, 71, 8]
+    p.start = RedstoneBot::Coords[1,71,1]
+    #p.bounds = [0..16, 68..78, 0..16]
+    p.goal = RedstoneBot::Coords[5, 71, 8]
     p
  end
 
@@ -27,28 +28,29 @@ describe RedstoneBot::Pathfinder do
   end
   
   it "knows the start point" do
-    pathfinder.start.should == [1,71,1]
+    pathfinder.start.should == RedstoneBot::Coords[1,71,1]
   end
   
   it "can tell if a node is a goal" do
-    pathfinder.is_goal?([1, 71, 1]).should be false
-    pathfinder.is_goal?([5, 71, 8]).should be true
+    pathfinder.is_goal?(RedstoneBot::Coords[1, 71, 1]).should be false
+    pathfinder.is_goal?(RedstoneBot::Coords[5, 71, 8]).should be true
   end
   
   it "can calculate costs between neighboring points" do
-    pathfinder.cost([1,71,1], [1,71,2]).should be_within(0.01).of(1)
+    pathfinder.cost(RedstoneBot::Coords[1,71,1], RedstoneBot::Coords[1,71,2]).should be_within(0.01).of(1)
   end
   
   it "can estimate costs between far points" do
-    pathfinder.heuristic_cost_estimate([4,71,7]).should be_within(0.01).of(1.41421356)
+    pathfinder.heuristic_cost_estimate(RedstoneBot::Coords[4,71,7]).should be_within(0.01).of(1.41421356)
   end
   
   it "can find the neighbors of a point on a flat plane" do
-    pathfinder.neighbors([1,71,1]).sort.should == [
+    Set.new(pathfinder.neighbors(RedstoneBot::Coords[1,71,1])).should ==
+      Set.new([
                   [1, 71, 2], 
       [0, 71, 1], [1, 72, 1], [2, 71, 1],
                   [1, 71, 0],
-      ].sort
+      ].collect { |a| RedstoneBot::Coords[*a] })
   end
   
   it "can find paths" do
