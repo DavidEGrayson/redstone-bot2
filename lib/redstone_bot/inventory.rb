@@ -65,7 +65,7 @@ module RedstoneBot
     end
     
     def pending?
-      !@pending_actions.empty?
+      !(loaded? && @pending_actions.empty?)
     end
     
     def item_types

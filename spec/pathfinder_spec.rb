@@ -37,11 +37,11 @@ describe RedstoneBot::Pathfinder do
   end
   
   it "can calculate costs between neighboring points" do
-    pathfinder.cost(RedstoneBot::Coords[1,71,1], RedstoneBot::Coords[1,71,2]).should be_within(0.01).of(1)
+    pathfinder.cost(RedstoneBot::Coords[1,71,1], RedstoneBot::Coords[1,71,2]).should == 1
   end
   
-  it "can estimate costs between far points" do
-    pathfinder.heuristic_cost_estimate(RedstoneBot::Coords[4,71,7]).should be_within(0.01).of(1.41421356)
+  it "can estimate costs between any points" do
+    pathfinder.heuristic_cost_estimate(RedstoneBot::Coords[4,71,7]).should == 2
   end
   
   it "can find the neighbors of a point on a flat plane" do

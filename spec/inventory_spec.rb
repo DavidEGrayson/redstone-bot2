@@ -27,6 +27,10 @@ describe RedstoneBot::Inventory do
     it "is empty" do
       @inventory.should be_empty
     end
+    
+    it "is pending" do
+      @inventory.should be_pending
+    end
   end
   
   context "after being loaded" do
@@ -53,7 +57,7 @@ describe RedstoneBot::Inventory do
     
     it "can select a slot to hold" do
       @client.should_receive(:send_packet).with(RedstoneBot::Packet::HeldItemChange.new(3))
-      @inventory.select_slot 3
+      @inventory.select_hotbar_slot 3
     end
         
     it "has a nice include? method" do
