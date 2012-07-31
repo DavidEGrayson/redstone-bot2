@@ -172,5 +172,7 @@ module RedstoneBot
     def non_empty_slots
       slots.select { |s| !s.nil? }
     end
+    
+    alias :hold :select
   end
 end
