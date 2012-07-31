@@ -9,12 +9,18 @@ module RedstoneBot
     NormalSlotRange = 9..35
     HotbarSlotRange = 36..44
     
+    # TODO: handle the packet that says you picked up an item
+    
+    def reset
+      @loaded = false
+      @slots = [nil]*45
+      @pending_actions = []
+    end
+    
     def initialize(client)
       @client = client
-      @slots = [nil]*45
-      @loaded = false
       @selected_hotbar_slot_index = 0
-      @pending_actions = []
+      reset
       
       client.listen do |p|
         case p
@@ -39,7 +45,13 @@ module RedstoneBot
           if p.action_number != expected_action_number
             raise "Unexpected transaction confirmation from server.  Expected action number = #{expected_action_number}.  Actual = #{p.action_number}."
           end
-          @pending_actions.shift
+          if p.accepted
+            @pending_actions.shift
+          else
+            # Our transaction was rejected, probably due to lag.  The server will send a SetWindowItems
+            # to tell us our entirey inventory, and until then lets us treat it as unloaded.
+            reset
+          end
         end
       end
     end
@@ -73,6 +85,8 @@ module RedstoneBot
     end
     
     def select(item_type)
+      return false if !loaded?
+    
       if hotbar_slot_index = hotbar_slots.index { |slot| item_type === slot }
         puts "Found #{item_type} in hotbar slot #{hotbar_slot_index}." if debug
         select_hotbar_slot(hotbar_slot_index)
