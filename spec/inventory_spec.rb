@@ -1,6 +1,14 @@
 require_relative 'spec_helper'
 require 'redstone_bot/inventory'
 
+# monkeypatch to make tests more readable
+class RedstoneBot::ItemType
+  def *(count)
+    raise ArgumentError.new("count must be an integer larger then 0") unless count > 0
+    RedstoneBot::Slot.new(self, count)
+  end
+end
+
 describe RedstoneBot::Inventory do
   before do
     @client = TestClient.new
@@ -36,9 +44,9 @@ describe RedstoneBot::Inventory do
   context "after being loaded" do
     before do
       slots = [nil]*45
-      slots[10] = RedstoneBot::Slot.new(RedstoneBot::ItemType::IronShovel, 1, 2, "fake enchant data")
-      slots[36] = RedstoneBot::Slot.new(RedstoneBot::ItemType::WheatItem, 31)
-      slots[37] = RedstoneBot::Slot.new(RedstoneBot::ItemType::Bread, 44)
+      slots[10] = RedstoneBot::ItemType::IronShovel * 1
+      slots[36] = RedstoneBot::ItemType::WheatItem * 31
+      slots[37] = RedstoneBot::ItemType::Bread * 44
       @client << RedstoneBot::Packet::SetWindowItems.create(0, slots)
     end
 
