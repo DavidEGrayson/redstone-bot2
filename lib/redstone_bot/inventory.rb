@@ -2,18 +2,20 @@ require_relative "packets"
 require_relative "item_types"
 
 module RedstoneBot
+  # TODO: add a feature for couting food calories
 
   class Inventory
     attr_accessor :debug
     
     NormalSlotRange = 9..35
     HotbarSlotRange = 36..44
+    SlotCount = 45
     
     # TODO: handle the packet that says you picked up an item
     
     def reset
       @loaded = false
-      @slots = [nil]*45
+      @slots = [nil]*SlotCount
       @pending_actions = []
     end
     
@@ -34,8 +36,8 @@ module RedstoneBot
         case p
         when Packet::SetWindowItems
           if p.window_id == 0
-            if p.slots.size != 45
-              raise "Error: Expected 44 slots in inventory, received #{p.slots_data.size}."
+            if p.slots.size != SlotCount
+              raise "Error: Expected #{SlotCount} slots in inventory, received #{p.slots_data.size}."
             end
             @slots = p.slots   # assumption: no other objects will be messing with the same array
             @loaded = true
@@ -113,7 +115,21 @@ module RedstoneBot
           return true
           
         else
-          raise "Hotbar is full: need to do some left clicking and write tests!"          
+          puts "Hotbar is full: need to left-click twice." if debug     
+          hotbar_slot_index = 0   # TODO: actually choose the least-used item in the hotbar
+          
+          src_slot_id = NormalSlotRange.min + slot_index
+          destination_slot_id = HotbarSlotRange.min + hotbar_slot_index
+
+          # TODO: refactor this, maybe by making a transaction { |t| } method
+          action_number = new_transaction
+          @client.send_packet Packet::ClickWindow.new(0, src_slot_id, false, action_number, false, slots[src_slot_id])
+          action_number = new_transaction
+          @client.send_packet Packet::ClickWindow.new(0, destination_slot_id, false, action_number, false, slots[destination_slot_id])
+          swap_slots src_slot_id, destination_slot_id
+          
+          select_hotbar_slot(hotbar_slot_index)
+          return true
         end
       else
         puts "Item #{item_type} not found." if debug

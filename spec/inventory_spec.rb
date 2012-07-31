@@ -115,7 +115,22 @@ describe Inventory do
       @inventory.selected_slot.should == IronShovel * 1
       @inventory.should be_pending
     end
-
+    
+  end
+  
+  context "when the entire inventory is full" do
+    before do
+      slots = [Cobblestone*64]*45
+      slots[10] = IronOre * 1
+      @client << Packet::SetWindowItems.create(0, slots)
+    end
+    
+    it "can swap two items to put something in the hotbar" do
+      @client.should_receive(:send_packet).at_least(2).times
+      @inventory.select(IronOre).should == true
+      @inventory.selected_slot.should == IronOre * 1
+      @inventory.should be_pending
+    end
   end
   
 end
