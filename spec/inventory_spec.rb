@@ -9,10 +9,12 @@ class RedstoneBot::ItemType
   end
 end
 
+# do this to make the class and constant names in RedstoneBot and ItemType not
+# require prefixes, thus making them more readable
 module RedstoneBot
-class ItemType  # do this to make the class names more readable
+class ItemType  
 
-describe RedstoneBot::Inventory do
+describe Inventory do
   before do
     @client = TestClient.new
     @inventory = described_class.new(@client)
@@ -22,6 +24,12 @@ describe RedstoneBot::Inventory do
     @client << Packet::SetWindowItems.create(2, [Bread * 10]*45)
     @inventory.slots.should == [nil]*45
     @inventory.should_not be_loaded
+  end
+        
+  it "can select a slot to hold" do
+    @client.should_receive(:send_packet).with(Packet::HeldItemChange.new(3))
+    @inventory.select_hotbar_slot 3
+    @inventory.instance_variable_get(:@selected_hotbar_slot_index).should == 3
   end
   
   context "before being loaded" do  
@@ -46,6 +54,7 @@ describe RedstoneBot::Inventory do
     before do
       slots = [nil]*45
       slots[10] = IronShovel * 1
+      slots[12] = Bread * 2
       slots[36] = WheatItem * 31
       slots[37] = Bread * 44
       @client << Packet::SetWindowItems.create(0, slots)
@@ -59,14 +68,13 @@ describe RedstoneBot::Inventory do
       @inventory.should_not be_empty
     end
     
+    it "is not pending" do
+      @inventory.should_not be_pending
+    end
+    
     it "has stuff in the slots" do
       @inventory.slots[36].item_type.should == WheatItem
       WheatItem.should === @inventory.slots[36]
-    end
-    
-    it "can select a slot to hold" do
-      @client.should_receive(:send_packet).with(Packet::HeldItemChange.new(3))
-      @inventory.select_hotbar_slot 3
     end
         
     it "has a nice include? method" do
@@ -77,9 +85,37 @@ describe RedstoneBot::Inventory do
     end
     
     it "has a nice hotbar_include? method" do
-      @inventory.should_not be_hotbar_include(IronShovel)
-      @inventory.should be_hotbar_include(Bread)
+      @inventory.should_not be_hotbar_include IronShovel
+      @inventory.should be_hotbar_include Bread
     end
+    
+    it "knows that hotbar index 0 is selected by default" do
+      @inventory.selected_slot.should == WheatItem * 31
+    end
+    
+    it "can select the item that is already selected without sending packets" do
+      @client.should_not_receive :send_packet
+      @inventory.select(WheatItem).should == true
+      @inventory.selected_slot.should == WheatItem * 31
+      @inventory.should_not be_pending
+    end
+    
+    it "can select another item in the hotbar with a single packet" do
+      @client.should_receive(:send_packet).with(Packet::HeldItemChange.new(1))
+      @inventory.select(Bread).should == true
+      @inventory.selected_slot.should == Bread * 44
+      @inventory.should_not be_pending
+    end
+    
+    it "if there is an empty spot in the hotbar can select an item not in the hotbar" do
+      #@client.should_receive(:send_packet).with(Packet::ClickWindow.new(0, slot_id, false, action_number, true, slots[slot_id]))
+      #@client.should_receive(:send_packet).with(Packet::HeldItemChange.new(2))
+      @client.should_receive(:send_packet).twice
+      @inventory.select(IronShovel).should == true
+      @inventory.selected_slot.should == IronShovel * 1
+      @inventory.should be_pending
+    end
+
   end
   
 end

@@ -87,6 +87,8 @@ module RedstoneBot
     def select(item_type)
       return false if !loaded?
     
+      # TODO: it item_type is nil, actually put nothing in your arms (and return false if all slots are full)
+    
       if hotbar_slot_index = hotbar_slots.index { |slot| item_type === slot }
         puts "Found #{item_type} in hotbar slot #{hotbar_slot_index}." if debug
         select_hotbar_slot(hotbar_slot_index)
@@ -106,6 +108,8 @@ module RedstoneBot
           destination_slot_id = HotbarSlotRange.min + hotbar_slot_index
           send_shift_click src_slot_id
           swap_slots src_slot_id, destination_slot_id
+          
+          select_hotbar_slot(hotbar_slot_index)
           return true
           
         else
@@ -142,7 +146,7 @@ module RedstoneBot
     end
 
     def send_shift_click(slot_id) 
-      puts "shift clicking slot #{slot_id} #{slots[slot_id]}"  # tmphax
+      puts "Shift clicking slot #{slot_id} #{slots[slot_id]}" if debug
       action_number = new_transaction
       @client.send_packet Packet::ClickWindow.new(0, slot_id, false, action_number, true, slots[slot_id])
     end
