@@ -14,7 +14,8 @@ module RedstoneBot
       @slots = [nil]*45
       @loaded = false
       @selected_hotbar_slot_index = 0
-
+      @pending_actions = []
+      
       client.listen do |p|
         case p
         when Packet::SetWindowItems, Packet::SetSlot, Packet::ConfirmTransaction, Packet::UpdateWindowProperty
@@ -33,6 +34,12 @@ module RedstoneBot
             @slots = p.slots   # assumption: no other objects will be messing with the same array
             @loaded = true
           end
+        when Packet::ConfirmTransaction
+          expected_action_number = @pending_actions.first
+          if p.action_number != expected_action_number
+            raise "Unexpected transaction confirmation from server.  Expected action number = #{expected_action_number}.  Actual = #{p.action_number}."
+          end
+          @pending_actions.shift
         end
       end
     end
@@ -43,6 +50,10 @@ module RedstoneBot
     
     def empty?
       slots.none?
+    end
+    
+    def pending?
+      !@pending_actions.empty?
     end
     
     def item_types
@@ -73,7 +84,7 @@ module RedstoneBot
         puts "Found #{item_type} in normal slot #{slot_index}." if debug
         
         if hotbar_slot_index = hotbar_slots.find_index { |s| s.nil? }        
-          puts "Putting into hotbar slot #{hotbar_slot_id}." if debug
+          puts "Putting into hotbar slot #{hotbar_slot_index}." if debug
 
           # Assumption: choose_hotbar_slot chose the FIRST empty slot, so we can just
           # shift_click the get the item into that slot.
@@ -86,6 +97,9 @@ module RedstoneBot
         else
           raise "Hotbar is full: need to do some left clicking and write tests!"          
         end
+      else
+        puts "Item #{item_type} not found." if debug
+        return false
       end
     end
     
@@ -102,7 +116,7 @@ module RedstoneBot
       slots.select{ |s| item_type === s }
     end
     
-    # hotbar_slot_id must be a number in 0..8, which corresponds to inventory slot IDs 36..44
+    # hotbar_slot_index must be a number in 0..8, which corresponds to inventory slot IDs 36..44
     def select_hotbar_slot(hotbar_slot_index)
       if hotbar_slot_index != @selected_hotbar_slot_index
         puts "Selecting hotbar slot #{hotbar_slot_index}." if debug
@@ -115,12 +129,14 @@ module RedstoneBot
 
     def send_shift_click(slot_id) 
       puts "shift clicking slot #{slot_id} #{slots[slot_id]}"  # tmphax
-      @client.send_packet Packet::ClickWindow.new(0, slot_id, false, @client.next_action_number, true, slots[slot_id])
+      action_number = new_transaction
+      @client.send_packet Packet::ClickWindow.new(0, slot_id, false, action_number, true, slots[slot_id])
     end
     
-    def send_click(slot_id) 
-      puts "shift clicking slot #{slot_id} #{slots[slot_id]}"  # tmphax
-      @client.send_packet Packet::ClickWindow.new(0, slot_id, false, @client.next_action_number, true, slots[slot_id])
+    def new_transaction
+      action_number = @client.next_action_number
+      @pending_actions.push action_number
+      return action_number
     end
     
     def slots

@@ -1055,7 +1055,7 @@ module RedstoneBot
   
   class Packet::ConfirmTransaction < Packet
     packet_type 0x6A
-    attr_reader :window_id, :action_nuber, :accepted
+    attr_reader :window_id, :action_number, :accepted
     
     def initialize(window_id, action_number, accepted)
       @window_id = window_id
