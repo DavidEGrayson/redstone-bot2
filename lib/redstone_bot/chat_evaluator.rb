@@ -34,7 +34,6 @@ module RedstoneBot
         result = begin
           (@context || self).instance_eval string
         rescue Exception => e
-          $stderr.puts e.backtrace if $SAFE <= 2  # TODO: what safe levels allow puts?
           exception = e
           e.message
         end

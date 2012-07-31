@@ -33,6 +33,8 @@ module RedstoneBot
     def setup
       standard_setup
       
+      @inventory.debug = true
+      
       @chat_filter = ChatFilter.new(@client)
       @chat_filter.only_player_chats
       @chat_filter.reject_from_self      

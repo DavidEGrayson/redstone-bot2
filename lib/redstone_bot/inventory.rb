@@ -3,14 +3,18 @@ require_relative "item_types"
 
 module RedstoneBot
 
-  class Inventory  
-    attr_reader :slots
+  class Inventory
+    attr_accessor :debug
+    
+    NormalSlotRange = 9..35
+    HotbarSlotRange = 36..44
     
     def initialize(client)
       @client = client
       @slots = [nil]*45
       @loaded = false
-            
+      @selected_hotbar_slot_index = 0
+
       client.listen do |p|
         case p
         when Packet::SetWindowItems, Packet::SetSlot, Packet::ConfirmTransaction, Packet::UpdateWindowProperty
@@ -26,7 +30,7 @@ module RedstoneBot
             if p.slots.size != 45
               raise "Error: Expected 44 slots in inventory, received #{p.slots_data.size}."
             end
-            @slots = p.slots
+            @slots = p.slots   # assumption: no other objects will be messing with the same array
             @loaded = true
           end
         end
@@ -41,30 +45,98 @@ module RedstoneBot
       slots.none?
     end
     
+    def item_types
+      non_empty_slots.collect(&:item_type).uniq
+    end
+    
     def include?(item_type)
       slots.any? { |s| item_type === s }
     end
     
+    def selected_slot
+      slots[HotbarSlotRange.min + @selected_hotbar_slot_index]
+    end
+    
+    def count(item_type)
+      slots_of_type(item_type).inject(:+){ |sum, slot| slot.count }
+    end
+    
+    def select(item_type)
+      if hotbar_slot_index = hotbar_slots.index { |slot| item_type === slot }
+        puts "Found #{item_type} in hotbar slot #{hotbar_slot_index}." if debug
+        select_hotbar_slot(hotbar_slot_index)
+        return true
+        
+      elsif slot_index = normal_slots.index { |slot| item_type === slot }
+        # TODO: also look for items in the armor slots!
+        
+        puts "Found #{item_type} in normal slot #{slot_index}." if debug
+        
+        if hotbar_slot_index = hotbar_slots.find_index { |s| s.nil? }        
+          puts "Putting into hotbar slot #{hotbar_slot_id}." if debug
+
+          # Assumption: choose_hotbar_slot chose the FIRST empty slot, so we can just
+          # shift_click the get the item into that slot.
+          src_slot_id = NormalSlotRange.min + slot_index
+          destination_slot_id = HotbarSlotRange.min + hotbar_slot_index
+          send_shift_click src_slot_id
+          swap_slots src_slot_id, destination_slot_id
+          return true
+          
+        else
+          raise "Hotbar is full: need to do some left clicking and write tests!"          
+        end
+      end
+    end
+    
+    # TODO: protected
+    def swap_slots(x, y)
+      slots[x], slots[y] = slots[y], slots[x]
+    end
+        
     def hotbar_include?(item_type)
       hotbar_slots.any? { |s| item_type === s }      
     end
+    
+    def slots_of_type(item_type)
+      slots.select{ |s| item_type === s }
+    end
+    
+    # hotbar_slot_id must be a number in 0..8, which corresponds to inventory slot IDs 36..44
+    def select_hotbar_slot(hotbar_slot_index)
+      if hotbar_slot_index != @selected_hotbar_slot_index
+        puts "Selecting hotbar slot #{hotbar_slot_index}." if debug
+        @selected_hotbar_slot_index = hotbar_slot_index
+        @client.send_packet Packet::HeldItemChange.new @selected_hotbar_slot_index
+      else
+        puts "Hotbar slot #{hotbar_slot_index} already selected." if debug
+      end
+    end
 
-    def normal_slots
-      slots[9..35]
-    end
-    
-    def hotbar_slots
-      slots[36..44]
-    end
-    
-    def shift_click_slot(slot_id) 
-      puts "shift clicking slot #{slot_id} #{slots[slot_id]}"
+    def send_shift_click(slot_id) 
+      puts "shift clicking slot #{slot_id} #{slots[slot_id]}"  # tmphax
       @client.send_packet Packet::ClickWindow.new(0, slot_id, false, @client.next_action_number, true, slots[slot_id])
     end
     
-    def select_slot(slot_id)
-      @client.send_packet Packet::HeldItemChange.new(slot_id)
+    def send_click(slot_id) 
+      puts "shift clicking slot #{slot_id} #{slots[slot_id]}"  # tmphax
+      @client.send_packet Packet::ClickWindow.new(0, slot_id, false, @client.next_action_number, true, slots[slot_id])
     end
     
+    def slots
+      @slots
+    end
+        
+    def normal_slots
+      slots[NormalSlotRange]
+    end
+    
+    def hotbar_slots
+      slots[HotbarSlotRange]
+    end
+    
+    def non_empty_slots
+      slots.select { |s| !s.nil? }
+    end
   end
 end
