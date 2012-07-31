@@ -102,7 +102,7 @@ describe Inventory do
     
     it "can select another item in the hotbar with a single packet" do
       @client.should_receive(:send_packet).with(Packet::HeldItemChange.new(1))
-      @inventory.select(Bread).should == true
+      @inventory.hold(Bread).should == true
       @inventory.selected_slot.should == Bread * 44
       @inventory.should_not be_pending
     end
