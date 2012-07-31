@@ -9,6 +9,9 @@ class RedstoneBot::ItemType
   end
 end
 
+module RedstoneBot
+class ItemType  # do this to make the class names more readable
+
 describe RedstoneBot::Inventory do
   before do
     @client = TestClient.new
@@ -16,9 +19,7 @@ describe RedstoneBot::Inventory do
   end
   
   it "ignores SetWindowItems packets for non-0 windows" do
-    RedstoneBot::Slot.new(RedstoneBot::ItemType::Bread, 44).encode_data
-  
-    @client << RedstoneBot::Packet::SetWindowItems.create(2, [RedstoneBot::Slot.new(RedstoneBot::ItemType::Bread, 44)]*45)
+    @client << Packet::SetWindowItems.create(2, [Bread * 10]*45)
     @inventory.slots.should == [nil]*45
     @inventory.should_not be_loaded
   end
@@ -44,10 +45,10 @@ describe RedstoneBot::Inventory do
   context "after being loaded" do
     before do
       slots = [nil]*45
-      slots[10] = RedstoneBot::ItemType::IronShovel * 1
-      slots[36] = RedstoneBot::ItemType::WheatItem * 31
-      slots[37] = RedstoneBot::ItemType::Bread * 44
-      @client << RedstoneBot::Packet::SetWindowItems.create(0, slots)
+      slots[10] = IronShovel * 1
+      slots[36] = WheatItem * 31
+      slots[37] = Bread * 44
+      @client << Packet::SetWindowItems.create(0, slots)
     end
 
     it "is loaded" do
@@ -59,26 +60,28 @@ describe RedstoneBot::Inventory do
     end
     
     it "has stuff in the slots" do
-      @inventory.slots[36].item_type.should == RedstoneBot::ItemType::WheatItem
-      RedstoneBot::ItemType::WheatItem.should === @inventory.slots[36]
+      @inventory.slots[36].item_type.should == WheatItem
+      WheatItem.should === @inventory.slots[36]
     end
     
     it "can select a slot to hold" do
-      @client.should_receive(:send_packet).with(RedstoneBot::Packet::HeldItemChange.new(3))
+      @client.should_receive(:send_packet).with(Packet::HeldItemChange.new(3))
       @inventory.select_hotbar_slot 3
     end
         
     it "has a nice include? method" do
-      @inventory.should include RedstoneBot::ItemType::IronShovel
-      @inventory.should include RedstoneBot::ItemType::WheatItem
-      @inventory.should include RedstoneBot::ItemType::Bread
-      @inventory.should_not include RedstoneBot::ItemType::EmeraldOre      
+      @inventory.should include IronShovel
+      @inventory.should include WheatItem
+      @inventory.should include Bread
+      @inventory.should_not include EmeraldOre      
     end
     
     it "has a nice hotbar_include? method" do
-      @inventory.should_not be_hotbar_include(RedstoneBot::ItemType::IronShovel)
-      @inventory.should be_hotbar_include(RedstoneBot::ItemType::Bread)
+      @inventory.should_not be_hotbar_include(IronShovel)
+      @inventory.should be_hotbar_include(Bread)
     end
   end
   
 end
+
+end; end  # break out of the class and module
