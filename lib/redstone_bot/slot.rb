@@ -45,5 +45,14 @@ module RedstoneBot
       binary_data
     end
     
+    def to_s
+      s = item_type.to_s
+      s += "x#{count}" if count != 1
+      s += "(damage=#{damage}"
+      s += " enchant_data=#{enchant_data.inspect}" if enchant_data
+      s += ")"
+      s
+    end
+    
   end
 end
