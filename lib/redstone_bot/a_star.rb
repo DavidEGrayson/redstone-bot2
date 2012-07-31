@@ -1,13 +1,20 @@
 require 'set'
 
 module AStar
-  def run_a_star   
+  def run_a_star
+    # closed_set is the set of points where we have considered all their neighbors.
     closed_set = Set[]
+    
+    # open_set is the set of points we found but are not in in the closed set yet.
     open_set = Set[start]
     
     came_from = {}
+    
+    # g_score = the length of the shortest path to the node that we have found so far
     g_score = {}
     g_score[start] = 0
+    
+    # f_score = g_score + heuristic_cost_estimate
     f_score = {}
     f_score[start] = g_score[start] + heuristic_cost_estimate(start)
     
