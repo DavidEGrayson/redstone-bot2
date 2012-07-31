@@ -1020,7 +1020,7 @@ module RedstoneBot
   
   class Packet::SetSlot < Packet
     packet_type 0x67
-    attr_reader :window_id, :slot_id, :slot_data
+    attr_reader :window_id, :slot_id, :slot
     
     def receive_data(socket)
       @window_id = socket.read_byte
