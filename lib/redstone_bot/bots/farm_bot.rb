@@ -30,7 +30,7 @@ module RedstoneBot
         when /plant (\-?\d+) (\-?\d+)/
           # Plants seeds at a spot
           coords = [$1.to_i, FarmBounds[1].min-1, $2.to_i]
-          if block_type(coords) == ItemType::Farmland || true
+          if block_type(coords) == ItemType::Farmland
             puts "planting on the farmland at #{coords.inspect}!"
             if hold(ItemType::Seeds)
               @client.send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 4, 15, 5
@@ -41,6 +41,7 @@ module RedstoneBot
           else
             chat "dat not farm"
           end
+          
         when "farm"
           body.start { farm }
         end

@@ -82,6 +82,24 @@ module RedstoneBot
       self
     end
     
+    def spiral
+      return enum_for(:spiral) unless block_given?
+      # if z points up, x points to the left
+    
+      start = to_int_coords
+      x, y, z = start.to_a
+      yield start
+      d = 0
+      while true
+        d += 1
+        r = (1-d)..d
+        r.each { |i| yield Coords[x+d, y, z+i] }
+        r.each { |i| yield Coords[x-i, y, z+d] }
+        r.each { |i| yield Coords[x-d, y, z-i] }
+        r.each { |i| yield Coords[x+i, y, z-d] }
+      end
+    end
+    
     # TODO: see if block-searching algorithms get faster if these
     # enumerators just give int arrays instead of Coord objects
     def self.each_in_bounds(bounds)

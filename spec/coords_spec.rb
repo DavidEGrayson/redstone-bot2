@@ -88,4 +88,52 @@ describe RedstoneBot::Coords do
     enum.count.should == 80
   end
   
+  it "can tell if it has only integers" do
+    described_class[1,2,3].should be_int_coords
+    described_class[1.1,2,3].should_not be_int_coords
+    described_class[1,2.2,3].should_not be_int_coords
+    described_class[1,2,3.3].should_not be_int_coords
+  end
+  
+  it "can convert itself to integers using floor" do
+    described_class[-0.4, 1.1, 3.9].to_int_coords.should == described_class[-1, 1, 3]
+  end
+  
+  it "can enumerate spirals" do
+    start = described_class[100, 64, 200]
+    s = start.spiral
+    s.next.should == start
+    
+    # Distance 1
+    (s.next - start).should == described_class[ 1, 0,  0]
+    (s.next - start).should == described_class[ 1, 0,  1]
+    (s.next - start).should == described_class[ 0, 0,  1]
+    (s.next - start).should == described_class[-1, 0,  1]
+    (s.next - start).should == described_class[-1, 0,  0]
+    (s.next - start).should == described_class[-1, 0, -1]
+    (s.next - start).should == described_class[ 0, 0, -1]
+    (s.next - start).should == described_class[ 1, 0, -1]
+    
+    # Distance 2
+    (s.next - start).should == described_class[ 2, 0, -1]
+    (s.next - start).should == described_class[ 2, 0,  0]
+    (s.next - start).should == described_class[ 2, 0,  1]
+    (s.next - start).should == described_class[ 2, 0,  2]
+    (s.next - start).should == described_class[ 1, 0,  2]
+    (s.next - start).should == described_class[ 0, 0,  2]
+    (s.next - start).should == described_class[-1, 0,  2]
+    (s.next - start).should == described_class[-2, 0,  2]
+    (s.next - start).should == described_class[-2, 0,  1]
+    (s.next - start).should == described_class[-2, 0,  0]
+    (s.next - start).should == described_class[-2, 0, -1]
+    (s.next - start).should == described_class[-2, 0, -2]
+    (s.next - start).should == described_class[-1, 0, -2]
+    (s.next - start).should == described_class[ 0, 0, -2]
+    (s.next - start).should == described_class[ 1, 0, -2]
+    (s.next - start).should == described_class[ 2, 0, -2]
+
+    # Distance 3
+    (s.next - start).should == described_class[ 3, 0, -2]
+  end
+  
 end
