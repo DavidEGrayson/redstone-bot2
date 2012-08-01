@@ -41,27 +41,34 @@ module RedstoneBot
             chat "dat not farm"
           end
         when "whee"
-          # Harvest and replant everything
-          
-          body.position.change_y(FarmBounds[1].min).spiral.first(100).each do |coords|
-            if !hold(ItemType::Seeds)
-              chat "got seeds?"
-              break
-            end
-            
-            if block_type(coords) == ItemType::WheatBlock
-              dig coords
-            end
-            
-            ground = coords - Coords::Y
-            if block_type(ground) == ItemType::Farmland
-              place_block_above ground
-            end
-          end
+          # Harvest and replant everything          
+          dig_and_replant_within_reach
         when "farm"
           body.start { farm }
         end
       end
+    end
+    
+    def dig_and_replant_within_reach
+      wheats_dug = 0
+      body.position.change_y(FarmBounds[1].min).spiral.first(100).each do |coords|
+        if !hold(ItemType::Seeds)
+          chat "got seeds?"
+          break
+        end
+        
+        if block_type(coords) == ItemType::WheatBlock && block_metadata(coords) == ItemType::WheatBlock.fully_grown
+          wheats_dug += 1
+          just_dug = true
+          dig coords
+        end
+        
+        ground = coords - Coords::Y
+        if block_type(ground) == ItemType::Farmland && (just_dug || block_type(coords) == ItemType::Air)
+          place_block_above ground
+        end
+      end
+      return wheats_dug
     end
     
     def dig(coords)
