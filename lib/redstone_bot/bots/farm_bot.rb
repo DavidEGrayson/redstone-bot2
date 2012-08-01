@@ -26,26 +26,56 @@ module RedstoneBot
           # Digs a block, e.g. harvests wheat
           x, y, z = $1.to_i, FarmBounds[1].min, $2.to_i
           puts "digging #{x},#{y},#{z}!"
-          @client.send_packet Packet::PlayerDigging.start [x,y,z]
+          dig [x,y,z]
         when /plant (\-?\d+) (\-?\d+)/
           # Plants seeds at a spot
           coords = [$1.to_i, FarmBounds[1].min-1, $2.to_i]
           if block_type(coords) == ItemType::Farmland
             puts "planting on the farmland at #{coords.inspect}!"
             if hold(ItemType::Seeds)
-              @client.send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 4, 15, 5
-              @client.send_packet Packet::Animation.new @client.eid, 1
+              place_block_above coords
             else
               chat "got seeds?"
             end
           else
             chat "dat not farm"
           end
+        when "whee"
+          # Harvest and replant everything
           
+          body.position.change_y(FarmBounds[1].min).spiral.first(100).each do |coords|
+            if !hold(ItemType::Seeds)
+              chat "got seeds?"
+              break
+            end
+            
+            if block_type(coords) == ItemType::WheatBlock
+              dig coords
+            end
+            
+            ground = coords - Coords::Y
+            if block_type(ground) == ItemType::Farmland
+              place_block_above ground
+            end
+          end
         when "farm"
           body.start { farm }
         end
       end
+    end
+    
+    def dig(coords)
+      puts "Digging #{coords}."
+      @client.send_packet Packet::PlayerDigging.start coords
+    end
+    
+    def place_block_above(coords)
+      puts "Placing block above #{coords}."
+      @client.send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 4, 15, 5
+      @client.send_packet Packet::Animation.new @client.eid, 1
+      
+      # We WILL get a Set Slot packet from the server, but we want to keep track of the change before that happens
+      @inventory.use_up_one
     end
     
     # Runs in a position update fiber

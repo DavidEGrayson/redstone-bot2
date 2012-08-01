@@ -355,7 +355,7 @@ module RedstoneBot
     # defaults for dropping items where only the status matters
     def initialize(status, intcoords=[0,0,0], face=0)
       @status = status
-      @x, @y, @z = intcoords
+      @x, @y, @z = intcoords.to_a
       @face = face
     end
     

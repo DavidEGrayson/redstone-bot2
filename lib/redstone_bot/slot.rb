@@ -45,6 +45,10 @@ module RedstoneBot
       binary_data
     end
     
+    def -(num)
+      self.class.new(item_type, count - num, damage, enchant_data) if (count - num) > 0
+    end
+    
     def to_s
       s = item_type.to_s
       s += "x#{count}" if count != 1

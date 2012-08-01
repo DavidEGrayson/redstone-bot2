@@ -217,6 +217,10 @@ module RedstoneBot
       slots[id] = nil
     end
     
+    def use_up_one
+      slots[HotbarSlotRange.min + @selected_hotbar_slot_index] = selected_slot - 1
+    end
+    
     def to_s
       s = "== Inventory =="
       slots.each_with_index do |slot, slot_id|
