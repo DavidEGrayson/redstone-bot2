@@ -21,34 +21,43 @@ module RedstoneBot
         
         case p.chat
         when "i"
-          puts "== INVENTORY =="
-          @inventory.slots.each_with_index do |slot, slot_id|
-            next unless slot
-            puts "#{slot_id}: #{slot}"            
-          end
-          puts "===="
-        when /d (\-?\d+) (\-?\d+) (\-?\d+)/
-          x, y, z = $1.to_i, $2.to_i, $3.to_i
-          puts "using #{x},#{y},#{z}!"
-          #@client.send_packet Packet::PlayerDigging.new(2, [x, y, z], 0)
+          puts @inventory
+        when /dig (\-?\d+) (\-?\d+)/
+          # Digs a block, e.g. harvests wheat
+          x, y, z = $1.to_i, FarmBounds[1].min, $2.to_i
+          puts "digging #{x},#{y},#{z}!"
           @client.send_packet Packet::PlayerDigging.start [x,y,z]
-        when "g"
-          @body.start do
-            while true
-              item = @entity_tracker.closest_entity(Item)
-              if item && @body.distance_to(item) < 30
-                puts "moving to #{item}"
-                move_to item.position.change_y(FarmBounds[1].min)
-              else
-                @body.wait_for_next_position_update
-              end
+        when /plant (\-?\d+) (\-?\d+)/
+          # Plants seeds at a spot
+          coords = [$1.to_i, FarmBounds[1].min-1, $2.to_i]
+          if block_type(coords) == ItemType::Farmland || true
+            puts "planting on the farmland at #{coords.inspect}!"
+            if hold(ItemType::Seeds)
+              @client.send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 4, 15, 5
+              @client.send_packet Packet::Animation.new @client.eid, 1
+            else
+              chat "got seeds?"
             end
+          else
+            chat "dat not farm"
           end
+        when "farm"
+          body.start { farm }
         end
       end
-      
-      #@entity_tracker.debug = true
-      #@entity_tracker.debug_ignore = [Villager, IronGolem, Zombie, Creeper, Skeleton, Pig, Spider, Squid, Enderman, Slime, Sheep, Cow]
+    end
+    
+    # Runs in a position update fiber
+    def farm
+      while true
+        item = @entity_tracker.closest_entity(Item)
+        if item && @body.distance_to(item) < 30
+          puts "moving to #{item}"
+          move_to item.position.change_y(FarmBounds[1].min)
+        else
+          @body.wait_for_next_position_update
+        end
+      end
     end
     
     def average_growth

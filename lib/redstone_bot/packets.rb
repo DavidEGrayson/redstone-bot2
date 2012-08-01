@@ -389,7 +389,7 @@ module RedstoneBot
     end
     
     def encode_data
-      int(coords[0]) + unsigned_byte(coords[1]) + int(coords[2]) + byte(direction) +
+      int(coords[0]) + byte(coords[1]) + int(coords[2]) + byte(direction) +
         Slot.encode_data(held_item) + byte(cursor_x) + byte(cursor_y) + byte(cursor_z)
     end
   end
@@ -433,6 +433,15 @@ module RedstoneBot
     packet_type 0x12
     attr_reader :eid
     attr_reader :animation
+  
+    def initialize(eid, animation)
+      @eid = eid
+      @animation = animation
+    end
+    
+    def encode_data
+      int(eid) + byte(animation)
+    end
   
     def receive_data(socket)
       @eid = socket.read_int

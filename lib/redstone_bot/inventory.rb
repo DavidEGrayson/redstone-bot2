@@ -217,5 +217,12 @@ module RedstoneBot
       slots[id] = nil
     end
     
+    def to_s
+      s = "== Inventory =="
+      slots.each_with_index do |slot, slot_id|
+        s += "#{slot_id}: #{slot}" if slot
+      end
+      puts "===="
+    end
   end
 end

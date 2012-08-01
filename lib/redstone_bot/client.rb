@@ -166,6 +166,7 @@ module RedstoneBot
       if !packet.is_a?(Packet::LoginRequest)
         raise "Expected login packet, but got #{packet.inspect}."
       end
+      @eid = packet.eid
       
       # Report settings to the server.  There is some chance that the "far" render
       # distance will let us see more chunks.
