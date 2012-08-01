@@ -116,17 +116,63 @@ describe Inventory do
       @inventory.selected_slot.should == IronShovel * 1
       @inventory.should be_pending
     end
+	
+	it "can dump by slot id" do
+      @client.should_receive(:send_packet).exactly(2).times
+	  @inventory.dump_slot_id(36)
+	  @inventory.count(WheatItem).should == 0
+      @inventory.should be_pending
+	end
+	
+	it "can dump by item type" do
+      @client.should_receive(:send_packet).exactly(2).times
+      @inventory.dump(Bread)
+	  @inventory.count(Bread).should == 44
+      @inventory.should be_pending
+	end
+	
+    it "can dump all of some item type" do
+      @client.should_receive(:send_packet).exactly(4).times
+      @inventory.dump_all(Bread)
+	  @inventory.count(Bread).should == 0
+      @inventory.should be_pending
+	end
     
     it "responds to SetSlot packets for window 0" do
       @client << Packet::SetSlot.create(0, 32, DiamondAxe * 1)
       @inventory.slots[32].should == DiamondAxe * 1
     end
 
-
     it "ignores SetSlot packets for non-0 windows" do
       @client << Packet::SetSlot.create(10, 32, DiamondAxe * 1)
       @inventory.slots[32].should == nil
     end
+	
+	context "when there are pending transactions" do
+      before do
+        @client.stub(:send_packet)
+        @inventory.dump(Bread)
+	  end
+      
+      it "is pending" do
+        @inventory.should be_pending
+        @inventory.instance_variable_get(:@pending_actions).should == [1, 2]
+      end
+
+      it "can understand when they are confirmed" do
+        @client << Packet::ConfirmTransaction.new(0, 1, true)
+        @inventory.should be_pending
+        @client << Packet::ConfirmTransaction.new(0, 2, true)
+        @inventory.should_not be_pending
+      end
+      
+      it "can understand when they are rejected" do
+        @client << Packet::ConfirmTransaction.new(0, 1, false)
+        @inventory.should be_pending
+        @inventory.should_not be_loaded
+        @inventory.slots.uniq.should == [nil]
+      end
+	end
   end
   
   context "when the entire inventory is full" do
@@ -138,7 +184,7 @@ describe Inventory do
     
     it "can swap two items to put something in the hotbar" do
       @client.should_receive(:send_packet).exactly(3).times
-      @inventory.select(IronOre).should == true
+      @inventory.hold(IronOre).should == true
       @inventory.selected_slot.should == IronOre * 1
       @inventory.should be_pending
     end

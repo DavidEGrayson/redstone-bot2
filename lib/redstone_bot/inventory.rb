@@ -94,7 +94,7 @@ module RedstoneBot
       slots_of_type(item_type).inject(0){ |sum, slot| sum + slot.count }
     end
     
-    def select(item_type)
+    def hold(item_type)
       return false if !loaded?
     
       # TODO: it item_type is nil, actually put nothing in your arms (and return false if all slots are full)
@@ -142,7 +142,6 @@ module RedstoneBot
       end
     end
     
-    # TODO: protected
     def swap_slots(x, y)
       slots[x], slots[y] = slots[y], slots[x]
     end
@@ -183,7 +182,7 @@ module RedstoneBot
     def new_transaction
       action_number = @client.next_action_number
       @pending_actions.push action_number
-      return action_number
+      action_number
     end
         
     def normal_slots
@@ -205,14 +204,11 @@ module RedstoneBot
     
     def dump(item_type)
       slot_id = slot_id_of_type(item_type)
-      return false unless slot_id
-      
-      dump_slot_id(slot_id)
+      dump_slot_id(slot_id) if slot_id
     end
     
     def dump_all(item_type)
-      slot_ids = slot_ids_of_type(item_type)
-      slot_ids.each { |id| dump_slot_id(id) }
+      slot_ids_of_type(item_type).each { |id| dump_slot_id(id) }
     end
     
     def dump_slot_id(id)
@@ -221,6 +217,5 @@ module RedstoneBot
       slots[id] = nil
     end
     
-    alias :hold :select
   end
 end
