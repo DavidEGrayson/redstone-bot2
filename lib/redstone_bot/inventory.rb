@@ -123,7 +123,7 @@ module RedstoneBot
           return true
           
         else
-          puts "Hotbar is full: need to left-click twice." if debug     
+          puts "Hotbar is full: need to left-click thrice." if debug     
           hotbar_slot_index = 0   # TODO: actually choose the least-used item in the hotbar
           
           src_slot_id = NormalSlotRange.min + slot_index
@@ -155,6 +155,14 @@ module RedstoneBot
     
     def slots_of_type(item_type)
       slots.select{ |s| item_type === s }
+    end
+    
+    def slot_id_of_type(item_type)
+      slots.index { |s| item_type === s }
+    end
+    
+    def slot_ids_of_type(item_type)
+      slots.each_index.select { |id| item_type === slots[id] }
     end
     
     # hotbar_slot_index must be a number in 0..8, which corresponds to inventory slot IDs 36..44
@@ -198,14 +206,21 @@ module RedstoneBot
     end
     
     def dump(item_type)
-      slot_id = slots.index do |s|
-        item_type === s
-      end
+      slot_id = slot_id_of_type(item_type)
       return false unless slot_id
       
-      @client.send_packet Packet::ClickWindow.new(0, slot_id, false, new_transaction, false, slots[slot_id])
+      dump_slot_id(slot_id)
+    end
+    
+    def dump_all(item_type)
+      slot_ids = slot_ids_of_type(item_type)
+      slot_ids.each { |id| dump_slot_id(id) }
+    end
+    
+    def dump_slot_id(id)
+      @client.send_packet Packet::ClickWindow.new(0, id, false, new_transaction, false, slots[id])
       @client.send_packet Packet::ClickWindow.outside(new_transaction)
-      slots[slot_id] = nil
+      slots[id] = nil
     end
     
     alias :hold :select
