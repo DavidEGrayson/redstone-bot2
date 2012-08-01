@@ -29,9 +29,9 @@ module RedstoneBot
         case p
         when Packet::SetWindowItems, Packet::SetSlot, Packet::ConfirmTransaction, Packet::UpdateWindowProperty
         then
-          puts "#{@client.time_string} #{p.inspect}"
+          puts "#{@client.time_string} #{p.inspect}" if debug
         end
-      end if true
+      end
       
       client.listen do |p|
         case p
@@ -132,9 +132,7 @@ module RedstoneBot
           @client.send_packet Packet::ClickWindow.new(0, src_slot_id, false, new_transaction, false, slots[src_slot_id])
           @client.send_packet Packet::ClickWindow.new(0, destination_slot_id, false, new_transaction, false, slots[destination_slot_id])
           swap_slots src_slot_id, destination_slot_id
-          @client.send_packet Packet::ClickWindow.new(0, src_slot_id, false, new_transaction, false, nil)
-          
-          
+          @client.send_packet Packet::ClickWindow.new(0, src_slot_id, false, new_transaction, false, nil)          
           select_hotbar_slot(hotbar_slot_index)
           return true
         end

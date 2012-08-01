@@ -85,25 +85,25 @@ describe Inventory do
       @inventory.selected_slot.should == WheatItem * 31
     end
     
-    it "can select the item that is already selected without sending packets" do
+    it "can hold the item that is already selected without sending packets" do
       @client.should_not_receive :send_packet
-      @inventory.select(WheatItem).should == true
+      @inventory.hold(WheatItem).should == true
       @inventory.selected_slot.should == WheatItem * 31
       @inventory.should_not be_pending
     end
     
-    it "can select another item in the hotbar with a single packet" do
+    it "can hold another item in the hotbar with a single packet" do
       @client.should_receive(:send_packet).with(Packet::HeldItemChange.new(1))
       @inventory.hold(Bread).should == true
       @inventory.selected_slot.should == Bread * 44
       @inventory.should_not be_pending
     end
     
-    it "if there is an empty spot in the hotbar can select an item not in the hotbar" do
+    it "if there is an empty spot in the hotbar can hold an item not in the hotbar" do
       #@client.should_receive(:send_packet).with(Packet::ClickWindow.new(0, slot_id, false, action_number, true, slots[slot_id]))
       #@client.should_receive(:send_packet).with(Packet::HeldItemChange.new(2))
-      @client.should_receive(:send_packet).twice
-      @inventory.select(IronShovel).should == true
+      @client.should_receive(:send_packet).exactly(2).times
+      @inventory.hold(IronShovel).should == true
       @inventory.selected_slot.should == IronShovel * 1
       @inventory.should be_pending
     end
@@ -128,7 +128,7 @@ describe Inventory do
     end
     
     it "can swap two items to put something in the hotbar" do
-      @client.should_receive(:send_packet).at_least(2).times
+      @client.should_receive(:send_packet).exactly(3).times
       @inventory.select(IronOre).should == true
       @inventory.selected_slot.should == IronOre * 1
       @inventory.should be_pending
