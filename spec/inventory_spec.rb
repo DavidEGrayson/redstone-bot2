@@ -76,6 +76,15 @@ describe Inventory do
       @inventory.should_not include EmeraldOre      
     end
     
+	it "has a nice item_types method" do
+	  @inventory.item_types.should == [IronShovel, Bread, WheatItem]
+	end
+	
+	it "can count items" do
+	  @inventory.count(Bread).should == 46
+	  @inventory.count(Emerald).should == 0
+	end
+	
     it "has a nice hotbar_include? method" do
       @inventory.should_not be_hotbar_include IronShovel
       @inventory.should be_hotbar_include Bread

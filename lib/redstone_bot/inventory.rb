@@ -91,7 +91,7 @@ module RedstoneBot
     end
     
     def count(item_type)
-      slots_of_type(item_type).inject(:+){ |sum, slot| slot.count }
+      slots_of_type(item_type).inject(0){ |sum, slot| sum + slot.count }
     end
     
     def select(item_type)
