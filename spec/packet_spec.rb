@@ -137,3 +137,12 @@ describe RedstoneBot::Packet::ClientSettings do
     described_class.new("en_US", :tiny, :enabled, true, 2).encode_data.should == "\x00\x05\x00e\x00n\x00_\x00U\x00S\x03\x08\x02"
   end
 end
+
+describe RedstoneBot::Packet::SetSlot do
+  it "parses binary data correctly" do
+    p = described_class.create(0, 32, RedstoneBot::ItemType::DiamondAxe * 1)
+    p.window_id.should == 0
+    p.slot_id.should == 32
+    p.slot.should == RedstoneBot::ItemType::DiamondAxe * 1
+  end
+end

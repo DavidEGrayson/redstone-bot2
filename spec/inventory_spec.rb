@@ -1,14 +1,6 @@
 require_relative 'spec_helper'
 require 'redstone_bot/inventory'
 
-# monkeypatch to make tests more readable
-class RedstoneBot::ItemType
-  def *(count)
-    raise ArgumentError.new("count must be an integer larger then 0") unless count > 0
-    RedstoneBot::Slot.new(self, count)
-  end
-end
-
 # do this to make the class and constant names in RedstoneBot and ItemType not
 # require prefixes, thus making them more readable
 module RedstoneBot
@@ -116,6 +108,16 @@ describe Inventory do
       @inventory.should be_pending
     end
     
+    it "responds to SetSlot packets for window 0" do
+      @client << Packet::SetSlot.create(0, 32, DiamondAxe * 1)
+      @inventory.slots[32].should == DiamondAxe * 1
+    end
+
+
+    it "ignores SetSlot packets for non-0 windows" do
+      @client << Packet::SetSlot.create(10, 32, DiamondAxe * 1)
+      @inventory.slots[32].should == nil
+    end
   end
   
   context "when the entire inventory is full" do

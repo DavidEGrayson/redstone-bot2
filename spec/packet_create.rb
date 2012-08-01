@@ -68,4 +68,8 @@ module RedstoneBot
     binary_data += slots.collect { |slot| Slot.encode_data(slot) }.join
     receive_data test_stream binary_data
   end
+  
+  def (Packet::SetSlot).create(window_id, slot_id, slot)
+    receive_data test_stream [window_id, slot_id].pack("CS>") + Slot.encode_data(slot)
+  end
 end

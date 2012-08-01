@@ -6,6 +6,7 @@ module RedstoneBot
 
   class Inventory
     attr_accessor :debug
+    attr_accessor :slots
     
     NormalSlotRange = 9..35
     HotbarSlotRange = 36..44
@@ -41,6 +42,13 @@ module RedstoneBot
             end
             @slots = p.slots   # assumption: no other objects will be messing with the same array
             @loaded = true
+          end
+        when Packet::SetSlot
+          if p.window_id == 0
+            if p.slot_id >= SlotCount
+              raise "Error in SetSlot packet: Expected slot_id to be less than #{SlotCount} but got #{p.slot_id}."
+            end
+            @slots[p.slot_id] = p.slot
           end
         when Packet::ConfirmTransaction
           expected_action_number = @pending_actions.first
@@ -168,10 +176,6 @@ module RedstoneBot
       action_number = @client.next_action_number
       @pending_actions.push action_number
       return action_number
-    end
-    
-    def slots
-      @slots
     end
         
     def normal_slots
