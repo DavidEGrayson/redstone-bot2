@@ -352,7 +352,8 @@ module RedstoneBot
     packet_type 0x0E
     attr_reader :status, :x, :y, :z, :face
     
-    def initialize(status, intcoords, face)
+    # defaults for dropping items where only the status matters
+    def initialize(status, intcoords=[0,0,0], face=0)
       @status = status
       @x, @y, @z = intcoords
       @face = face

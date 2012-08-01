@@ -66,7 +66,14 @@ module RedstoneBot
           end
         else
           chat "dunno where U r"
-        end        
+        end   
+      when "fetch"
+        item = @entity_tracker.closest_entity(Item)
+        if item
+          start_path_to item.position
+        else 
+          chat "don't see dat"
+        end
       when "h"
         player = @entity_tracker.player(p.username)
         if player

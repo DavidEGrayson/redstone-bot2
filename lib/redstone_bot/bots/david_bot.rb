@@ -67,6 +67,37 @@ module RedstoneBot
         next unless p.is_a?(Packet::ChatMessage) && p.player_chat?
         
         case p.chat
+        when /drop[ ]*(.*)/
+          name = $1
+          @inventory.drop 
+        when /dump[ ]*(.*)/
+          name = $1
+          @inventory.drop
+        
+        when /hold (.+)/  
+          name = $1
+          type = ItemType.from(name)
+          if type
+            @inventory.hold(type)
+          else
+            chat "da understood #{name}"
+          end
+        when /craft/
+          #@client.send_packet Packet::PlayerBlockPlacement.new([-100,67,804],0,@inventory.slots[36])
+          #@client.send_packet Packet::ClickWindow.new(1,
+          #def initialize(window_id, slot_id, right_click, action_number, shift, clicked_item)
+          
+          
+          
+          
+          
+        when /i/
+          puts "== INVENTORY =="
+          @inventory.slots.each_with_index do |slot, slot_id|
+            next unless slot
+            puts "#{slot_id}: #{slot}"            
+          end
+          puts "===="
         when /ground report/
           coords = @body.position.dup
           coords.y = find_nearby_ground-1

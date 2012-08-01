@@ -73,6 +73,11 @@ module RedstoneBot
       Coords[x.floor, y.floor, z.floor]
     end
     
+    def to_int_array
+      int_coords = to_int_coords
+      [int_coords.x,int_coords.y,int_coords.z]
+    end
+    
     def to_coords
       self
     end
