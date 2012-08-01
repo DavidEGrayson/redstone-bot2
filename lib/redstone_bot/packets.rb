@@ -364,15 +364,15 @@ module RedstoneBot
     end
     
     def self.done(intcoords, face=0)
-      p = allocate
-      p.send :initialize, 2, intcoords, face
-      p
+      new 2, intcoords, face
     end
     
     def self.start(intcoords, face=0)
-      p = allocate
-      p.send :initialize, 0, intcoords, face
-      p
+      new 0, intcoords, face
+    end
+    
+    def self.drop
+      new 4
     end
   end
   
@@ -1013,9 +1013,12 @@ module RedstoneBot
       @clicked_item = clicked_item
     end
     
+    def self.outside(transaction_id)
+      new 0, -999, false, transaction_id, false, nil
+    end
+    
     def encode_data
-      raise "ClickWindow: clicked_item is nil" if clicked_item.nil?
-      byte(window_id) + unsigned_short(slot_id) + bool(right_click) + unsigned_short(action_number) + bool(shift) + clicked_item.encode_data
+      byte(window_id) + short(slot_id) + bool(right_click) + unsigned_short(action_number) + bool(shift) + Slot.encode_data(clicked_item)
     end
   end
   

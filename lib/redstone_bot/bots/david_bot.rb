@@ -72,8 +72,12 @@ module RedstoneBot
           @inventory.drop 
         when /dump[ ]*(.*)/
           name = $1
-          @inventory.drop
-        
+          type = ItemType.from(name)
+          if type
+            @inventory.dump(type)
+          else
+            chat "da understood #{name}"
+          end
         when /hold (.+)/  
           name = $1
           type = ItemType.from(name)

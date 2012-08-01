@@ -132,6 +132,8 @@ module RedstoneBot
           @client.send_packet Packet::ClickWindow.new(0, src_slot_id, false, new_transaction, false, slots[src_slot_id])
           @client.send_packet Packet::ClickWindow.new(0, destination_slot_id, false, new_transaction, false, slots[destination_slot_id])
           swap_slots src_slot_id, destination_slot_id
+          @client.send_packet Packet::ClickWindow.new(0, src_slot_id, false, new_transaction, false, nil)
+          
           
           select_hotbar_slot(hotbar_slot_index)
           return true
@@ -192,11 +194,18 @@ module RedstoneBot
        
     #TODO drop a specific item
     def drop
-      @client.send_packet Packet::PlayerDigging.new(4)
+      @client.send_packet Packet::PlayerDigging.drop
     end
     
-    def dump
+    def dump(item_type)
+      slot_id = slots.index do |s|
+        item_type === s
+      end
+      return false unless slot_id
       
+      @client.send_packet Packet::ClickWindow.new(0, slot_id, false, new_transaction, false, slots[slot_id])
+      @client.send_packet Packet::ClickWindow.outside(new_transaction)
+      slots[slot_id] = nil
     end
     
     alias :hold :select
