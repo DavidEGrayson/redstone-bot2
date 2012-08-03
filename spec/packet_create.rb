@@ -43,8 +43,8 @@ module RedstoneBot
     receive_data test_stream [metadata.size, compressed_data.size].pack("S>L>") + compressed_data + binary_metadata
   end
   
-  def (Packet::SpawnDroppedItem).create(eid, item, count, metadata, coords, yaw, pitch, roll)
-    binary_data = [eid, item, count, metadata,
+  def (Packet::SpawnDroppedItem).create(eid, item_type, count, metadata, coords, yaw, pitch, roll)
+    binary_data = [eid, item_type.to_i, count, metadata,
      (coords[0]*32).round, (coords[1]*32).round, (coords[2]*32).round,
      yaw, pitch, roll
     ].pack("l>s>Cs>l>l>l>ccc")

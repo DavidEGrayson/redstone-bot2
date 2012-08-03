@@ -86,7 +86,7 @@ describe RedstoneBot::Packet::SpawnDroppedItem do
      
      p = described_class.create(eid, item, count, metadata, coords, yaw, pitch, roll)
      p.eid.should == eid
-     p.item.should == item
+     p.item_type.to_i.should == item
      p.count.should == count
      p.metadata.should == 3
      p.coords.should be_within(0.00001).of(coords)

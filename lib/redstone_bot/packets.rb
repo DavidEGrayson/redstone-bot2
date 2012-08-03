@@ -478,7 +478,7 @@ module RedstoneBot
   class Packet::SpawnDroppedItem < Packet
     packet_type 0x15
     attr_reader :eid
-    attr_reader :item
+    attr_reader :item_type_id, :item_type
     attr_reader :count
     attr_reader :metadata
     attr_reader :x, :y, :z
@@ -490,7 +490,9 @@ module RedstoneBot
         
     def receive_data(socket)
       @eid = socket.read_int
-      @item = socket.read_short
+      @item_type_id = socket.read_short
+      @item_type = ItemType.from_id(@item_type_id)
+      raise "Unknown item type #{@item_type_id} enocunted." if !@item_type
       @count = socket.read_byte
       @metadata = socket.read_short
       @x = socket.read_int/32.0
@@ -499,6 +501,10 @@ module RedstoneBot
       @yaw = socket.read_signed_byte
       @pitch = socket.read_signed_byte
       @roll = socket.read_signed_byte
+    end
+    
+    def to_s
+      "SpawnDroppedItem(#{eid}, #{item_type}, #{count}, #{metadata.inspect}, #{coords}, yw=#{yaw}, pt=#{pitch}, rl=#{roll})"
     end
   end
   
@@ -620,6 +626,10 @@ module RedstoneBot
       @vy = socket.read_short
       @vz = socket.read_short
     end
+    
+    def to_s
+      "EntityVelocity(#{eid}, #{velocity})"      
+    end
   end
   
   class Packet::DestroyEntity < Packet
@@ -645,6 +655,10 @@ module RedstoneBot
       @dx = socket.read_signed_byte/32.0
       @dy = socket.read_signed_byte/32.0
       @dz = socket.read_signed_byte/32.0
+    end
+    
+    def to_s
+      "EntityRelativeMove(#{eid}, #{coords_change})"
     end
   end
   
@@ -697,6 +711,10 @@ module RedstoneBot
       @z = socket.read_int/32.0
       @yaw = socket.read_signed_byte
       @pitch = socket.read_signed_byte
+    end
+    
+    def to_s
+      "EntityTeleport(#{eid}, #{coords}, yw=#{yaw}, pt=#{pitch})"
     end
   end
   

@@ -16,13 +16,28 @@ module RedstoneBot
         count_wheat_in_chunk(chunk_id)
       end
       
+      # @client.listen do |p|
+        # next unless p.respond_to?(:eid)
+        # Assumption: this runs AFTER entity_tracker's listen block
+        # entity = @entity_tracker.entities[p.eid]
+        
+        # next unless ItemType::WheatItem === entity || ItemType::Seeds === entity
+        
+        # puts p
+      # end
+      
+      # Caches the coordinates of each fully-grown wheat by chunk.
       @fully_grown_wheats = SimpleCache.new(@chunk_tracker) do |chunk_id|
         # TODO: reject wheats that are not in bounds
         Coords.each_in_bounds([chunk_id[0]..(chunk_id[0]+15), FarmBounds[1], chunk_id[1]..(chunk_id[1]+15)]).select do |coords|
           block_type(coords) == ItemType::WheatBlock && block_metadata(coords) == ItemType::WheatBlock.fully_grown
         end
       end
-            
+      
+      #@body.on_position_update do
+      #  dig_and_replant_within_reach  # OH NOES!
+      #end
+      
       @chat_filter.listen do |p|
         next unless p.is_a?(Packet::ChatMessage) && p.player_chat?
         
@@ -63,7 +78,8 @@ module RedstoneBot
       wheats_dug = 0
       body.position.change_y(FarmBounds[1].min).spiral.first(100).each do |coords|
         if !hold(ItemType::Seeds)
-          chat "got seeds?"
+          #chat "got seeds?"
+          puts "got seeds?"
           break
         end
         
@@ -74,7 +90,7 @@ module RedstoneBot
         
         ground = coords - Coords::Y
         if block_type(ground) == ItemType::Farmland && block_type(coords) == ItemType::Air
-          place_block_above ground
+          place_block_above ground, ItemType::WheatBlock
         end
       end
       return wheats_dug
@@ -90,13 +106,15 @@ module RedstoneBot
       nil
     end
     
-    def place_block_above(coords)
-      puts "Placing block above #{coords}."
+    def place_block_above(coords, item_type)
+      # TODO: remove item_type arg, calculate it from @inventory.selected_slot.item_type (e.g. WheatItem -> WheatBlock)
+    
+      #puts "Placing block above #{coords}."
       @client.send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 4, 15, 5
       @client.send_packet Packet::Animation.new @client.eid, 1
 
       # We will NOT get an update from the server about the new block
-      @chunk_tracker.change_block(coords, @inventory.selected_slot.item_type)
+      @chunk_tracker.change_block(coords, item_type)
       
       # We WILL get a Set Slot packet from the server, but we want to keep track of the change before that happens
       @inventory.use_up_one
@@ -121,25 +139,26 @@ module RedstoneBot
       fully_grown_wheats.min_by { |coords| @body.distance_to(coords) }
     end
     
-    # Cached
     def wheat_count
       farm_chunks.inject(0) { |sum, chunk_id| sum + (@wheat_count[chunk_id] || 0) }
     end
     
-    # Cached
     def fully_grown_wheats
       farm_chunks.flat_map { |chunk_id| @fully_grown_wheats[chunk_id] }
     end
     
+    # Uncached!
     def average_growth
       growths = wheats.collect { |c| block_metadata(c) }
       growths.inject(:+).to_f / growths.count
     end
     
+    # Uncached!
     def wheats
       farm_blocks.select { |c| block_type(c) == ItemType::WheatBlock }
     end
     
+    # Uncached!
     def count_unloaded
       farm_blocks.count { |c| block_type(c) == nil }
     end
