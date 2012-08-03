@@ -89,6 +89,10 @@ module RedstoneBot
     def selected_slot
       slots[HotbarSlotRange.min + @selected_hotbar_slot_index]
     end
+
+    def selected_slot=(slot)
+      slots[HotbarSlotRange.min + @selected_hotbar_slot_index] = slot
+    end
     
     def count(item_type)
       slots_of_type(item_type).inject(0){ |sum, slot| sum + slot.count }
@@ -207,7 +211,7 @@ module RedstoneBot
       dump_slot_id(slot_id) if slot_id
     end
     
-    def dump_all(item_type)
+    def dump_all(item_type=Slot)
       slot_ids_of_type(item_type).each { |id| dump_slot_id(id) }
     end
     
@@ -218,7 +222,8 @@ module RedstoneBot
     end
     
     def use_up_one
-      slots[HotbarSlotRange.min + @selected_hotbar_slot_index] = selected_slot - 1
+      # slots[HotbarSlotRange.min + @selected_hotbar_slot_index] = selected_slot - 1
+      selected_slot -= 1
     end
     
     def to_s

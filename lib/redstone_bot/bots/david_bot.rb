@@ -33,8 +33,6 @@ module RedstoneBot
     def setup
       standard_setup
       
-      @inventory.debug = true
-      
       @chat_filter = ChatFilter.new(@client)
       @chat_filter.only_player_chats
       @chat_filter.reject_from_self      
@@ -70,6 +68,8 @@ module RedstoneBot
         when /drop[ ]*(.*)/
           name = $1
           @inventory.drop 
+        when /dump all/
+          @inventory.dump_all
         when /dump all[ ]*(.*)/
           name = $1
           type = ItemType.from(name)

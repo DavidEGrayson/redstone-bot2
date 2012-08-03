@@ -136,7 +136,7 @@ module RedstoneBot
       section_num, section_x, section_y, section_z = convert_coords(coords)
       
       block_type_offset = 256*section_y + 16*section_z + section_x
-      @block_type[section_num][block_type_offset] = block_type.chr
+      @block_type[section_num][block_type_offset] = block_type.to_i.chr
       
       metadata_offset = 128*section_y + 8*section_z + section_x/2
       nibble = section_x % 1
@@ -229,10 +229,18 @@ module RedstoneBot
       chunk = chunk_at(coords)
       chunk && chunk.block_metadata(coords)
     end
+        
+    def change_block(coords, block_type, metadata=0)
+      chunk = chunk_at(coords)
+      if chunk
+        chunk.set_block_type_and_metadata(coords, block_type, metadata)
+        notify_change_listeners chunk.id, nil
+      end
+    end
     
     # coords is a RedstoneBot::Coords object or an array of numbers.  The y value is ignored.
     def chunk_id_at(coords)
-      [coords[0].to_i/16*16, coords[2].to_i/16*16]
+      [coords[0].floor/16*16, coords[2].floor/16*16]
     end
 
     def chunk_at(coords)
@@ -246,7 +254,7 @@ module RedstoneBot
     def loaded_chunks
       @chunks.values
     end
-
+    
     protected
 
     def get_or_create_chunk(chunk_id)

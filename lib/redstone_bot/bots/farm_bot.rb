@@ -15,6 +15,13 @@ module RedstoneBot
       @wheat_count = SimpleCache.new(@chunk_tracker) do |chunk_id|
         count_wheat_in_chunk(chunk_id)
       end
+      
+      @fully_grown_wheats = SimpleCache.new(@chunk_tracker) do |chunk_id|
+        # TODO: reject wheats that are not in bounds
+        Coords.each_in_bounds([chunk_id[0]..(chunk_id[0]+15), FarmBounds[1], chunk_id[1]..(chunk_id[1]+15)]).select do |coords|
+          block_type(coords) == ItemType::WheatBlock && block_metadata(coords) == ItemType::WheatBlock.fully_grown
+        end
+      end
             
       @chat_filter.listen do |p|
         next unless p.is_a?(Packet::ChatMessage) && p.player_chat?
@@ -45,6 +52,9 @@ module RedstoneBot
           dig_and_replant_within_reach
         when "farm"
           body.start { farm }
+        when "next"
+          coords = closest_fully_grown_wheat
+          chat "closest fully grown wheat = #{coords.inspect}"
         end
       end
     end
@@ -59,12 +69,11 @@ module RedstoneBot
         
         if block_type(coords) == ItemType::WheatBlock && block_metadata(coords) == ItemType::WheatBlock.fully_grown
           wheats_dug += 1
-          just_dug = true
           dig coords
         end
         
         ground = coords - Coords::Y
-        if block_type(ground) == ItemType::Farmland && (just_dug || block_type(coords) == ItemType::Air)
+        if block_type(ground) == ItemType::Farmland && block_type(coords) == ItemType::Air
           place_block_above ground
         end
       end
@@ -74,12 +83,20 @@ module RedstoneBot
     def dig(coords)
       puts "Digging #{coords}."
       @client.send_packet Packet::PlayerDigging.start coords
+      
+      # We will NOT get an update from the server about the digging finishing.
+      @chunk_tracker.change_block(coords, ItemType::Air)
+      
+      nil
     end
     
     def place_block_above(coords)
       puts "Placing block above #{coords}."
       @client.send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 4, 15, 5
       @client.send_packet Packet::Animation.new @client.eid, 1
+
+      # We will NOT get an update from the server about the new block
+      @chunk_tracker.change_block(coords, @inventory.selected_slot.item_type)
       
       # We WILL get a Set Slot packet from the server, but we want to keep track of the change before that happens
       @inventory.use_up_one
@@ -87,6 +104,8 @@ module RedstoneBot
     
     # Runs in a position update fiber
     def farm
+      # TODO: entity_tracker needs to understand how the items fly after they are generated so that this
+      # algorithm doesn't get stuck going towards a spot where the item used to be?
       while true
         item = @entity_tracker.closest_entity(Item)
         if item && @body.distance_to(item) < 30
@@ -98,6 +117,20 @@ module RedstoneBot
       end
     end
     
+    def closest_fully_grown_wheat
+      fully_grown_wheats.min_by { |coords| @body.distance_to(coords) }
+    end
+    
+    # Cached
+    def wheat_count
+      farm_chunks.inject(0) { |sum, chunk_id| sum + (@wheat_count[chunk_id] || 0) }
+    end
+    
+    # Cached
+    def fully_grown_wheats
+      farm_chunks.flat_map { |chunk_id| @fully_grown_wheats[chunk_id] }
+    end
+    
     def average_growth
       growths = wheats.collect { |c| block_metadata(c) }
       growths.inject(:+).to_f / growths.count
@@ -105,10 +138,6 @@ module RedstoneBot
     
     def wheats
       farm_blocks.select { |c| block_type(c) == ItemType::WheatBlock }
-    end
-    
-    def wheat_count
-      farm_chunks.inject(0) { |sum, chunk_id| sum + (@wheat_count[chunk_id] || 0) }
     end
     
     def count_unloaded
