@@ -76,15 +76,15 @@ describe Inventory do
       @inventory.should_not include EmeraldOre      
     end
     
-	it "has a nice item_types method" do
-	  @inventory.item_types.should == [IronShovel, Bread, WheatItem]
-	end
-	
-	it "can count items" do
-	  @inventory.count(Bread).should == 46
-	  @inventory.count(Emerald).should == 0
-	end
-	
+    it "has a nice item_types method" do
+      @inventory.item_types.should == [IronShovel, Bread, WheatItem]
+    end
+    
+    it "can count items" do
+      @inventory.count(Bread).should == 46
+      @inventory.count(Emerald).should == 0
+    end
+    
     it "has a nice hotbar_include? method" do
       @inventory.should_not be_hotbar_include IronShovel
       @inventory.should be_hotbar_include Bread
@@ -116,27 +116,34 @@ describe Inventory do
       @inventory.selected_slot.should == IronShovel * 1
       @inventory.should be_pending
     end
-	
-	it "can dump by slot id" do
-      @client.should_receive(:send_packet).exactly(2).times
-	  @inventory.dump_slot_id(36)
-	  @inventory.count(WheatItem).should == 0
-      @inventory.should be_pending
-	end
-	
-	it "can dump by item type" do
+    
+    it "can dump by slot id" do
+    @client.should_receive(:send_packet).exactly(2).times
+      @inventory.dump_slot_id(36)
+      @inventory.count(WheatItem).should == 0
+    @inventory.should be_pending
+    end
+    
+    it "can dump by item type" do
       @client.should_receive(:send_packet).exactly(2).times
       @inventory.dump(Bread)
-	  @inventory.count(Bread).should == 44
+      @inventory.count(Bread).should == 44
       @inventory.should be_pending
-	end
-	
+    end
+    
     it "can dump all of some item type" do
       @client.should_receive(:send_packet).exactly(4).times
       @inventory.dump_all(Bread)
-	  @inventory.count(Bread).should == 0
+      @inventory.count(Bread).should == 0
       @inventory.should be_pending
-	end
+    end
+    
+    it "can dump all items" do
+      @client.should_receive(:send_packet).exactly(8).times
+      @inventory.dump_all
+      @inventory.should be_empty
+      @inventory.should be_pending
+    end
     
     it "responds to SetSlot packets for window 0" do
       @client << Packet::SetSlot.create(0, 32, DiamondAxe * 1)
@@ -147,12 +154,24 @@ describe Inventory do
       @client << Packet::SetSlot.create(10, 32, DiamondAxe * 1)
       @inventory.slots[32].should == nil
     end
-	
-	context "when there are pending transactions" do
+    
+    it "can use up the selected item" do
+      # This is called by other parts of the code after sending some packet that uses up
+      # the selected item, so use_up_one does not send any packets of its own.
+      @inventory.selected_slot.should == WheatItem * 31
+      @inventory.use_up_one
+      @inventory.selected_slot.should == WheatItem * 30
+      @inventory.selected_slot -= 29
+      @inventory.selected_slot.should == WheatItem * 1
+      @inventory.use_up_one
+      @inventory.selected_slot.should be nil     
+    end
+    
+    context "when there are pending transactions" do
       before do
         @client.stub(:send_packet)
         @inventory.dump(Bread)
-	  end
+      end
       
       it "is pending" do
         @inventory.should be_pending
@@ -172,7 +191,7 @@ describe Inventory do
         @inventory.should_not be_loaded
         @inventory.slots.uniq.should == [nil]
       end
-	end
+    end
   end
   
   context "when the entire inventory is full" do

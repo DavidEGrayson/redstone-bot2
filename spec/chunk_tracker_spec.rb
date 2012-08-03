@@ -31,6 +31,7 @@ bulkdata1 = (bt*16 + metadata*16 + light*16 + sky_light*16 + biome_data)*2
 map_chunk_bulk1 = RedstoneBot::Packet::MapChunkBulk.create([[[48,16], 0xFFFF, 0], [[64, 16], 0xFFFF, 0]], bulkdata1)
 
 describe RedstoneBot::Chunk do
+
   before do
     @chunk = RedstoneBot::Chunk.new([32,16])    
     @chunk.apply_packet testdata1
@@ -60,7 +61,9 @@ describe RedstoneBot::Chunk do
   end
   
   it "can change individual block type and metadata" do
-    @chunk.set_block_type_and_metadata([42,1,20], RedstoneBot::ItemType::Wool.id, 6)
+    wool = double("wool")
+    wool.should_receive(:to_i).and_return(RedstoneBot::ItemType::Wool.id)
+    @chunk.set_block_type_and_metadata([42,1,20], wool, 6)
     @chunk.block_metadata([42,1,20]).should == 6
     @chunk.block_type_id([42,1,20]).should == RedstoneBot::ItemType::Wool.id
     @chunk.block_metadata([43,1,20]).should == 5
@@ -137,6 +140,12 @@ describe RedstoneBot::ChunkTracker do
     end
   end
   
+  it "handles calls to change_block" do
+    @chunk_tracker.change_block([32,0,16], RedstoneBot::ItemType::Wool, 3)
+    @chunk_tracker.block_type([32, 0, 16]).should == RedstoneBot::ItemType::Wool
+    @chunk_tracker.block_metadata([32, 0, 16]).should == 3
+  end
+  
   it "reports which chunks are loaded" do
     @chunk_tracker.loaded_chunks.collect(&:id).should == [testdata1.chunk_id]
   end
@@ -144,6 +153,11 @@ describe RedstoneBot::ChunkTracker do
   it "handles deallocation" do
     @client << RedstoneBot::Packet::ChunkData.create_deallocation([32,16])
     @chunk_tracker.chunks[[32,16]].should == nil
+  end
+  
+  it "can calculate chunk IDs" do
+    @chunk_tracker.chunk_id_at(RedstoneBot::Coords[-32.1, 0, -64.1]).should == [-48, -80]
+    @chunk_tracker.chunk_id_at(RedstoneBot::Coords[32.1, 0, 64.1]).should == [32, 64]
   end
   
   context "when reporting chunk changes" do
@@ -157,6 +171,11 @@ describe RedstoneBot::ChunkTracker do
     it "reports chunk changes" do
       @receiver.should_receive(:info).with([32,16], testdata1)
       @client << testdata1
+    end
+    
+    it "reports calls to change_block" do
+      @receiver.should_receive(:info).with([32,16], nil)
+      @chunk_tracker.change_block([32,0,16], RedstoneBot::ItemType::Wool, 3)
     end
   end
   
