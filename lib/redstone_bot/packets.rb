@@ -424,7 +424,7 @@ module RedstoneBot
       @eid = socket.read_int
       socket.read_byte
       @x = socket.read_int
-      @y = socket.read_int
+      @y = socket.read_byte
       @z = socket.read_int
     end
   end
