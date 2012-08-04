@@ -136,4 +136,28 @@ describe RedstoneBot::MoveFiber do
       raise "Failed to time out" if Time.now > end_time
     end
   end
+  
+  it "can do nested timeouts" do
+    @mf = RedstoneBot::MoveFiber.new do
+      Fiber.current.timeout(0.20) do
+        20.times do |n|
+          Fiber.current.timeout(0.05) do
+            loop do
+              Fiber.current.yield n
+            end
+          end
+        end
+        nil
+      end
+    end
+    
+    responses = []
+    loop do
+      result = @mf.resume
+      break unless result
+      responses << result unless responses.include?(result)
+    end
+    
+    responses.should == (0..3).to_a
+  end
 end

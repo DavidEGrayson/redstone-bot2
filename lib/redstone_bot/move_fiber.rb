@@ -34,9 +34,9 @@ module RedstoneBot
     def timeout(time, &block)
       end_time = Time.now + time
       habit = Proc.new do
-        throw :timeout if Time.now > end_time
+        throw habit if Time.now > end_time
       end      
-      catch(:timeout) do
+      catch(habit) do
         with_habit(habit, &block)
       end
     end
