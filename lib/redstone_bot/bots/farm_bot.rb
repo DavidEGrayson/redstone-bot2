@@ -92,16 +92,21 @@ module RedstoneBot
         end
         
         if block_type(coords) == ItemType::WheatBlock && block_metadata(coords) == ItemType::WheatBlock.fully_grown
+          puts "#{time_string} digging #{coords}"
           wheats_dug += 1
           dig coords
         end
         
         ground = coords - Coords::Y
         if block_type(ground) == ItemType::Farmland && block_type(coords) == ItemType::Air
+          puts "#{time_string} replanting #{coords}"
           place_block_above ground, ItemType::WheatBlock
+          delay(0.5)  # tmphax
         end
+        
+        break if wheats_dug >= 4  # tmphax        
       end
-      return wheats_dug
+      nil
     end
     
     def dig(coords)
@@ -133,7 +138,7 @@ module RedstoneBot
         while true
           item = @entity_tracker.closest_entity(Item)
           if item && distance_to(item) < 30
-            puts "moving to #{item}"
+            puts "#{time_string} moving to #{item}"
             move_to item.position.change_y(FarmBounds[1].min)
           else
             return
