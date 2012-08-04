@@ -90,7 +90,9 @@ describe RedstoneBot::MoveFiber do
     @habit.should_receive(:call).twice
     @mf.resume.should == 2
     @mf.resume.should == 4
+    @mf.instance_variable_get(:@habits).should be_empty
     @mf.resume
+    
   end
   
   it "supports timeout-like habits" do
@@ -159,5 +161,7 @@ describe RedstoneBot::MoveFiber do
     end
     
     responses.should == (0..3).to_a
+    
+    @mf.instance_variable_get(:@habits).should be_empty
   end
 end
