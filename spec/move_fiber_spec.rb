@@ -120,4 +120,20 @@ describe RedstoneBot::MoveFiber do
     @mf.resume.should == 0
     @mf.resume.should == 1
   end
+  
+  it "has a timeout method" do
+    @mf = RedstoneBot::MoveFiber.new do
+      Fiber.current.timeout(0.05) do
+        loop do
+          Fiber.current.yield
+        end
+      end
+      true
+    end
+    
+    end_time = Time.now + 0.07
+    while !@mf.resume
+      raise "Failed to time out" if Time.now > end_time
+    end
+  end
 end
