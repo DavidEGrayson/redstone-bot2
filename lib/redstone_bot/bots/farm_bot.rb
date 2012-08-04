@@ -76,10 +76,12 @@ module RedstoneBot
     def farm
       return unless require_fiber { farm }
       
-      dig_and_replant_within_reach
-      collect_nearby_items(10)
+      while true
+        dig_and_replant_within_reach
+        collect_nearby_items(10)
+      end
       
-      chat "done farming I guess"
+      chat "done farming"
     end
     
     def dig_and_replant_within_reach
