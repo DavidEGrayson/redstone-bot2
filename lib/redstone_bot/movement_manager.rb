@@ -58,6 +58,6 @@ module RedstoneBot
     def add_habit(*args, &proc); Fiber.current.add_habit(*args, &proc); end
     def delete_habit(*args, &proc); Fiber.current.delete_habit(*args, &proc); end
     def with_habit(*args, &proc); Fiber.current.with_habit(*args, &proc); end
-    def timeout(*args, &proc); Fiber.current.timout(*args, &proc); end
+    def timeout(*args, &proc); Fiber.current.timeout(*args, &proc); end
   end
 end

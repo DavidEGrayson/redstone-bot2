@@ -41,5 +41,6 @@ module RedstoneBot
     def_delegators :@chunk_tracker, :block_type, :block_metadata
     def_delegators :@client, :chat
     def_delegators :@inventory, :hold
+    def_delegators :@entity_tracker, :closest_entity
   end
 end

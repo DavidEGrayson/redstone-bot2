@@ -42,8 +42,6 @@ module RedstoneBot
         next unless p.is_a?(Packet::ChatMessage) && p.player_chat?
         
         case p.chat
-        when "i"
-          puts @inventory
         when /dig (\-?\d+) (\-?\d+)/
           # Digs a block, e.g. harvests wheat
           x, y, z = $1.to_i, FarmBounds[1].min, $2.to_i
@@ -66,12 +64,22 @@ module RedstoneBot
           # Harvest and replant everything          
           dig_and_replant_within_reach
         when "farm"
-          body.start { farm }
+          farm
         when "next"
           coords = closest_fully_grown_wheat
           chat "closest fully grown wheat = #{coords.inspect}"
         end
       end
+    end
+    
+    # Runs in a position update fiber
+    def farm
+      return unless require_fiber { farm }
+      
+      dig_and_replant_within_reach
+      collect_nearby_items(10)
+      
+      chat "done farming I guess"
     end
     
     def dig_and_replant_within_reach
@@ -120,17 +128,16 @@ module RedstoneBot
       @inventory.use_up_one
     end
     
-    # Runs in a position update fiber
-    def farm
-      # TODO: entity_tracker needs to understand how the items fly after they are generated so that this
-      # algorithm doesn't get stuck going towards a spot where the item used to be?
-      while true
-        item = @entity_tracker.closest_entity(Item)
-        if item && @body.distance_to(item) < 30
-          puts "moving to #{item}"
-          move_to item.position.change_y(FarmBounds[1].min)
-        else
-          @body.wait_for_next_position_update
+    def collect_nearby_items(timeout)
+      timeout(timeout) do
+        while true
+          item = @entity_tracker.closest_entity(Item)
+          if item && distance_to(item) < 30
+            puts "moving to #{item}"
+            move_to item.position.change_y(FarmBounds[1].min)
+          else
+            return
+          end
         end
       end
     end

@@ -226,11 +226,11 @@ module RedstoneBot
     end
     
     def to_s
-      s = "== Inventory =="
+      s = "== Inventory ==\n"
       slots.each_with_index do |slot, slot_id|
-        s += "#{slot_id}: #{slot}" if slot
+        s += "#{slot_id}: #{slot}\n" if slot
       end
-      puts "===="
+      s += "====\n"
     end
   end
 end

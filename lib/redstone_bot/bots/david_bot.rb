@@ -13,9 +13,9 @@ module RedstoneBot
 
   class Bots::DavidBot < RedstoneBot::Bot
     extend Forwardable
+    include MovementManager
     include BodyMovers
     include Profiler
-    include MovementManager
     
     Aliases = {
       "meq" => "m -2570 -2069",
@@ -29,6 +29,8 @@ module RedstoneBot
     
     def setup
       standard_setup
+
+      @packet_printer = PacketPrinter.new(@client, PrintPacketClasses)  # should be before chat_filter
       
       @chat_filter = ChatFilter.new(@client)
       @chat_filter.only_player_chats
@@ -44,8 +46,6 @@ module RedstoneBot
       @body.on_position_update do
         manage_movement || default_position_update
       end
-            
-      @packet_printer = PacketPrinter.new(@client, PrintPacketClasses)
       
       @client.listen do |p|
         case p
@@ -62,9 +62,9 @@ module RedstoneBot
         when /drop[ ]*(.*)/
           name = $1
           @inventory.drop 
-        when /dump all/
+        when /\Adump all\Z/
           @inventory.dump_all
-        when /dump all[ ]*(.*)/
+        when /\Adump all[ ]*(.*)\Z/
           name = $1
           type = ItemType.from(name)
           if type
@@ -92,14 +92,9 @@ module RedstoneBot
           #@client.send_packet Packet::PlayerBlockPlacement.new([-100,67,804],0,@inventory.slots[36])
           #@client.send_packet Packet::ClickWindow.new(1,
           #def initialize(window_id, slot_id, right_click, action_number, shift, clicked_item)
-        when /i/
-          puts "== INVENTORY =="
-          @inventory.slots.each_with_index do |slot, slot_id|
-            next unless slot
-            puts "#{slot_id}: #{slot}"            
-          end
-          puts "===="
-        when /ground report/
+        when "i"
+          puts @inventory
+        when "ground report"
           coords = @body.position.dup
           coords.y = find_nearby_ground-1
           columns = [[coords.x+0.3,coords.y,coords.z+0.3],
@@ -107,7 +102,7 @@ module RedstoneBot
                      [coords.x+0.3,coords.y,coords.z-0.3],                     
                      [coords.x-0.3,coords.y,coords.z-0.3]]
           chat "The grnd is #{columns.collect { |col| @chunk_tracker.block_type(col)}}"
-        when /how much (.+)/
+        when /\Ahow much (.+)\Z/
           # TODO: perhaps cache these results using a SimpleCache
           name = $1
           item_type = ItemType.from name
