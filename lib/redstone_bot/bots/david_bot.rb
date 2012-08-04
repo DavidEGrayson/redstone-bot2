@@ -61,7 +61,7 @@ module RedstoneBot
         end
       end 
       
-      @client.listen do |p|
+      @chat_filter.listen do |p|
         next unless p.is_a?(Packet::ChatMessage) && p.player_chat?
         
         case p.chat
