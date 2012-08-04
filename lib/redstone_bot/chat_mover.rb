@@ -37,17 +37,17 @@ module RedstoneBot
           end
         end
       when "stop" then stop
-      when "n", "z-" then start_move_to position - Coords::Z
-      when "s", "z+" then start_move_to position + Coords::Z
-      when "e", "x+" then start_move_to position + Coords::X
-      when "w", "x-" then start_move_to position - Coords::X
-      when "j" then start_jump
+      when "n", "z-" then move_to position - Coords::Z
+      when "s", "z+" then move_to position + Coords::Z
+      when "e", "x+" then move_to position + Coords::X
+      when "w", "x-" then move_to position - Coords::X
+      when "j" then jump
       when "m"
         player = @entity_tracker.player(p.username)
         if player
           x, z = player.position.x, player.position.z
           chat "coming to #{x}, #{z}!"
-          start_miracle_jump x, z
+          miracle_jump x, z
         else
           chat "dunno where U r (chat m <X> <Z> to specify)"
         end
@@ -55,12 +55,12 @@ module RedstoneBot
         x = $1.to_f
         z = $2.to_f
         chat "coming to #{x}, #{z}!"
-        start_miracle_jump x, z
+        miracle_jump x, z
       when "follow me"
         player = @entity_tracker.player(p.username)
         if player
           chat "coming!"
-          start_follow(speed: 20) do 
+          follow(speed: 20) do 
             leader = @entity_tracker.player(p.username)
             leader and leader.position
           end
@@ -70,7 +70,7 @@ module RedstoneBot
       when "fetch"
         item = @entity_tracker.closest_entity(Item)
         if item
-          start_path_to item.position
+          path_to item.position
         else 
           chat "don't see dat"
         end
@@ -78,7 +78,7 @@ module RedstoneBot
         player = @entity_tracker.player(p.username)
         if player
           chat "coming!"
-          start_path_to player.position
+          path_to player.position
         else
           chat "dunno where U r"
         end
@@ -87,7 +87,7 @@ module RedstoneBot
     
     protected
     
-    def_delegators :@body_mover, :start_move_to, :start_jump, :start_miracle_jump, :position, :stop, :start_path_to, :start_follow
+    def_delegators :@body_mover, :position, :stop, :jump, :follow, :miracle_jump, :path_to, :move_to, :fall
     def_delegators :@chatter, :chat
   end
 end

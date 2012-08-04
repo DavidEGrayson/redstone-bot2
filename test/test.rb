@@ -15,7 +15,7 @@ puts "Starting #{bot_class}..."
 
 client = RedstoneBot::Client.new(USERNAME, PASSWORD, HOSTNAME, PORT)
 bot = bot_class.new(client)
-bot.start
+bot.start_bot
 while true
   sleep 10
 end

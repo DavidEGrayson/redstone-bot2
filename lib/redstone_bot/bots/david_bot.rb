@@ -134,6 +134,7 @@ module RedstoneBot
     end
     
     def miracle_jump(x,z)
+      return super unless in_fiber?
       @start_fly = Time.now
       result = super
       chat "I be at #{@body.position} after #{Time.now - @start_fly} seconds."
@@ -146,8 +147,9 @@ module RedstoneBot
     end
     
     def jump_to_height(*args)
+      return super unless in_fiber?
       result = super
-      chat "I bumped my head!" if !result
+      chat "I bumped my head!" if result == :bumped
       result
     end
 

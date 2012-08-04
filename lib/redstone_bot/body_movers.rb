@@ -10,31 +10,9 @@
 module RedstoneBot
   module BodyMovers
     
-    def start_path_to(*args)
-      start do
-        if error = path_to(*args)
-          chat "cant get to U #{error}"
-        end
-      end  
-    end
-    
-    def start_follow(*args, &block)
-      start { follow *args, &block }
-    end
-      
-    def start_move_to(*args)
-      start { move_to *args }
-    end
-    
-    def start_jump(*args)
-      start { jump *args }
-    end
-    
-    def start_miracle_jump(*args)
-      start { miracle_jump *args }
-    end
-    
     def miracle_jump(x, z)
+      return unless require_fiber { miracle_jump x, z }
+
       opts = { :update_period => 0.01, :speed => 600 }
       jump_to_height 276, opts
       move_to Coords[x, 257, z], opts
@@ -42,6 +20,8 @@ module RedstoneBot
     end
     
     def follow(opts={}, &block)
+      return unless require_fiber { follow opts, &block }
+
       opts = opts.dup
       opts[:pathfinder] ||= Pathfinder.new(chunk_tracker, tolerance: 3, flying_aversion: 2)
       while true
@@ -65,6 +45,8 @@ module RedstoneBot
     end
     
     def path_to(target, opts={})
+      return unless require_fiber { path_to target, opts }
+
       target = target.to_int_coords
       pathfinder = opts[:pathfinder] || Pathfinder.new(chunk_tracker)
       
@@ -84,6 +66,8 @@ module RedstoneBot
     end
     
     def move_to(target, opts={})
+      return unless require_fiber { move_to target, opts }
+
       target = target.to_coords
     
       tolerance = opts[:tolerance] || 0.2
@@ -118,19 +102,23 @@ module RedstoneBot
     end
     
     def jump_to_height(y, opts={})
+      return unless require_fiber { jump_to_height y, opts }
+    
       speed = opts[:speed] || 10
     
       while body.position.y <= y
         wait_for_next_position_update(opts[:update_period])
         body.position += Coords::Y*(speed*body.last_update_period)
         if body.bumped?
-          return false   # the head got bumped
+          return :bumped
         end
       end
-      return true
+      return nil
     end
 	
     def fall(opts={})
+      return unless require_fiber { fall opts }
+
       while true
         wait_for_next_position_update(opts[:update_period])
         break if fall_update(opts)

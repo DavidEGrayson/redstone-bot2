@@ -1,3 +1,4 @@
+require "continuation"
 require_relative "move_fiber"
 
 module RedstoneBot
@@ -22,6 +23,19 @@ module RedstoneBot
     def start(&proc)
       @current_fiber = proc
       nil
+    end
+    
+    def in_fiber?
+      Fiber.current.is_a? MoveFiber
+    end
+    
+    def require_fiber(&proc)
+      if in_fiber?
+        true
+      else
+        start(&proc) if proc
+        false
+      end
     end
     
     def stop
