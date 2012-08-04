@@ -62,7 +62,11 @@ module RedstoneBot
     end
     
     def to_s
-      "(%7.2f,%7.2f,%7.2f)" % [x, y, z]
+      if int_coords?
+        "(%7d,%7d,%7d)" % [x, y, z]
+      else
+        "(%7.2f,%7.2f,%7.2f)" % [x, y, z]
+      end
     end
     
     def int_coords?
