@@ -1,6 +1,3 @@
-require 'forwardable'
-require 'fiber'
-
 require "redstone_bot/bot"
 require "redstone_bot/chat_evaluator"
 require "redstone_bot/pathfinder"
@@ -9,6 +6,7 @@ require "redstone_bot/chat_filter"
 require "redstone_bot/chat_mover"
 require "redstone_bot/profiler"
 require "redstone_bot/packet_printer"
+require "redstone_bot/movement_manager"
 
 module RedstoneBot
   module Bots; end
@@ -17,6 +15,7 @@ module RedstoneBot
     extend Forwardable
     include BodyMovers
     include Profiler
+    include MovementManager
     
     Aliases = {
       "meq" => "m -2570 -2069",
@@ -27,8 +26,6 @@ module RedstoneBot
     PrintPacketClasses = [
       Packet::ChatMessage,
     ]
-    
-    attr_reader :body, :chunk_tracker
     
     def setup
       standard_setup
@@ -45,12 +42,9 @@ module RedstoneBot
       @cm = ChatMover.new(@chat_filter, self, @entity_tracker)
       
       @body.on_position_update do
-        if !@body.current_fiber
-          fall_update
-          @body.look_at @entity_tracker.closest_entity
-        end
+        manage_movement || default_position_update
       end
-      
+            
       @packet_printer = PacketPrinter.new(@client, PrintPacketClasses)
       
       @client.listen do |p|
@@ -98,11 +92,6 @@ module RedstoneBot
           #@client.send_packet Packet::PlayerBlockPlacement.new([-100,67,804],0,@inventory.slots[36])
           #@client.send_packet Packet::ClickWindow.new(1,
           #def initialize(window_id, slot_id, right_click, action_number, shift, clicked_item)
-          
-          
-          
-          
-          
         when /i/
           puts "== INVENTORY =="
           @inventory.slots.each_with_index do |slot, slot_id|
@@ -137,19 +126,18 @@ module RedstoneBot
       
     end
     
-    def miracle_jump(x,z)
-      @start_fly = Time.now
-      super
-      chat "I be at #{@body.position} after #{Time.now - @start_fly} seconds."
+    def default_position_update
+      if !@body.current_fiber
+        fall_update
+        @body.look_at @entity_tracker.closest_entity
+      end
     end
     
-    def tmphax_find_path
-      @pathfinder.start = @body.position.to_a.collect(&:to_i)
-      @pathfinder.bounds = [94..122, 69..78, 233..261]
-      @pathfinder.goal = [104, 73, 240]
-      puts "Finding path from #{@pathfinder.start} to #{@pathfinder.goal}..."
-      result = @pathfinder.find_path
-      puts "t: " + result.inspect
+    def miracle_jump(x,z)
+      @start_fly = Time.now
+      result = super
+      chat "I be at #{@body.position} after #{Time.now - @start_fly} seconds."
+      result
     end
     
     def standing_on
@@ -163,9 +151,5 @@ module RedstoneBot
       result
     end
 
-    protected
-    def_delegators :@chunk_tracker, :block_type, :block_metadata
-    def_delegators :@client, :chat
-    def_delegators :@inventory, :hold
   end
 end

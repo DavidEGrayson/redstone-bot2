@@ -1,20 +1,24 @@
-require_relative 'body'
-require_relative 'entity_tracker'
-require_relative 'chunk_tracker'
-require_relative 'inventory'
-require_relative 'uninspectable'
+require "forwardable"
+require_relative "uninspectable"
+require_relative "body"
+require_relative "entity_tracker"
+require_relative "chunk_tracker"
+require_relative "inventory"
 
 # This class is not too useful on its own.  It is meant to be subclassed by
 # people making bots.
 module RedstoneBot
   class Bot
     include Uninspectable
+    extend Forwardable
+    
+    attr_reader :body, :chunk_tracker, :entity_tracker, :inventory    
   
     def initialize(client)
       @client = client
     end
     
-    def start
+    def start_bot
       setup
       @client.start
     end
@@ -32,5 +36,10 @@ module RedstoneBot
       @chunk_tracker = ChunkTracker.new(@client)
       @inventory = Inventory.new(@client)
     end
+    
+    def_delegators :@body, :position, :look_at, :distance_to
+    def_delegators :@chunk_tracker, :block_type, :block_metadata
+    def_delegators :@client, :chat
+    def_delegators :@inventory, :hold
   end
 end

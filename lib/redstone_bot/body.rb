@@ -1,5 +1,4 @@
 require_relative 'coords'
-require 'move_fiber'
 
 module RedstoneBot
   class Look < Struct.new(:yaw, :pitch)
@@ -51,16 +50,6 @@ module RedstoneBot
         end
       end
       
-      on_position_update do
-        if @current_fiber
-          if @current_fiber.respond_to? :call
-            c = @current_fiber
-            @current_fiber = Fiber.new { c.call }
-          end
-          @current_fiber.resume
-          @current_fiber = nil if !@current_fiber.alive?
-        end
-      end
     end
     
     def on_position_update(&proc)
@@ -101,27 +90,7 @@ module RedstoneBot
     def distance_to(coords)
       (coords.to_coords - position).magnitude
     end
-    
-    def start(&proc)
-      @current_fiber = proc
-      nil
-    end
-    
-    def stop
-      @current_fiber = nil
-    end
-    
-    def delay(time)
-      wait_for_next_position_update(time)
-    end
-    
-    def wait_for_next_position_update(update_period = nil)
-      if update_period
-        self.next_update_period = update_period
-      end
-      Fiber.yield
-    end
-    
+       
     protected  
     def send_update
       packet = Packet::PlayerPositionAndLook.new(

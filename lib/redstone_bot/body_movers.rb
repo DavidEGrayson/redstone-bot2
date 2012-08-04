@@ -11,7 +11,7 @@ module RedstoneBot
   module BodyMovers
     
     def start_path_to(*args)
-      body.start do
+      start do
         if error = path_to(*args)
           chat "cant get to U #{error}"
         end
@@ -19,19 +19,19 @@ module RedstoneBot
     end
     
     def start_follow(*args, &block)
-      body.start { follow *args, &block }
+      start { follow *args, &block }
     end
       
     def start_move_to(*args)
-      body.start { move_to *args }
+      start { move_to *args }
     end
     
     def start_jump(*args)
-      body.start { jump *args }
+      start { jump *args }
     end
     
     def start_miracle_jump(*args)
-      body.start { miracle_jump *args }
+      start { miracle_jump *args }
     end
     
     def miracle_jump(x, z)
@@ -49,12 +49,12 @@ module RedstoneBot
         break if target.nil?
         if (body.position - target).abs <= 1
           #TODO maybe fall_update here instead
-          body.wait_for_next_position_update 
+          wait_for_next_position_update 
         else
           case path_to target, opts
           when :solid, nil
             #TODO maybe fall_update here instead
-            body.wait_for_next_position_update        
+            wait_for_next_position_update        
           when :no_path
             chat "cant get to U"
             body.delay 10
@@ -91,7 +91,7 @@ module RedstoneBot
       axes = [Coords::X, Coords::Y, Coords::Z].cycle
       
       while true
-        body.wait_for_next_position_update(opts[:update_period])
+        wait_for_next_position_update(opts[:update_period])
         body.look_at target
 
         d = target - body.position
@@ -121,8 +121,8 @@ module RedstoneBot
       speed = opts[:speed] || 10
     
       while body.position.y <= y
-        body.wait_for_next_position_update(opts[:update_period])
-        body.position.y += speed*body.last_update_period
+        wait_for_next_position_update(opts[:update_period])
+        body.position += Coords::Y*(speed*body.last_update_period)
         if body.bumped?
           return false   # the head got bumped
         end
@@ -132,7 +132,7 @@ module RedstoneBot
 	
     def fall(opts={})
       while true
-        body.wait_for_next_position_update(opts[:update_period])
+        wait_for_next_position_update(opts[:update_period])
         break if fall_update(opts)
       end
     end
@@ -174,12 +174,5 @@ module RedstoneBot
       nil
     end
     
-    def position
-      body.position
-    end
-    
-    def stop
-      body.stop
-    end
   end
 end
