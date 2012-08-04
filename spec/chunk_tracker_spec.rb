@@ -60,7 +60,7 @@ describe RedstoneBot::Chunk do
     @chunk.sky_light([42, 1, 20]).should == 2
   end
   
-  it "can change individual block type and metadata" do
+  it "can change individual block type and metadata (nibble=0)" do
     wool = double("wool")
     wool.should_receive(:to_i).and_return(RedstoneBot::ItemType::Wool.id)
     @chunk.set_block_type_and_metadata([42,1,20], wool, 6)
@@ -68,6 +68,13 @@ describe RedstoneBot::Chunk do
     @chunk.block_type_id([42,1,20]).should == RedstoneBot::ItemType::Wool.id
     @chunk.block_metadata([43,1,20]).should == 5
     @chunk.block_type_id([43,1,20]).should == RedstoneBot::ItemType::WheatBlock.id
+  end
+  
+  it "can change individual block type and metadata (nibble=1)" do
+    @chunk.set_block_type_and_metadata([45,1,20], RedstoneBot::ItemType::Wool, 6)
+    @chunk.block_metadata([44,1,20]).should == 5
+    @chunk.block_metadata([45,1,20]).should == 6
+    @chunk.block_type_id([45,1,20]).should == RedstoneBot::ItemType::Wool.id
   end
   
   it "can count blocks by type" do
@@ -140,10 +147,16 @@ describe RedstoneBot::ChunkTracker do
     end
   end
   
-  it "handles calls to change_block" do
-    @chunk_tracker.change_block([32,0,16], RedstoneBot::ItemType::Wool, 3)
+  it "handles calls to change_block (nibble=0)" do
+    @chunk_tracker.change_block([32, 0, 16], RedstoneBot::ItemType::Wool, 3)
     @chunk_tracker.block_type([32, 0, 16]).should == RedstoneBot::ItemType::Wool
     @chunk_tracker.block_metadata([32, 0, 16]).should == 3
+  end
+  
+  it "handles calls to change_block (nibble=1)" do
+    @chunk_tracker.change_block([33, 0, 16], RedstoneBot::ItemType::Wool, 3)
+    @chunk_tracker.block_type([33, 0, 16]).should == RedstoneBot::ItemType::Wool
+    @chunk_tracker.block_metadata([33, 0, 16]).should == 3
   end
   
   it "reports which chunks are loaded" do

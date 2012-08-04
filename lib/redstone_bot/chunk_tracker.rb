@@ -139,7 +139,7 @@ module RedstoneBot
       @block_type[section_num][block_type_offset] = block_type.to_i.chr
       
       metadata_offset = 128*section_y + 8*section_z + section_x/2
-      nibble = section_x % 1
+      nibble = section_x % 2
       @metadata[section_num][metadata_offset] = if nibble == 1
         (@metadata[section_num][metadata_offset].ord & 0x0F) | (metadata << 4 & 0xF0)
       else
