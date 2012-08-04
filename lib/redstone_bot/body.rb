@@ -1,4 +1,5 @@
 require_relative 'coords'
+require 'move_fiber'
 
 module RedstoneBot
   class Look < Struct.new(:yaw, :pitch)
