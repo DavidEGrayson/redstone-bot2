@@ -23,12 +23,12 @@ module RedstoneBot
     end
     
     def with_habit(habit)
-      #begin
+      begin
         add_habit(habit)
         yield
-      #ensure
+      ensure
         delete_habit(habit)
-      #end
+      end
     end
   end
 end

@@ -74,16 +74,50 @@ describe RedstoneBot::MoveFiber do
     @mf = RedstoneBot::MoveFiber.new do
       Fiber.current.yield 0
 
-      Fiber.current.with_habit(@habit) do
-        Fiber.current.yield 1
+      catch(:hey) do
+        Fiber.current.with_habit(@habit) do
+          Fiber.current.yield 1
+          Fiber.current.yield 2
+          throw :hey
+          Fiber.current.yield 3
+        end
       end
-      Fiber.current.yield 2      
+      Fiber.current.yield 4
     end
     
     @mf.resume.should == 0
     @mf.resume.should == 1
-    @habit.should_receive(:call).once
+    @habit.should_receive(:call).twice
     @mf.resume.should == 2
+    @mf.resume.should == 4
     @mf.resume
+  end
+  
+  it "supports timeout-like habits" do
+    class << @habit
+      def call
+        @times ||= 0
+        @times += 1
+        throw :timeout if @times == 5
+      end
+    end
+    
+    @mf = RedstoneBot::MoveFiber.new do
+      catch(:timeout) do
+        Fiber.current.with_habit(@habit) do
+          100.times do
+            Fiber.current.yield 0
+          end
+        end
+      end
+      Fiber.current.yield 1
+    end
+    
+    @mf.resume.should == 0
+    @mf.resume.should == 0
+    @mf.resume.should == 0
+    @mf.resume.should == 0
+    @mf.resume.should == 0
+    @mf.resume.should == 1
   end
 end
