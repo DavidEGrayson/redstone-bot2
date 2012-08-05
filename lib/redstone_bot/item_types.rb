@@ -57,21 +57,27 @@ module RedstoneBot
       end
     end
     
+    def self.new_from_line(line)
+      id_string, name, max_stack_string, attr_string = line.split
+      id = id_string.to_i
+      symbol = name.to_sym
+      max_stack = max_stack_string.to_i
+      attrs = (attr_string||"").split(",")
+
+      new(id, symbol, max_stack, attrs.include?("solid"))
+    end
+    
+    def self.register(item_type)
+      name = item_type.symbol.to_s.downcase
+      raise "Multiple item types named #{name}" if @types_by_string[name]
+      raise "Multiple item types with id #{item_type.id}" if @types[item_type.id]
+      const_set item_type.symbol, item_type
+      @types_by_string[name] = @types[item_type.id] = item_type
+    end
+    
     File.open(File.join(File.dirname(__FILE__), "item_types.tsv")) do |f|
       f.each_line do |line|
-        id_string, name, max_stack_string, attr_string = line.split
-        id = id_string.to_i
-        symbol = name.to_sym
-        max_stack = max_stack_string.to_i        
-        attrs = (attr_string||"").split(",")
-
-        item_type = new(id, symbol, max_stack, attrs.include?("solid"))
-        
-        string = name.downcase
-        raise "Multiple item types named #{name}" if @types_by_string[string]
-        raise "Multiple item types with id #{id}" if @types[id]
-        const_set symbol, item_type
-        @types_by_string[string] = @types[id] = item_type
+        register new_from_line(line)
       end
     end
     
