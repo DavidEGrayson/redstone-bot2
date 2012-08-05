@@ -118,7 +118,7 @@ module RedstoneBot
         
         ground = coords - Coords::Y
                 
-        next unless distance_to(ground) < 6.2
+        next unless distance_to(ground) < 6.2   # TODO: more carefully choose a value for this
         
         if block_type(coords) == ItemType::WheatBlock && block_metadata(coords) == ItemType::WheatBlock.fully_grown
           puts "#{time_string} digging #{coords}"
