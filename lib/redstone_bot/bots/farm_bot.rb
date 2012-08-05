@@ -18,16 +18,6 @@ module RedstoneBot
         count_wheat_in_chunk(chunk_id)
       end
       
-      # @client.listen do |p|
-        # next unless p.respond_to?(:eid)
-        # Assumption: this runs AFTER entity_tracker's listen block
-        # entity = @entity_tracker.entities[p.eid]
-        
-        # next unless ItemType::WheatItem === entity || ItemType::Seeds === entity
-        
-        # puts p
-      # end
-      
       # Caches the coordinates of each fully-grown wheat by chunk.
       @fully_grown_wheats = SimpleCache.new(@chunk_tracker) do |chunk_id|
         # TODO: reject wheats that are not in bounds
@@ -50,32 +40,8 @@ module RedstoneBot
         next unless p.is_a?(Packet::ChatMessage) && p.player_chat?
         
         case p.chat
-        when /dig (\-?\d+) (\-?\d+)/
-          # Digs a block, e.g. harvests wheat
-          x, y, z = $1.to_i, FarmBounds[1].min, $2.to_i
-          puts "digging #{x},#{y},#{z}!"
-          dig [x,y,z]
-        when /plant (\-?\d+) (\-?\d+)/
-          # Plants seeds at a spot
-          coords = [$1.to_i, FarmBounds[1].min-1, $2.to_i]
-          if block_type(coords) == ItemType::Farmland
-            puts "planting on the farmland at #{coords.inspect}!"
-            if hold(ItemType::Seeds)
-              place_block_above coords
-            else
-              chat "got seeds?"
-            end
-          else
-            chat "dat not farm"
-          end
-        when "whee"
-          # Harvest and replant everything          
-          dig_and_replant_within_reach
         when "farm"
           farm
-        when "next"
-          coords = closest_fully_grown_wheat
-          chat "closest fully grown wheat = #{coords.inspect}"
         end
       end
     end
