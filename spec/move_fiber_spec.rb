@@ -141,9 +141,9 @@ describe RedstoneBot::MoveFiber do
   
   it "can do nested timeouts" do
     @mf = RedstoneBot::MoveFiber.new do
-      Fiber.current.timeout(0.18) do
+      Fiber.current.timeout(0.15) do
         20.times do |n|
-          Fiber.current.timeout(0.05) do
+          Fiber.current.timeout(0.1) do
             loop do
               Fiber.current.yield n
             end
@@ -160,7 +160,7 @@ describe RedstoneBot::MoveFiber do
       responses << result unless responses.include?(result)
     end
     
-    responses.should == (0..3).to_a
+    responses.should == [0, 1]
     
     @mf.instance_variable_get(:@habits).should be_empty
   end

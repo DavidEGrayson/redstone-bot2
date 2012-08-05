@@ -204,7 +204,7 @@ module RedstoneBot
           end
           
           # Notify the listeners for each chunk that changed
-          p.metadata.each do |chunk_id, _1, _2|
+          p.metadata.each do |chunk_id, *_|
             notify_change_listeners chunk_id, p
           end
         end
