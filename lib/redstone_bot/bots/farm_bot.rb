@@ -146,9 +146,7 @@ module RedstoneBot
         while true
           # Get the closest Wheat or Seed item that is at the right level.
           # We just ignore items that fell into the water.
-          item = closest entity_tracker.select do |entity|
-            (ItemType::WheatItem === entity or ItemType::Seeds === entity) and FarmBounds[1].include?(entity.position.y.floor)
-          end
+          item = closest desirable_items
           
           if item && distance_to(item) < 30
             puts "#{time_string} moving to #{item}"
@@ -158,6 +156,12 @@ module RedstoneBot
             return
           end
         end
+      end
+    end
+    
+    def desirable_items
+      entity_tracker.select do |entity|
+        (ItemType::WheatItem === entity or ItemType::Seeds === entity) and FarmBounds[1].include?(entity.position.y.floor)
       end
     end
     
