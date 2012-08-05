@@ -1,281 +1,281 @@
-0	Air	
-1	Stone	solid
-2	GrassBlock	solid
-3	Dirt	solid
-4	Cobblestone	solid
-5	WoodenPlanks	solid
-6	Saplings	solid
-7	Bedrock	solid
-8	Water	fluid
-9	StationaryWater	fluid
-10	Lava	fluid
-11	StationaryLava	fluid
-12	Sand	solid
-13	Gravel	solid
-14	GoldOre	solid
-15	IronOre	solid
-16	CoalOre	solid
-17	Wooden	solid
-18	Leaves	solid
-19	Sponge	solid
-20	Glass	solid
-21	LapisOre	solid
-22	LapisBlock	solid
-23	Dispenser	solid
-24	Sandstone	solid
-25	NoteBlock	solid
-26	BedBlock	solid
-27	PoweredRail	
-28	DetectorRail	
-29	StickyPiston	solid
-30	Cobweb	
-31	TallGrass	
-32	DeadBush	
-33	Piston	solid
-34	PistonExtension	solid
-35	Wool	solid
-36	BlockMovedByPiston	solid
-37	Dandelion	
-38	Rose	
-39	BrownMushroom	
-40	RedMushroom	
-41	GoldBlock	solid
-42	IronBlock	solid
-43	DoubleSlabs	solid
-44	Slabs	solid
-45	Bricks	solid
-46	TNT	solid
-47	Bookshelf	solid
-48	MossStone	solid
-49	Obsidian	solid
-50	Torch	
-51	Fire	
-52	MonsterSpawner	solid
-53	OakWoodStairs	solid
-54	Chest	solid
-55	RedstoneWire	
-56	DiamondOre	solid
-57	DiamondBlock	solid
-58	CraftingTable	solid
-59	WheatBlock	
-60	Farmland	solid
-61	Furnace	solid
-62	BurningFurnace	solid
-63	SignPost	
-64	WoodenDoorBlock	solid
-65	Ladders	solid
-66	Rails	solid
-67	CobblestoneStairs	solid
-68	WallSign	
-69	Lever	
-70	StonePressurePlate	
-71	IronDoorBlock	solid
-72	WoodenPressurePlate	
-73	RedstoneOre	solid
-74	GlowingRedstoneOre	solid
-75	RedstoneTorchOff	
-76	RedstoneTorchOn	
-77	StoneButton	
-78	SnowCover	
-79	Ice	solid
-80	SnowBlock	solid
-81	Cactus	solid
-82	ClayBlock	solid
-83	SugarCaneBlock	solid
-84	Jukebox	solid
-85	Fence	solid
-86	Pumpkin	solid
-87	Netherrack	solid
-88	SoulSand	solid
-89	GlowstoneBlock	solid
-90	Portal	
-91	JackOLantern	solid
-92	CakeBlock	solid
-93	RedstoneRepeaterOff	solid
-94	RedstoneRepeaterOn	solid
-95	LockedChest	solid
-96	Trapdoor	solid
-97	MonsterEgg	solid
-98	StoneBricks	solid
-99	HugeBrownMushroom	solid
-100	HugeRedMushroom	solid
-101	IronBars	solid
-102	GlassPane	solid
-103	Melon	solid
-104	PumpkinStem	
-105	MelonStem	
-106	Vines	
-107	FenceGate	solid
-108	BrickStairs	solid
-109	StoneBrickStairs	solid
-110	Mycelium	solid
-111	LilyPad	solid
-112	NetherBrick	solid
-113	NetherBrickFence	solid
-114	NetherBrickStairs	solid
-115	NetherWartBlock	
-116	EnchantmentTable	solid
-117	BrewingStandBlock	solid
-118	CauldronBlock	solid
-119	EndPortal	
-120	EndPortalFrame	solid
-121	EndStone	solid
-122	DragonEgg	solid
-123	RedstoneLampOff	solid
-124	RedstoneLampOn	solid
-125	WoodenDoubleSlab	solid
-126	WoodenSlab	solid
-127	CocoaPlant	
-128	SandstoneStairs	solid
-129	EmeraldOre	solid
-130	EnderChest	
-131	TripwireHook	solid
-132	Tripwire	
-133	EmeraldBlock	solid
-134	SpruceWoodStairs	solid
-135	BirchWoodStairs	solid
-136	JungleWoodStairs	solid
-256	IronShovel	
-257	IronPickaxe	
-258	IronAxe	
-259	FlintAndSteel	
-260	RedApple	
-261	Bow	
-262	Arrow	
-263	Coal	
-264	Diamond	
-265	IronIngot	
-266	GoldIngot	
-267	IronSword	
-268	WoodenSword	
-269	WoodenShovel	
-270	WoodenPickaxe	
-271	WoodenAxe	
-272	StoneSword	
-273	StoneShovel	
-274	StonePickaxe	
-275	StoneAxe	
-276	DiamondSword	
-277	DiamondShovel	
-278	DiamondPickaxe	
-279	DiamondAxe	
-280	Stick	
-281	Bowl	
-282	MushroomSoup	
-283	GoldenSword	
-284	GoldenShovel	
-285	GoldenPickaxe	
-286	GoldenAxe	
-287	StringItem	
-288	Feather	
-289	Gunpowder	
-290	WoodenHoe	
-291	StoneHoe	
-292	IronHoe	
-293	DiamondHoe	
-294	GoldHoe	
-295	Seeds	
-296	WheatItem	
-297	Bread	
-298	LeatherCap	
-299	LeatherTunic	
-300	LeatherPants	
-301	LeatherBoots	
-302	ChainHelmet	
-303	ChainChestplate	
-304	ChainLeggings	
-305	ChainBoots	
-306	IronHelmet	
-307	IronChestplate	
-308	IronLeggings	
-309	IronBoots	
-310	DiamondHelmet	
-311	DiamondChestplate	
-312	DiamondLeggings	
-313	DiamondBoots	
-314	GoldenHelmet	
-315	GoldenChestplate	
-316	GoldenLeggings	
-317	GoldenBoots	
-318	Flint	
-319	RawPorkchop	
-320	CookedPorkchop	
-321	Paintings	
-322	GoldenApple	
-323	Sign	
-324	WoodenDoorItem	
-325	Bucket	
-326	WaterBucket	
-327	LavaBucket	
-328	Minecart	
-329	Saddle	
-330	IronDoorItem	
-331	RedstoneDust	
-332	SnowBall	
-333	Boat	
-334	Leather	
-335	Milk	
-336	ClayBrick	
-337	ClayBall	
-338	SugarCaneItem	
-339	Paper	
-340	Book	
-341	Slimeball	
-342	MinecartWithChest	
-343	MinecartWithFurnace	
-344	ChickenEgg	
-345	Compass	
-346	FishingRod	
-347	Clock	
-348	GlowstoneDust	
-349	RawFish	
-350	CookedFish	
-351	Dye	
-352	Bone	
-353	Sugar	
-354	CakeItem	
-355	BedItem	
-356	RedstoneRepeater	
-357	Cookie	
-358	Map	
-359	Shears	
-360	MelonSlice	
-361	PumpkinSeeds	
-362	MelonSeeds	
-363	RawBeef	
-364	Steak	
-365	RawChicken	
-366	CookedChicken	
-367	RottenFlesh	
-368	EnderPearl	
-369	BlazeRod	
-370	GhastTear	
-371	GoldNugget	
-372	NetherWartItem	
-373	Potions	
-374	GlassBottle	
-375	SpiderEye	
-376	FermentedSpiderEye	
-377	BlazePowder	
-378	MagmaCream	
-379	BrewingStandItem	
-380	CauldronItem	
-381	EyeofEnder	
-382	GlisteringMelon	
-383	SpawnEgg	
-384	BottleOfEnchanting	
-385	FireCharge	
-386	BookAndQuill	
-387	WrittenBook	
-388	Emerald	
-2256	Disc13	
-2257	DiskCat	
-2258	DiskBlocks	
-2259	DiskChirps	
-2260	DiskFar	
-2261	DiskMall	
-2262	DiskMellohi	
-2263	DiskStal	
-2264	DiskStrad	
-2265	DiskWard	
-2266	Disk11	
+0	Air	64	
+1	Stone	64	solid
+2	GrassBlock	64	solid
+3	Dirt	64	solid
+4	Cobblestone	64	solid
+5	WoodenPlanks	64	solid
+6	Saplings	64	solid
+7	Bedrock	64	solid
+8	Water	64	fluid
+9	StationaryWater	64	fluid
+10	Lava	64	fluid
+11	StationaryLava	64	fluid
+12	Sand	64	solid
+13	Gravel	64	solid
+14	GoldOre	64	solid
+15	IronOre	64	solid
+16	CoalOre	64	solid
+17	Wooden	64	solid
+18	Leaves	64	solid
+19	Sponge	64	solid
+20	Glass	64	solid
+21	LapisOre	64	solid
+22	LapisBlock	64	solid
+23	Dispenser	64	solid
+24	Sandstone	64	solid
+25	NoteBlock	64	solid
+26	BedBlock	1	solid
+27	PoweredRail	64	
+28	DetectorRail	64	
+29	StickyPiston	64	solid
+30	Cobweb	64	
+31	TallGrass	64	
+32	DeadBush	64	
+33	Piston	64	solid
+34	PistonExtension	64	solid
+35	Wool	64	solid
+36	BlockMovedByPiston	64	solid
+37	Dandelion	64	
+38	Rose	64	
+39	BrownMushroom	64	
+40	RedMushroom	64	
+41	GoldBlock	64	solid
+42	IronBlock	64	solid
+43	DoubleSlabs	64	solid
+44	Slabs	64	solid
+45	Bricks	64	solid
+46	TNT	64	solid
+47	Bookshelf	64	solid
+48	MossStone	64	solid
+49	Obsidian	64	solid
+50	Torch	64	
+51	Fire	64	
+52	MonsterSpawner	64	solid
+53	OakWoodStairs	64	solid
+54	Chest	64	solid
+55	RedstoneWire	64	
+56	DiamondOre	64	solid
+57	DiamondBlock	64	solid
+58	CraftingTable	64	solid
+59	WheatBlock	64	
+60	Farmland	64	solid
+61	Furnace	64	solid
+62	BurningFurnace	64	solid
+63	SignPost	16	
+64	WoodenDoorBlock	64	solid
+65	Ladders	64	solid
+66	Rails	64	solid
+67	CobblestoneStairs	64	solid
+68	WallSign	64	
+69	Lever	64	
+70	StonePressurePlate	64	
+71	IronDoorBlock	64	solid
+72	WoodenPressurePlate	64	
+73	RedstoneOre	64	solid
+74	GlowingRedstoneOre	64	solid
+75	RedstoneTorchOff	64	
+76	RedstoneTorchOn	64	
+77	StoneButton	64	
+78	SnowCover	64	
+79	Ice	64	solid
+80	SnowBlock	64	solid
+81	Cactus	64	solid
+82	ClayBlock	64	solid
+83	SugarCaneBlock	64	solid
+84	Jukebox	64	solid
+85	Fence	64	solid
+86	Pumpkin	64	solid
+87	Netherrack	64	solid
+88	SoulSand	64	solid
+89	GlowstoneBlock	64	solid
+90	Portal	64	
+91	JackOLantern	64	solid
+92	CakeBlock	64	solid
+93	RedstoneRepeaterOff	64	solid
+94	RedstoneRepeaterOn	64	solid
+95	LockedChest	64	solid
+96	Trapdoor	64	solid
+97	MonsterEgg	64	solid
+98	StoneBricks	64	solid
+99	HugeBrownMushroom	64	solid
+100	HugeRedMushroom	64	solid
+101	IronBars	64	solid
+102	GlassPane	64	solid
+103	Melon	64	solid
+104	PumpkinStem	64	
+105	MelonStem	64	
+106	Vines	64	
+107	FenceGate	64	solid
+108	BrickStairs	64	solid
+109	StoneBrickStairs	64	solid
+110	Mycelium	64	solid
+111	LilyPad	64	solid
+112	NetherBrick	64	solid
+113	NetherBrickFence	64	solid
+114	NetherBrickStairs	64	solid
+115	NetherWartBlock	64	
+116	EnchantmentTable	64	solid
+117	BrewingStandBlock	64	solid
+118	CauldronBlock	64	solid
+119	EndPortal	64	
+120	EndPortalFrame	64	solid
+121	EndStone	64	solid
+122	DragonEgg	64	solid
+123	RedstoneLampOff	64	solid
+124	RedstoneLampOn	64	solid
+125	WoodenDoubleSlab	64	solid
+126	WoodenSlab	64	solid
+127	CocoaPlant	64	
+128	SandstoneStairs	64	solid
+129	EmeraldOre	64	solid
+130	EnderChest	64	
+131	TripwireHook	64	solid
+132	Tripwire	64	
+133	EmeraldBlock	64	solid
+134	SpruceWoodStairs	64	solid
+135	BirchWoodStairs	64	solid
+136	JungleWoodStairs	64	solid
+256	IronShovel	1	
+257	IronPickaxe	1	
+258	IronAxe	1	
+259	FlintAndSteel	1	
+260	RedApple	64	
+261	Bow	1	
+262	Arrow	64	
+263	Coal	64	
+264	Diamond	64	
+265	IronIngot	64	
+266	GoldIngot	64	
+267	IronSword	1	
+268	WoodenSword	1	
+269	WoodenShovel	1	
+270	WoodenPickaxe	1	
+271	WoodenAxe	1	
+272	StoneSword	1	
+273	StoneShovel	1	
+274	StonePickaxe	1	
+275	StoneAxe	1	
+276	DiamondSword	1	
+277	DiamondShovel	1	
+278	DiamondPickaxe	1	
+279	DiamondAxe	1	
+280	Stick	64	
+281	Bowl	64	
+282	MushroomSoup	1	
+283	GoldenSword	1	
+284	GoldenShovel	1	
+285	GoldenPickaxe	1	
+286	GoldenAxe	1	
+287	StringItem	64	
+288	Feather	64	
+289	Gunpowder	64	
+290	WoodenHoe	1	
+291	StoneHoe	1	
+292	IronHoe	1	
+293	DiamondHoe	1	
+294	GoldHoe	1	
+295	Seeds	64	
+296	WheatItem	64	
+297	Bread	64	
+298	LeatherCap	1	
+299	LeatherTunic	1	
+300	LeatherPants	1	
+301	LeatherBoots	1	
+302	ChainHelmet	1	
+303	ChainChestplate	1	
+304	ChainLeggings	1	
+305	ChainBoots	1	
+306	IronHelmet	1	
+307	IronChestplate	1	
+308	IronLeggings	1	
+309	IronBoots	1	
+310	DiamondHelmet	1	
+311	DiamondChestplate	1	
+312	DiamondLeggings	1	
+313	DiamondBoots	1	
+314	GoldenHelmet	1	
+315	GoldenChestplate	1	
+316	GoldenLeggings	1	
+317	GoldenBoots	1	
+318	Flint	64	
+319	RawPorkchop	64	
+320	CookedPorkchop	64	
+321	Paintings	64	
+322	GoldenApple	64	
+323	Sign	16	
+324	WoodenDoorItem	1	
+325	Bucket	16	
+326	WaterBucket	1	
+327	LavaBucket	1	
+328	Minecart	1	
+329	Saddle	1	
+330	IronDoorItem	1	
+331	RedstoneDust	64	
+332	SnowBall	16	
+333	Boat	1	
+334	Leather	64	
+335	Milk	1	
+336	ClayBrick	64	
+337	ClayBall	64	
+338	SugarCaneItem	64	
+339	Paper	64	
+340	Book	64	
+341	Slimeball	64	
+342	MinecartWithChest	1	
+343	MinecartWithFurnace	1	
+344	ChickenEgg	16	
+345	Compass	1	
+346	FishingRod	1	
+347	Clock	1	
+348	GlowstoneDust	64	
+349	RawFish	64	
+350	CookedFish	64	
+351	Dye	64	
+352	Bone	64	
+353	Sugar	64	
+354	CakeItem	1	
+355	BedItem	1	
+356	RedstoneRepeater	64	
+357	Cookie	64	
+358	Map	1	
+359	Shears	1	
+360	MelonSlice	64	
+361	PumpkinSeeds	64	
+362	MelonSeeds	64	
+363	RawBeef	64	
+364	Steak	64	
+365	RawChicken	64	
+366	CookedChicken	64	
+367	RottenFlesh	64	
+368	EnderPearl	64	
+369	BlazeRod	64	
+370	GhastTear	64	
+371	GoldNugget	64	
+372	NetherWartItem	64	
+373	Potions	1	
+374	GlassBottle	64	
+375	SpiderEye	64	
+376	FermentedSpiderEye	64	
+377	BlazePowder	64	
+378	MagmaCream	64	
+379	BrewingStandItem	64	
+380	CauldronItem	1	
+381	EyeofEnder	64	
+382	GlisteringMelon	64	
+383	SpawnEgg	64	
+384	BottleOfEnchanting	64	
+385	FireCharge	64	
+386	BookAndQuill	64	
+387	WrittenBook	1	
+388	Emerald	64	
+2256	Disc13	1	
+2257	DiskCat	1	
+2258	DiskBlocks	1	
+2259	DiskChirps	1	
+2260	DiskFar	1	
+2261	DiskMall	1	
+2262	DiskMellohi	1	
+2263	DiskStal	1	
+2264	DiskStrad	9	
+2265	DiskWard	1	
+2266	Disk11	1	

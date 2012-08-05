@@ -1,10 +1,11 @@
 module RedstoneBot
   class ItemType
-    attr_reader :symbol, :id
+    attr_reader :id, :symbol, :max_stack
   
-    def initialize(id, symbol, solid)
+    def initialize(id, symbol, max_stack, solid)
       @id = id
       @symbol = symbol
+      @max_stack = max_stack
       @solid = solid
     end
   
@@ -22,6 +23,10 @@ module RedstoneBot
     
     def block?
       id < 256
+    end
+    
+    def stackable?
+      max_stack > 1
     end
     
     def to_s
@@ -54,14 +59,17 @@ module RedstoneBot
     
     File.open(File.join(File.dirname(__FILE__), "item_types.tsv")) do |f|
       f.each_line do |line|
-        id_string, name, attr_string = line.split
+        id_string, name, max_stack_string, attr_string = line.split
         id = id_string.to_i
         symbol = name.to_sym
+        max_stack = max_stack_string.to_i        
         attrs = (attr_string||"").split(",")
-        item_type = new(id, symbol, attrs.include?("solid"))
-        string = symbol.to_s.downcase
+
+        item_type = new(id, symbol, max_stack, attrs.include?("solid"))
+        
+        string = name.downcase
         raise "Multiple item types named #{name}" if @types_by_string[string]
-        raise "Multiple items with id #{id}" if @types[id]
+        raise "Multiple item types with id #{id}" if @types[id]
         const_set symbol, item_type
         @types_by_string[string] = @types[id] = item_type
       end

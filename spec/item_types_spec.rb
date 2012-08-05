@@ -48,4 +48,13 @@ describe RedstoneBot::ItemType do
     RedstoneBot::ItemType::CoalOre.should be_solid
     RedstoneBot::ItemType::WheatBlock.should_not be_solid
   end
+  
+  it "tells you how stackable items are" do
+    RedstoneBot::ItemType::CoalOre.max_stack.should == 64
+    RedstoneBot::ItemType::SignPost.max_stack.should == 16
+    RedstoneBot::ItemType::IronShovel.max_stack.should == 1
+  
+    RedstoneBot::ItemType::SignPost.should be_stackable
+    RedstoneBot::ItemType::IronShovel.should_not be_stackable
+  end
 end
