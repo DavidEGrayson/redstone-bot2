@@ -26,16 +26,6 @@ module RedstoneBot
         end
       end
       
-      @chunk_tracker.on_change do |chunk_id|
-        if block_type([-254, 63, 775]) == ItemType::WheatBlock
-          raise "gotcha now"
-        end
-        
-        if wheat_count > ExpectedWheatCount
-          raise "wtfbbq #{wheat_count}"
-        end
-      end
-      
       @chat_filter.listen do |p|
         next unless p.is_a?(Packet::ChatMessage) && p.player_chat?
         
