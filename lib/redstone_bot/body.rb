@@ -90,6 +90,10 @@ module RedstoneBot
     def distance_to(coords)
       (coords.to_coords - position).magnitude
     end
+    
+    def closest(things)
+      things.min_by { |t| distance_to t }
+    end
        
     protected  
     def send_update

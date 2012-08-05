@@ -1,5 +1,7 @@
 require "redstone_bot/packets"
 
+$e = Object.new.extend(RedstoneBot::DataEncoder)
+
 module RedstoneBot
   def (Packet::BlockChange).create(coords, block_type_id, block_metadata)
     p = receive_data test_stream (coords + [block_type_id, block_metadata]).pack('l>Cl>S>C')
@@ -43,7 +45,7 @@ module RedstoneBot
     receive_data test_stream [metadata.size, compressed_data.size].pack("S>L>") + compressed_data + binary_metadata
   end
   
-  def (Packet::SpawnDroppedItem).create(eid, item_type, count, metadata, coords, yaw, pitch, roll)
+  def (Packet::SpawnDroppedItem).create(eid, item_type, count, metadata, coords, yaw=0, pitch=0, roll=0)
     binary_data = [eid, item_type.to_i, count, metadata,
      (coords[0]*32).round, (coords[1]*32).round, (coords[2]*32).round,
      yaw, pitch, roll
@@ -56,6 +58,12 @@ module RedstoneBot
       yaw.to_i, pitch.to_i, head_yaw.to_i,
       (velocity[2]*32).round, (velocity[0]*32).round, (velocity[1]*32).round
       ].pack("l>Cl>l>l>cccs>s>s>") + metadata
+    receive_data test_stream binary_data
+  end
+  
+  def (Packet::SpawnNamedEntity).create(eid, player_name, coords, yaw=0, pitch=0, current_item=0, metadata="\x7F")
+    binary_data = $e.int(eid) + $e.string(player_name) + $e.int((coords[0]*32).floor) + $e.int((coords[1]*32).floor) + $e.int((coords[2]*32).floor) +
+    $e.byte(yaw) + $e.byte(pitch) + $e.short(current_item) + metadata
     receive_data test_stream binary_data
   end
   

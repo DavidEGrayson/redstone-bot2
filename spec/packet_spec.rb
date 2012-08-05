@@ -146,3 +146,13 @@ describe RedstoneBot::Packet::SetSlot do
     p.slot.should == RedstoneBot::ItemType::DiamondAxe * 1
   end
 end
+
+describe RedstoneBot::Packet::SpawnNamedEntity do
+  it "parses binary data correctly" do
+    p = described_class.create(48, "Bob", [1, 4, 9])
+    p.eid.should == 48
+    p.player_name.should == "Bob"
+    p.coords.should be_within(0.0001).of(RedstoneBot::Coords[1, 4, 9])
+    # TODO: test other fields of this packet
+  end
+end

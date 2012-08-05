@@ -43,11 +43,16 @@ module RedstoneBot
         end
       end
     end
+
+    def select(&proc)
+      entities.values.select(&proc)
+    end
     
     def entities_of_type(klass)
-      entities.values.select { |e| klass === e }
+      select { |e| klass === e }
     end
-
+    
+    # TODO: get rid of this in favor of using @body.closest?  Then EntityTracker does not need @body
     def closest_entity(klass=Entity)
       entities_of_type(klass).min_by { |e| @body.distance_to(e.position) }
     end

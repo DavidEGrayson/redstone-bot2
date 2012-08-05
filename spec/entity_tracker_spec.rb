@@ -56,4 +56,20 @@ describe RedstoneBot::EntityTracker do
     @entity_tracker.entities_of_type(RedstoneBot::Mob).size.should == 0
   end
   
+  context "with some stuff loaded" do
+    before do
+      @client << RedstoneBot::Packet::SpawnDroppedItem.create(44, RedstoneBot::ItemType::Wool, 1, 2, [100, 200, 300])
+      @client << RedstoneBot::Packet::SpawnDroppedItem.create(45, RedstoneBot::ItemType::Seeds, 1, 0, [100, 201, 301])
+      @client << RedstoneBot::Packet::SpawnNamedEntity.create(46, "Bob", [100, 205, 305])
+    end
+    
+    it "can select entitites by type" do
+      @entity_tracker.entities_of_type(RedstoneBot::ItemType::Seeds).collect(&:eid).should == [45]
+    end
+    
+    it "can select entities" do
+      @entity_tracker.select { |e| (RedstoneBot::ItemType::WheatItem === e or RedstoneBot::ItemType::Seeds === e) }.collect(&:eid).should == [45]
+    end
+  end
+  
 end

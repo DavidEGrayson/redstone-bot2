@@ -42,13 +42,19 @@ module RedstoneBot
       
       while true
         if wheat_count < ExpectedWheatCount - 50
-          puts "what have I done??"
+          chat "what have I done??"
           return
         end
         
         if !inventory.include? ItemType::Seeds
           chat "got seeds?"
           return
+        end
+        
+        if inventory_too_full?
+          go_from_farm_to_storage
+          store_items
+          go_from_storage_to_farm
         end
         
         # TODO: go dump your stuff unless you have room for seeds AND wheatitem
@@ -71,8 +77,6 @@ module RedstoneBot
       wheats_dug = 0
       body.position.change_y(FarmBounds[1].min).spiral.first(100).each do |coords|
         if !hold(ItemType::Seeds)
-          #chat "got seeds?"
-          puts "got seeds?"
           break
         end
         
@@ -81,13 +85,13 @@ module RedstoneBot
         next unless distance_to(ground) < 6.2   # TODO: more carefully choose a value for this
         
         if block_type(coords) == ItemType::WheatBlock && block_metadata(coords) == ItemType::WheatBlock.fully_grown
-          puts "#{time_string} digging #{coords}"
+          #puts "#{time_string} digging #{coords}"
           wheats_dug += 1
           dig coords
         end
         
         if block_type(ground) == ItemType::Farmland && block_type(coords) == ItemType::Air
-          puts "#{time_string} replanting #{coords}"
+          #puts "#{time_string} replanting #{coords}"
           place_block_above ground, ItemType::WheatBlock
           #delay(0.1)  # tmphax to slow down the farming
         end
@@ -96,7 +100,7 @@ module RedstoneBot
     end
     
     def dig(coords)
-      puts "Digging #{coords}."
+      #puts "Digging #{coords}."
       @client.send_packet Packet::PlayerDigging.start coords
       
       # We will NOT get an update from the server about the digging finishing.
@@ -105,11 +109,22 @@ module RedstoneBot
       nil
     end
     
-    def go_to_storage
-      return unless require_fiber { go_to_storage }
+    def go_from_farm_to_storage
+      return unless require_fiber { go_from_farm_to_storage }
       
       move_to StorageWaypoint if defined?(StorageWaypoint)
       path_to Storage
+    end
+    
+    def go_from_storage_to_farm
+      return unless require_fiber { go_from_storage_to_farm }
+      
+      path_to StorageWaypoint if defined?(StorageWaypoint)
+    end
+    
+    def store_items
+      chat "hmmmm, how 2 store items in chests..."
+      delay(5)
     end
     
     def place_block_above(coords, item_type)
@@ -129,9 +144,15 @@ module RedstoneBot
     def collect_nearby_items(timeout)
       timeout(timeout) do
         while true
-          item = @entity_tracker.closest_entity(Item)
+          # Get the closest Wheat or Seed item that is at the right level.
+          # We just ignore items that fell into the water.
+          item = closest entity_tracker.select do |entity|
+            (ItemType::WheatItem === entity or ItemType::Seeds === entity) and FarmBounds[1].include?(entity.position.y.floor)
+          end
+          
           if item && distance_to(item) < 30
             puts "#{time_string} moving to #{item}"
+            puts "#{ItemType::WheatItem === item} #{ItemType::Seeds === item}"
             move_to item.position.change_y(FarmBounds[1].min)
           else
             return
@@ -200,5 +221,9 @@ module RedstoneBot
       end
     end
     
+    def inventory_too_full?
+      # At least one slot for seeds, one slot for wheat.
+      inventory.empty_slot_count < 2
+    end
   end
 end

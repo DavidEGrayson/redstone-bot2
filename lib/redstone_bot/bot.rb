@@ -37,10 +37,10 @@ module RedstoneBot
       @inventory = Inventory.new(@client)
     end
     
-    def_delegators :@body, :position, :look_at, :distance_to
+    def_delegators :@body, :position, :look_at, :distance_to, :closest
     def_delegators :@chunk_tracker, :block_type, :block_metadata
     def_delegators :@client, :chat, :time_string
     def_delegators :@inventory, :hold
-    def_delegators :@entity_tracker, :closest_entity
+    def_delegators :@entity_tracker, :entities_of_type
   end
 end
