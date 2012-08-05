@@ -21,6 +21,7 @@ module RedstoneBot
       "meq" => "m -2570 -2069",
       "mpl" => "m 99.5 225.5",
       "mkn" => "m -211 785",
+      "mwm" => "m -111.5 116.5",
       }
     
     PrintPacketClasses = [
