@@ -8,8 +8,9 @@ module RedstoneBot
     attr_accessor :debug
     attr_accessor :slots
     
+    GeneralSlotRange = 9..44
     NormalSlotRange = 9..35
-    HotbarSlotRange = 36..44
+    HotbarSlotRange = 36..44    
     SlotCount = 45
     
     # TODO: handle the packet that says you picked up an item
@@ -80,6 +81,10 @@ module RedstoneBot
     
     def item_types
       non_empty_slots.collect(&:item_type).uniq
+    end
+    
+    def empty_slot_count
+      general_slots.count(nil)
     end
     
     def include?(item_type)
@@ -188,14 +193,18 @@ module RedstoneBot
       @pending_actions.push action_number
       action_number
     end
-        
+       
+    def general_slots
+      slots[GeneralSlotRange]
+    end
+       
     def normal_slots
       slots[NormalSlotRange]
     end
     
     def hotbar_slots
       slots[HotbarSlotRange]
-    end
+    end    
     
     def non_empty_slots
       slots.select { |s| !s.nil? }

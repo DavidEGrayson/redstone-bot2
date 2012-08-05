@@ -85,6 +85,10 @@ describe Inventory do
       @inventory.count(Emerald).should == 0
     end
     
+    it "can count empty slots" do
+      @inventory.empty_slot_count.should == 32
+    end
+    
     it "has a nice hotbar_include? method" do
       @inventory.should_not be_hotbar_include IronShovel
       @inventory.should be_hotbar_include Bread
