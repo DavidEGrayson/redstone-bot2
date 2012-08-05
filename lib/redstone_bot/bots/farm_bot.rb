@@ -6,7 +6,7 @@ require 'redstone_bot/simple_cache'
 module RedstoneBot
   class Bots::FarmBot < Bots::DavidBot
   
-    ExpectedWheat = 9759
+    ExpectedWheatCount = 9759
     FarmBounds = [(-300..-150), (63..63), (670..800)]
   
     def setup
@@ -33,10 +33,6 @@ module RedstoneBot
           block_type(coords) == ItemType::WheatBlock && block_metadata(coords) == ItemType::WheatBlock.fully_grown
         end
       end
-      
-      #@body.on_position_update do
-      #  dig_and_replant_within_reach  # OH NOES!
-      #end
       
       @chat_filter.listen do |p|
         next unless p.is_a?(Packet::ChatMessage) && p.player_chat?
@@ -77,8 +73,19 @@ module RedstoneBot
       return unless require_fiber { farm }
       
       while true
-        dig_and_replant_within_reach
-        collect_nearby_items(10)
+        if wheat_count < ExpectedWheatCount - 50
+          puts "what have I done??"
+          return
+        end
+      
+        wheats_dug = dig_and_replant_within_reach
+        if wheats_dug > 0
+          collect_nearby_items(10)
+        elsif coords = closest_fully_grown_wheat
+          move_to coords
+        end
+        
+        wait_for_next_position_update
       end
       
       chat "done farming"
@@ -103,12 +110,10 @@ module RedstoneBot
         if block_type(ground) == ItemType::Farmland && block_type(coords) == ItemType::Air
           puts "#{time_string} replanting #{coords}"
           place_block_above ground, ItemType::WheatBlock
-          delay(0.5)  # tmphax
+          #delay(0.1)  # tmphax to slow down the farming
         end
-        
-        break if wheats_dug >= 4  # tmphax        
       end
-      nil
+      return wheats_dug
     end
     
     def dig(coords)
@@ -188,7 +193,6 @@ module RedstoneBot
     # This function has intimate knowledge of Chunk and ChunkTracker.
     # chunk_id is an [x,z] array with x and z are multiples of 16.
     def count_wheat_in_chunk(chunk_id)
-      puts "COUNTING WHEAT in #{chunk_id}"
       yrange = FarmBounds[1]
       chunk = @chunk_tracker.chunks[chunk_id]
       return nil if !chunk
