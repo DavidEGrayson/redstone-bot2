@@ -8,6 +8,8 @@ module RedstoneBot
   
     ExpectedWheatCount = 9759
     FarmBounds = [(-300..-150), (63..63), (670..800)]
+    Storage = Coords[-210, 68, 798]
+    StorageWaypoint = Coords[-210, 63, 784]  # with a better pathinder we wouldn't need this
   
     def setup
       super
@@ -88,15 +90,17 @@ module RedstoneBot
           return
         end
         
-        if ww = wheats.find { |w| w[2] > 797 }  # tmphax
-          chat "weird wheat #{ww}"
+        if !inventory.include? ItemType::Seeds
+          chat "got seeds?"
           return
         end
-      
+        
+        # TODO: go dump your stuff unless you have room for seeds AND wheatitem
+                
         wheats_dug = dig_and_replant_within_reach
         if wheats_dug > 0
           delay(0.1)   # TODO: instead of delaying, specify a MIN time for collecting nearby items because it takes a finite time for the server to notify us
-          collect_nearby_items(10)
+          collect_nearby_items(10)   # TODO: only walk towards seeds and wheatitem
         elsif coords = closest_fully_grown_wheat
           move_to coords + Coords[0.5, 0.0, 0.5]
         end
@@ -143,6 +147,13 @@ module RedstoneBot
       @chunk_tracker.change_block(coords, ItemType::Air)
       
       nil
+    end
+    
+    def go_to_storage
+      return unless require_fiber { go_to_storage }
+      
+      move_to StorageWaypoint if defined?(StorageWaypoint)
+      path_to Storage
     end
     
     def place_block_above(coords, item_type)
