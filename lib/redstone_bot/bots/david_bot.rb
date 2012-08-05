@@ -39,7 +39,7 @@ module RedstoneBot
       @chat_filter.only_from_user(MASTER) if defined?(MASTER)
       
       @ce = ChatEvaluator.new(@chat_filter, self)
-      @ce.safe_level = 2
+      @ce.safe_level = 1
       @ce.timeout = 2
       @cm = ChatMover.new(@chat_filter, self, @entity_tracker)
       

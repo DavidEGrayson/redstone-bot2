@@ -832,8 +832,8 @@ module RedstoneBot
       (0...@data.length).step(4) do |i|
         data = @data[i,4]
         bytes = data.bytes.to_a
-        x = bytes[0] & 0x0F
-        z = bytes[0] >> 4 & 0x0F
+        z = bytes[0] & 0x0F
+        x = (bytes[0] >> 4) & 0x0F
         y = bytes[1]
         block_type_id = (bytes[2]<<4) | ((bytes[3]&0xF0)>>4)
         metadata = bytes[3] & 0xF

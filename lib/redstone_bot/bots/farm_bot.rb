@@ -34,6 +34,16 @@ module RedstoneBot
         end
       end
       
+      @chunk_tracker.on_change do |chunk_id|
+        if block_type([-254, 63, 775]) == ItemType::WheatBlock
+          raise "gotcha now"
+        end
+        
+        if wheat_count > ExpectedWheatCount
+          raise "wtfbbq #{wheat_count}"
+        end
+      end
+      
       @chat_filter.listen do |p|
         next unless p.is_a?(Packet::ChatMessage) && p.player_chat?
         
@@ -77,12 +87,18 @@ module RedstoneBot
           puts "what have I done??"
           return
         end
+        
+        if ww = wheats.find { |w| w[2] > 797 }  # tmphax
+          chat "weird wheat #{ww}"
+          return
+        end
       
         wheats_dug = dig_and_replant_within_reach
         if wheats_dug > 0
+          delay(0.1)   # TODO: instead of delaying, specify a MIN time for collecting nearby items because it takes a finite time for the server to notify us
           collect_nearby_items(10)
         elsif coords = closest_fully_grown_wheat
-          move_to coords
+          move_to coords + Coords[0.5, 0.0, 0.5]
         end
         
         wait_for_next_position_update
@@ -100,13 +116,16 @@ module RedstoneBot
           break
         end
         
+        ground = coords - Coords::Y
+                
+        next unless distance_to(ground) < 6.2
+        
         if block_type(coords) == ItemType::WheatBlock && block_metadata(coords) == ItemType::WheatBlock.fully_grown
           puts "#{time_string} digging #{coords}"
           wheats_dug += 1
           dig coords
         end
         
-        ground = coords - Coords::Y
         if block_type(ground) == ItemType::Farmland && block_type(coords) == ItemType::Air
           puts "#{time_string} replanting #{coords}"
           place_block_above ground, ItemType::WheatBlock
@@ -150,6 +169,19 @@ module RedstoneBot
           else
             return
           end
+        end
+      end
+    end
+    
+    def save_wheats
+      filename = "wheats.dat"
+      if File.exist?(filename)
+        chat "file already exist man"
+        return
+      end
+      File.open(filename, "w") do |f|
+        wheats.collect(&:to_a).sort.each do |coords|
+          f.puts coords.join("\t")
         end
       end
     end

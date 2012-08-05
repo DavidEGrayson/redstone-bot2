@@ -14,7 +14,7 @@ module RedstoneBot
   
     binary_data = [chunk_id[0]/16, chunk_id[1]/16, block_changes.size, 4*block_changes.size].pack("l>l>S>l>")
     binary_data += block_changes.collect do |c|
-      [(c.x%16)+((c.z%16)<<4), c.y, (c.block_type_id<<4) + (c.block_metadata&0xF)].pack("CCs>")
+      [(c.z%16)+((c.x%16)<<4), c.y, (c.block_type_id<<4) + (c.block_metadata&0xF)].pack("CCs>")
     end.join
     
     receive_data test_stream binary_data
