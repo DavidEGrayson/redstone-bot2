@@ -8,7 +8,7 @@ module RedstoneBot
   
     ExpectedWheatCount = 9759
     FarmBounds = [(-300..-150), (63..63), (670..800)]
-    Storage = Coords[-210, 68, 798]
+    Storage = Coords[-210, 68, 798] - Coords::Z*2
     StorageWaypoint = Coords[-210, 63, 784]  # with a better pathinder we wouldn't need this
   
     def setup
@@ -82,16 +82,16 @@ module RedstoneBot
         
         ground = coords - Coords::Y
                 
-        next unless distance_to(ground) < 6.2   # TODO: more carefully choose a value for this
+        next unless distance_to(ground) < 5   # TODO: more carefully choose a value for this
         
         if block_type(coords) == ItemType::WheatBlock && block_metadata(coords) == ItemType::WheatBlock.fully_grown
-          #puts "#{time_string} digging #{coords}"
+          puts "#{time_string} digging #{coords}"
           wheats_dug += 1
           dig coords
         end
         
         if block_type(ground) == ItemType::Farmland && block_type(coords) == ItemType::Air
-          #puts "#{time_string} replanting #{coords}"
+          puts "#{time_string} replanting #{coords}"
           place_block_above ground, ItemType::WheatBlock
           #delay(0.1)  # tmphax to slow down the farming
         end
@@ -100,7 +100,6 @@ module RedstoneBot
     end
     
     def dig(coords)
-      #puts "Digging #{coords}."
       @client.send_packet Packet::PlayerDigging.start coords
       
       # We will NOT get an update from the server about the digging finishing.
@@ -123,7 +122,17 @@ module RedstoneBot
     end
     
     def store_items
-      chat "hmmmm, how 2 store items in chests..."
+      return unless require_fiber { store_items }
+    
+      chat "hmmmm, how 2 store items in chests... I'll just dump it"
+      
+      # Dump everything, except guarantee that we at least have half a stack of seeds left
+      # TODO: express this more elegantly
+      inventory.slots.each_with_index do |slot, slot_id|
+        next if ItemType::Seeds === slot && inventory.count(ItemType::Seeds) < 96
+        inventory.dump_slot_id(slot_id)
+      end
+      
       delay(5)
     end
     
@@ -150,7 +159,6 @@ module RedstoneBot
           
           if item && distance_to(item) < 30
             puts "#{time_string} moving to #{item}"
-            puts "#{ItemType::WheatItem === item} #{ItemType::Seeds === item}"
             move_to item.position.change_y(FarmBounds[1].min)
           else
             return

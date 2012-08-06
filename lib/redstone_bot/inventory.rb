@@ -225,9 +225,11 @@ module RedstoneBot
     end
     
     def dump_slot_id(id)
-      @client.send_packet Packet::ClickWindow.new(0, id, false, new_transaction, false, slots[id])
-      @client.send_packet Packet::ClickWindow.outside(new_transaction)
-      slots[id] = nil
+      if slots[id] != nil
+        @client.send_packet Packet::ClickWindow.new(0, id, false, new_transaction, false, slots[id])
+        @client.send_packet Packet::ClickWindow.outside(new_transaction)
+        slots[id] = nil
+      end
     end
     
     def use_up_one
