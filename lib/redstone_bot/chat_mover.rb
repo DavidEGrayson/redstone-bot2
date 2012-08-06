@@ -24,7 +24,7 @@ module RedstoneBot
     
     def process_chat(p)
       case p.chat
-      when /where (.+)/ then
+      when /\Awhere (.+)\Z/ then
         name = $1
         if name == "u" || name == @chatter.username
           chat "I be at #{position}"

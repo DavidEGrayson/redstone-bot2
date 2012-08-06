@@ -73,7 +73,7 @@ module RedstoneBot
           else
             chat "da understood #{name}"
           end  
-        when /dump[ ]*(.*)/
+        when /\Adump[ ]*(.*)\Z/
           name = $1
           type = ItemType.from(name)
           if type
@@ -81,7 +81,7 @@ module RedstoneBot
           else
             chat "da understood #{name}"
           end
-        when /hold (.+)/  
+        when /\Ahold (.+)\Z/  
           name = $1
           type = ItemType.from(name)
           if type
@@ -89,7 +89,7 @@ module RedstoneBot
           else
             chat "da understood #{name}"
           end
-        when /craft/
+        when /\Acraft\Z/
           #@client.send_packet Packet::PlayerBlockPlacement.new([-100,67,804],0,@inventory.slots[36])
           #@client.send_packet Packet::ClickWindow.new(1,
           #def initialize(window_id, slot_id, right_click, action_number, shift, clicked_item)

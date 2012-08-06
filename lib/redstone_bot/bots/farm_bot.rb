@@ -43,7 +43,7 @@ module RedstoneBot
       while true
         if wheat_count < ExpectedWheatCount - 50
           chat "what have I done??"
-          return
+          abort "what have I done?? wheat count got too low, aborting because it might be a fire"
         end
         
         if !inventory.include? ItemType::Seeds
@@ -62,7 +62,7 @@ module RedstoneBot
         wheats_dug = dig_and_replant_within_reach
         if wheats_dug > 0
           delay(0.1)   # TODO: instead of delaying, specify a MIN time for collecting nearby items because it takes a finite time for the server to notify us
-          collect_nearby_items(10)   # TODO: only walk towards seeds and wheatitem
+          collect_nearby_items(10)
         elsif coords = closest_fully_grown_wheat
           move_to coords + Coords[0.5, 0.0, 0.5]
         end
