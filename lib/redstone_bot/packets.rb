@@ -762,6 +762,18 @@ module RedstoneBot
     end
   end
   
+  class Packet::EntityEffect < Packet
+    packet_type 0x29
+    attr_reader :eid, :effect_id, :amplifier, :duration
+    
+    def receive_data(stream)
+      @eid = stream.read_int
+      @effect_id = stream.read_byte
+      @amplifier = stream.read_byte
+      @duration = stream.read_unsigned_short
+    end
+  end
+  
   class Packet::SetExperience < Packet
     packet_type 0x2B
     attr_reader :experience_bar, :level, :total_experience
