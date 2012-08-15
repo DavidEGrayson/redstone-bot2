@@ -5,6 +5,8 @@ require_relative "pack"
 require_relative "slot"
 require "zlib"
 
+# TODO: implement the rest of the packets from http://www.wiki.vg/Protocol
+
 # TODO: to be more consistent, change all Coords var names to 'position or 'position_change' if that's what they represent?
 # start with the eid-related packets here
 
@@ -1035,6 +1037,19 @@ module RedstoneBot
       @x = socket.read_int/32.0
       @y = socket.read_int/32.0
       @z = socket.read_int/32.0
+    end
+  end
+  
+  class Packet::OpenWindow < Packet
+    packet_type 0x64
+    
+    attr_accessor :window_id, :type, :title, :slot_count
+    
+    def receive_data(stream)
+      @window_id = stream.read_byte
+      @type = strema.read_byte
+      @title = stream.read_string
+      @slot_count = stream.read_byte
     end
   end
   

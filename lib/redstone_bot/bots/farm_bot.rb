@@ -36,6 +36,12 @@ module RedstoneBot
       end
     end
     
+    def test
+      chest_coords = Coords[-212, 68, 797]
+      place_block_above chest_coords, ItemType::WheatBlock
+      
+    end
+    
     # Runs in a position update fiber
     def farm
       return unless require_fiber { farm }
@@ -52,9 +58,11 @@ module RedstoneBot
         end
         
         if inventory_too_full?
-          go_from_farm_to_storage
-          store_items
-          go_from_storage_to_farm
+          timeout(180) do
+            go_from_farm_to_storage
+            store_items
+            go_from_storage_to_farm
+          end
         end
         
         # TODO: go dump your stuff unless you have room for seeds AND wheatitem
@@ -64,7 +72,9 @@ module RedstoneBot
           delay(0.1)   # TODO: instead of delaying, specify a MIN time for collecting nearby items because it takes a finite time for the server to notify us
           collect_nearby_items(10)
         elsif coords = closest_fully_grown_wheat
-          move_to coords + Coords[0.5, 0.0, 0.5]
+          timeout(60) do
+            move_to coords + Coords[0.5, 0.0, 0.5]
+          end
         end
         
         wait_for_next_position_update
@@ -100,6 +110,9 @@ module RedstoneBot
     end
     
     def dig(coords)
+      # TODO: support digging blocks that take more than one packet to dig
+      # TODO: move to some shared module
+    
       @client.send_packet Packet::PlayerDigging.start coords
       
       # We will NOT get an update from the server about the digging finishing.
@@ -137,10 +150,11 @@ module RedstoneBot
     end
     
     def place_block_above(coords, item_type)
-      # TODO: remove item_type arg, calculate it from @inventory.selected_slot.item_type (e.g. WheatItem -> WheatBlock)
+      # TODO: remove item_type arg, calculate it from @inventory.selected_slot.item_type (e.g. Seeds -> WheatBlock)
+      # TODO: move this to some shared module
     
       #puts "Placing block above #{coords}."
-      @client.send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 4, 15, 5
+      @client.send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 8, 15, 8
       @client.send_packet Packet::Animation.new @client.eid, 1
 
       # We will NOT get an update from the server about the new block
@@ -148,6 +162,7 @@ module RedstoneBot
       
       # We WILL get a Set Slot packet from the server, but we want to keep track of the change before that happens
       @inventory.use_up_one
+      nil
     end
     
     def collect_nearby_items(timeout)
