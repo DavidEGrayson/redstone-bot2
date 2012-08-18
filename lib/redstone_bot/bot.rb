@@ -12,7 +12,7 @@ module RedstoneBot
     include Uninspectable
     extend Forwardable
     
-    attr_reader :body, :chunk_tracker, :entity_tracker, :inventory    
+    attr_reader :client, :body, :chunk_tracker, :entity_tracker, :inventory    
   
     def initialize(client)
       @client = client

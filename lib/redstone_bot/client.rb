@@ -57,7 +57,8 @@ module RedstoneBot
     attr_reader :hostname
     attr_reader :port
     attr_reader :eid
-
+    attr_reader :mutex
+    
     # password can be nil or empty for an offline server
     def initialize(username, password, hostname, port)
       @username = username

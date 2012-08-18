@@ -45,7 +45,7 @@ module RedstoneBot
       @cm = ChatMover.new(@chat_filter, self, @entity_tracker)
       
       @body.on_position_update do
-        manage_movement || default_position_update
+        default_position_update unless @current_brain
       end
       
       @client.listen do |p|

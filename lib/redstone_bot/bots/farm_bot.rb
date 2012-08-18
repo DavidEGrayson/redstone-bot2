@@ -49,7 +49,7 @@ module RedstoneBot
       while true
         if wheat_count < ExpectedWheatCount - 50
           chat "what have I done??"
-          abort "what have I done?? wheat count got too low, aborting because it might be a fire"
+          abort "what have I done?? wheat count got too low (#{wheat_count}), aborting because it might be a fire"
         end
         
         if !inventory.include? ItemType::Seeds

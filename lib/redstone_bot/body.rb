@@ -1,4 +1,5 @@
-require_relative 'coords'
+require "thread"
+require_relative "coords"
 
 module RedstoneBot
   class Look < Struct.new(:yaw, :pitch)
@@ -11,6 +12,7 @@ module RedstoneBot
     attr_accessor :last_update_period
     attr_accessor :debug
     attr_accessor :current_fiber
+    attr_accessor :position_update_condition_variable
     
     def on_ground?
       @on_ground
@@ -26,6 +28,7 @@ module RedstoneBot
   
     def initialize(client)
       @position_updaters = []
+      @position_update_condition_variable = ConditionVariable.new
       @client = client
       @update_period = 0.05
       client.listen do |p|
@@ -68,6 +71,7 @@ module RedstoneBot
             self.stance = position.y + 1.62   # TODO: handle this better!
             @bumped = false
             send_update
+            @position_update_condition_variable.broadcast
           end
         end
       end
