@@ -1,6 +1,5 @@
 require "continuation"
 require "timeout"
-require_relative "move_fiber"
 
 module RedstoneBot
   # Meant to be mixed into an object that has a "body" method, probably into
