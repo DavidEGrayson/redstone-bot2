@@ -56,12 +56,32 @@ module RedstoneBot
     
     # does NOT throw exceptions
     def timeout(*args, &block)
-      Timeout::timeout(*args, &block) rescue Timeout::Error        
+      Timeout::timeout(*args, &block)
+    rescue Timeout::Error
     end
     
     # throws exceptions
     def timeout!(*args, &block)
       Timeout::timeout(*args, &block)
+    end
+    
+    def time(min, max=nil)
+      if max.nil? && min.respond_to?(:max)
+        max = min.max
+        min = min.min
+      end
+      
+      start = Time.now
+      Timeout::timeout(max) do
+        while true
+          yield
+          if min.nil? || (Time.now - start) > min 
+            break
+          end
+          wait_for_next_position_update
+        end
+      end
+    rescue Timeout::Error
     end
     
     def wait_for_next_position_update(update_period = nil)

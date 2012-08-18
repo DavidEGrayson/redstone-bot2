@@ -48,8 +48,13 @@ module RedstoneBot
       
       while true
         if wheat_count < ExpectedWheatCount - 50
-          chat "what have I done??"
-          abort "what have I done?? wheat count got too low (#{wheat_count}), aborting because it might be a fire"
+          $stderr.puts "uh oh, wheat_count=#{wheat_count}"
+          delay 5
+          
+          if wheat_count < ExpectedWheatCount - 50
+            chat "what have I done??"
+            abort "what have I done?? wheat count got too low (#{wheat_count}), aborting because it might be a fire"
+          end
         end
         
         if !inventory.include? ItemType::Seeds
@@ -69,8 +74,7 @@ module RedstoneBot
                 
         wheats_dug = dig_and_replant_within_reach
         if wheats_dug > 0
-          delay(0.1)   # TODO: instead of delaying, specify a MIN time for collecting nearby items because it takes a finite time for the server to notify us
-          collect_nearby_items(10)
+          time(2..10) { collect_nearby_items }
         elsif coords = closest_fully_grown_wheat
           timeout(60) do
             move_to coords + Coords[0.5, 0.0, 0.5]
@@ -165,19 +169,17 @@ module RedstoneBot
       nil
     end
     
-    def collect_nearby_items(timeout)
-      timeout(timeout) do
-        while true
-          # Get the closest Wheat or Seed item that is at the right level.
-          # We just ignore items that fell into the water.
-          item = closest desirable_items
-          
-          if item && distance_to(item) < 30
-            puts "#{time_string} moving to #{item}"
-            move_to item.position.change_y(FarmBounds[1].min)
-          else
-            return
-          end
+    def collect_nearby_items
+      while true
+        # Get the closest Wheat or Seed item that is at the right level.
+        # We just ignore items that fell into the water.
+        item = closest desirable_items
+        
+        if item && distance_to(item) < 30
+          puts "#{time_string} moving to #{item}"
+          move_to item.position.change_y(FarmBounds[1].min)
+        else
+          return
         end
       end
     end
