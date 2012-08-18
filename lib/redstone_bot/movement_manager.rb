@@ -51,10 +51,16 @@ module RedstoneBot
     end
     
     def delay(time)
-      sleep(time)
+      client.mutex.sleep(time)
     end
     
+    # does NOT throw exceptions
     def timeout(*args, &block)
+      Timeout::timeout(*args, &block) rescue Timeout::Error        
+    end
+    
+    # throws exceptions
+    def timeout!(*args, &block)
       Timeout::timeout(*args, &block)
     end
     
