@@ -87,7 +87,12 @@ module RedstoneBot
       if update_period
         body.next_update_period = update_period
       end
+      count = body.position_update_count
       body.position_update_condition_variable.wait(client.mutex)
+      diff = body.position_update_count - count
+      if diff != 1
+        $stderr.puts "Warning: Failed to context switch to the position update thread in time (diff=#{diff})."
+      end
     end
 
   end

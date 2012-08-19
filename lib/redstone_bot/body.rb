@@ -13,6 +13,7 @@ module RedstoneBot
     attr_accessor :debug
     attr_accessor :current_fiber
     attr_accessor :position_update_condition_variable
+    attr_accessor :position_update_count
     
     def on_ground?
       @on_ground
@@ -31,6 +32,7 @@ module RedstoneBot
       @position_update_condition_variable = ConditionVariable.new
       @client = client
       @update_period = 0.05
+      @position_update_count = 0
       client.listen do |p|
         case p
           when Packet::PlayerPositionAndLook
@@ -60,6 +62,7 @@ module RedstoneBot
     end
     
     def start_regular_update_thread
+      @position_update_count = 0
       Thread.new do
         while true
           # TODO: get more reliable timing by using Time.now to compute how long to sleep
@@ -71,6 +74,7 @@ module RedstoneBot
             self.stance = position.y + 1.62   # TODO: handle this better!
             @bumped = false
             send_update
+            @position_update_count += 1
             @position_update_condition_variable.broadcast
           end
         end
