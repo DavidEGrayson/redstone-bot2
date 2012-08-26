@@ -38,7 +38,7 @@ module RedstoneBot
     
     def test
       chest_coords = Coords[-212, 68, 797]
-      place_block_above chest_coords, ItemType::WheatBlock
+      open_chest chest_coords
       
     end
     
@@ -151,6 +151,11 @@ module RedstoneBot
       end
       
       delay(5)
+    end
+    
+    def open_chest(coords)
+      @client.send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 8, 15, 8
+      @client.send_packet Packet::Animation.new @client.eid, 1
     end
     
     def place_block_above(coords, item_type)
