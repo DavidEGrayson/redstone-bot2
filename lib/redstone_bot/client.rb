@@ -192,11 +192,6 @@ module RedstoneBot
         end
       end
 
-      # Send keepalives  # TODO: is this needed?
-      regularly(1) do
-        send_packet Packet::KeepAlive.new
-      end
-
     end
 
     def handle_unknown_packet(e)
