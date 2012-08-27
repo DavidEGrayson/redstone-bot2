@@ -1047,9 +1047,19 @@ module RedstoneBot
     
     def receive_data(stream)
       @window_id = stream.read_byte
-      @type = strema.read_byte
+      @type = stream.read_byte
       @title = stream.read_string
       @slot_count = stream.read_byte
+    end
+  end
+  
+  class Packet::CloseWindow < Packet
+    packet_type 0x65
+    
+    attr_accessor :window_id
+    
+    def receive_data(stream)
+      @window_id = stream.read_byte
     end
   end
   

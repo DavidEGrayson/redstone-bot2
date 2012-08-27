@@ -37,7 +37,8 @@ module RedstoneBot
     end
     
     def test
-      chest_coords = Coords[-212, 68, 797]
+      chest_coords = Coords[101, 72, 224]
+      #chest_coords = Coords[99, 72, 224]
       open_chest chest_coords
       
     end

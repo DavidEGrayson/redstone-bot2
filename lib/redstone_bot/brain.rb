@@ -28,7 +28,7 @@ module RedstoneBot
     end
     
     def alive?
-      @thread and @thread.alive?
+      (@thread and @thread.alive?) ? true : false
     end
 
     def running?

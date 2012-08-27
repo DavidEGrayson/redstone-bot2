@@ -120,9 +120,9 @@ module RedstoneBot
     end
     
     def default_position_update
-      if !@body.current_fiber
+      if !brain.alive?
         fall_update
-        @body.look_at @entity_tracker.closest_entity
+        look_at @entity_tracker.closest_entity
       end
     end
     

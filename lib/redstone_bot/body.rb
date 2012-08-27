@@ -11,7 +11,6 @@ module RedstoneBot
     attr_accessor :next_update_period
     attr_accessor :last_update_period
     attr_accessor :debug
-    attr_accessor :current_fiber
     attr_accessor :position_update_condition_variable
     attr_accessor :position_update_count
     
@@ -117,7 +116,9 @@ module RedstoneBot
         self.next_update_period = update_period
       end
       count = position_update_count
+      $stderr.puts "waiting..."
       position_update_condition_variable.wait(@synchronizer.mutex)
+      $stderr.puts "awakened..."
       diff = position_update_count - count
       if diff != 1
         $stderr.puts "Warning: Failed to context switch to thread #{Thread.current} in time after waiting for position update (diff=#{diff})."
