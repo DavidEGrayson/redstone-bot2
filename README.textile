@@ -1,0 +1,14 @@
+h2. Method Types
+
+* Quick: Method does not sleep or perform any blocking operations.  This type of method is safe to call anywhere, as long as the current thread holds the lock to the proper mutex (if any).
+* Sleeping: This method unlocks the mutex and puts the thread to sleep to wait for something.
+* Blocking: For example: Kernel.sleep, socket.send, socket.read.
+
+Quick methods cannot call blocking methods.
+
+Many methods are sleeping if called in a context where sleeping is allowed (synchronizer#sleeping_allowed_in_this_thread?) but if they are calling in a non-sleeping method they are "quick".  This pattern is seen in pretty much any method that calls brain#require.
+
+h2. Thread Types
+
+* Outside: The mutex is usually unlocked, and any reading or writing any data from multi-thread objects must be done inside a call to the #synchronize method of the appropriate synchronizer.  Examples: The client's packet receiving thread and the body's position update thread. 
+* Inside: The mutex is usually locked, and if this thread wants to sleep or wait for something it should use someting like condition_variable.wait(mutex) or mutex.sleep(time) that unlocks the mutex dyuring sleeping.  Examples: The brain's thread.

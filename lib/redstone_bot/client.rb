@@ -9,6 +9,7 @@ require "net/https"
 require "net/http"
 require "openssl"
 require "uri"
+require "forwardable"
 
 # TODO: fix logging in to online servers
 
@@ -51,13 +52,14 @@ module RedstoneBot
   end
 
   class Client
-    include Synchronizer
-
+    extend Forwardable
+  
     attr_reader :username
     attr_reader :hostname
     attr_reader :port
     attr_reader :eid
     attr_reader :mutex
+    attr_accessor :synchronizer  # an object that includes the Synchronizer module
     
     # password can be nil or empty for an offline server
     def initialize(username, password, hostname, port)
@@ -80,7 +82,7 @@ module RedstoneBot
     end
 
     def notify_listeners(*args)
-      synchronize do
+      @synchronizer.synchronize do
         @listeners.each do |l|
           l.call(*args)
         end
@@ -179,10 +181,11 @@ module RedstoneBot
 
       # Receive packets
       Thread.new do
+        @synchronizer.sleeping_allowed_in_this_thread = false
         begin
           while true
-            packet = receive_packet
-            notify_listeners packet
+            packet = receive_packet   # this is the only blocking operationg that should happen in this thread
+            notify_listeners packet   # this should be quick
           end
         rescue UnknownPacketError => e
           handle_unknown_packet(e)
@@ -254,5 +257,7 @@ module RedstoneBot
       # TODO: generate something a little more secret
       "\xAA\x44"*8
     end
+    
+    def_delegators :synchronizer, :synchronize
   end
 end

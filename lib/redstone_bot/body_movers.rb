@@ -1,5 +1,4 @@
 # Module with some functions to help your bot move its body.
-# The blocking functions should only be called from inside a Fiber.
 # Can be included into your bot as long as you have these things:
 # A 'body' method that returns the RedstoneBot::Body.
 # A 'chunk_tracker' method that returns a RedstoneBot::ChunkTracker.
@@ -11,7 +10,7 @@ module RedstoneBot
   module BodyMovers
     
     def miracle_jump(x, z)
-      return unless require_fiber { miracle_jump x, z }
+      return unless require_brain { miracle_jump x, z }
 
       opts = { :update_period => 0.01, :speed => 600 }
       jump_to_height 276, opts
@@ -20,7 +19,7 @@ module RedstoneBot
     end
     
     def follow(opts={}, &block)
-      return unless require_fiber { follow opts, &block }
+      return unless require_brain { follow opts, &block }
 
       opts = opts.dup
       opts[:pathfinder] ||= Pathfinder.new(chunk_tracker, tolerance: 3, flying_aversion: 2)
@@ -28,12 +27,12 @@ module RedstoneBot
         target = yield
         break if target.nil?
         if (body.position - target).abs <= 1
-          #TODO maybe fall_update here instead
+          # maybe fall_update here instead
           wait_for_next_position_update 
         else
           case path_to target, opts
           when :solid, nil
-            #TODO maybe fall_update here instead
+            # maybe fall_update here instead
             wait_for_next_position_update        
           when :no_path
             chat "cant get to U"
@@ -45,7 +44,7 @@ module RedstoneBot
     end
     
     def path_to(target, opts={})
-      return unless require_fiber { path_to target, opts }
+      return unless require_brain { path_to target, opts }
 
       target = target.to_int_coords
       pathfinder = opts[:pathfinder] || Pathfinder.new(chunk_tracker)
@@ -66,7 +65,7 @@ module RedstoneBot
     end
     
     def move_to(target, opts={})
-      return unless require_fiber { move_to target, opts }
+      return unless require_brain { move_to target, opts }
 
       target = target.to_coords
     
@@ -102,7 +101,7 @@ module RedstoneBot
     end
     
     def jump_to_height(y, opts={})
-      return unless require_fiber { jump_to_height y, opts }
+      return unless require_brain { jump_to_height y, opts }
     
       speed = opts[:speed] || 10
     
@@ -117,7 +116,7 @@ module RedstoneBot
     end
 	
     def fall(opts={})
-      return unless require_fiber { fall opts }
+      return unless require_brain { fall opts }
 
       while true
         wait_for_next_position_update(opts[:update_period])

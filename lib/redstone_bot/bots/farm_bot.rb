@@ -74,7 +74,10 @@ module RedstoneBot
                 
         wheats_dug = dig_and_replant_within_reach
         if wheats_dug > 0
-          time(2..10) { collect_nearby_items }
+          time(2..10) do
+            collect_nearby_items
+            wait_for_next_position_update  # avoid accidentally blocking
+          end
         elsif coords = closest_fully_grown_wheat
           timeout(60) do
             move_to coords + Coords[0.5, 0.0, 0.5]

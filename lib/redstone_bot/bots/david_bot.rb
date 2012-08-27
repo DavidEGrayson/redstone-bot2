@@ -6,14 +6,11 @@ require "redstone_bot/chat_filter"
 require "redstone_bot/chat_mover"
 require "redstone_bot/profiler"
 require "redstone_bot/packet_printer"
-require "redstone_bot/movement_manager"
 
 module RedstoneBot
   module Bots; end
 
   class Bots::DavidBot < RedstoneBot::Bot
-    extend Forwardable
-    include MovementManager
     include BodyMovers
     include Profiler
     
@@ -130,7 +127,7 @@ module RedstoneBot
     end
     
     def miracle_jump(x,z)
-      return super unless in_fiber?
+      return super unless brain.running?
       @start_fly = Time.now
       result = super
       chat "I be at #{@body.position} after #{Time.now - @start_fly} seconds."
@@ -143,7 +140,7 @@ module RedstoneBot
     end
     
     def jump_to_height(*args)
-      return super unless in_fiber?
+      return super unless brain.running?
       result = super
       chat "I bumped my head!" if result == :bumped
       result
