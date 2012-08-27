@@ -16,13 +16,15 @@ module RedstoneBot
     
     Aliases = {
       "meq" => "m -2570 -2069",
-      "mpl" => "m 99.5 225.5",
+      "mpl" => "m 100.5 226.5",
       "mkn" => "m -211 785",
       "mwm" => "m -111.5 116.5",
+      "mcs" => "m -155 842",
       }
     
     PrintPacketClasses = [
       Packet::ChatMessage,
+      Packet::OpenWindow, Packet::CloseWindow, Packet::SetWindowItems, Packet::SetSlot, Packet::UpdateWindowProperty, Packet::ConfirmTransaction
     ]
     
     def setup
@@ -125,25 +127,10 @@ module RedstoneBot
         look_at @entity_tracker.closest_entity
       end
     end
-    
-    def miracle_jump(x,z)
-      return super unless brain.running?
-      @start_fly = Time.now
-      result = super
-      chat "I be at #{@body.position} after #{Time.now - @start_fly} seconds."
-      result
-    end
-    
+        
     def standing_on
       coord_array = (@body.position - Coords::Y*0.5).to_a.collect &:floor
       "#{block_type coord_array} #{@body.position.y}->#{coord_array[1]}"
-    end
-    
-    def jump_to_height(*args)
-      return super unless brain.running?
-      result = super
-      chat "I bumped my head!" if result == :bumped
-      result
     end
 
   end

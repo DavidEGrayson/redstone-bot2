@@ -16,6 +16,8 @@ module RedstoneBot
       jump_to_height 276, opts
       move_to Coords[x, 257, z], opts
       fall opts
+      
+      #chat "I be at #{body.position} after #{Time.now - @start_fly} seconds."
     end
     
     def follow(opts={}, &block)
@@ -109,6 +111,7 @@ module RedstoneBot
         wait_for_next_position_update(opts[:update_period])
         body.position += Coords::Y*(speed*body.last_update_period)
         if body.bumped?
+          chat "I bumped my head!"   # TODO: make this work!  requires funamental changes probably
           return :bumped
         end
       end

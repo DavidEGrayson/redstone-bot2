@@ -1091,9 +1091,18 @@ module RedstoneBot
     attr_reader :window_id, :slot_id, :slot
     
     def receive_data(socket)
-      @window_id = socket.read_byte
+      @window_id = socket.read_signed_byte
       @slot_id = socket.read_short
       @slot = Slot.receive_data(socket)
+    end
+    
+    # This packet is for the item attached to the cursor.
+    def cursor?
+      window_id == -1 && slot.nil?
+    end
+    
+    def inspect
+      "SetSlot(window=#{window_id}, slot_id=#{slot_id}, #{slot.inspect})"
     end
   end
   
@@ -1107,6 +1116,10 @@ module RedstoneBot
       @slots = count.times.collect do
         Slot.receive_data(socket)
       end
+    end
+    
+    def inspect
+      "SetWindowItems(#{window_id}, #{slots.inspect})"
     end
   end
   
