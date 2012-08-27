@@ -36,13 +36,6 @@ module RedstoneBot
       end
     end
     
-    def test
-      chest_coords = Coords[101, 72, 224]
-      #chest_coords = Coords[99, 72, 224]
-      open_chest chest_coords
-      
-    end
-    
     # Runs in a position update fiber
     def farm
       return unless require_fiber { farm }
@@ -117,18 +110,6 @@ module RedstoneBot
       return wheats_dug
     end
     
-    def dig(coords)
-      # TODO: support digging blocks that take more than one packet to dig
-      # TODO: move to some shared module
-    
-      @client.send_packet Packet::PlayerDigging.start coords
-      
-      # We will NOT get an update from the server about the digging finishing.
-      @chunk_tracker.change_block(coords, ItemType::Air)
-      
-      nil
-    end
-    
     def go_from_farm_to_storage
       return unless require_fiber { go_from_farm_to_storage }
       
@@ -156,28 +137,7 @@ module RedstoneBot
       
       delay(5)
     end
-    
-    def open_chest(coords)
-      @client.send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 8, 15, 8
-      @client.send_packet Packet::Animation.new @client.eid, 1
-    end
-    
-    def place_block_above(coords, item_type)
-      # TODO: remove item_type arg, calculate it from @inventory.selected_slot.item_type (e.g. Seeds -> WheatBlock)
-      # TODO: move this to some shared module
-    
-      #puts "Placing block above #{coords}."
-      @client.send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 8, 15, 8
-      @client.send_packet Packet::Animation.new @client.eid, 1
-
-      # We will NOT get an update from the server about the new block
-      @chunk_tracker.change_block(coords, item_type)
-      
-      # We WILL get a Set Slot packet from the server, but we want to keep track of the change before that happens
-      @inventory.use_up_one
-      nil
-    end
-    
+       
     def collect_nearby_items
       while true
         # Get the closest Wheat or Seed item that is at the right level.
@@ -262,6 +222,18 @@ module RedstoneBot
     def inventory_too_full?
       # At least one slot for seeds, one slot for wheat.
       inventory.empty_slot_count < 2
+    end
+    
+    def test
+      chest_coords = Coords[101, 72, 224]
+      #chest_coords = Coords[99, 72, 224]
+      open_chest chest_coords
+      
+    end
+    
+    def open_chest(coords)
+      @client.send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 8, 15, 8
+      @client.send_packet Packet::Animation.new @client.eid, 1
     end
   end
 end

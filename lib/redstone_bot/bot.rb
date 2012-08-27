@@ -5,6 +5,7 @@ require_relative "entity_tracker"
 require_relative "chunk_tracker"
 require_relative "inventory"
 require_relative "brain"
+require_relative "block_manipulation"
 
 # This class is not too useful on its own.  It is meant to be subclassed by
 # people making bots.
@@ -12,6 +13,7 @@ module RedstoneBot
   class Bot
     include Synchronizer
     include Uninspectable
+    include BlockManipulation
     extend Forwardable
     
     attr_reader :client, :body, :brain, :chunk_tracker, :entity_tracker, :inventory    
