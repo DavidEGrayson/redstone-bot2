@@ -1228,7 +1228,7 @@ module RedstoneBot
     end
 
     def creative_mode?
-      (flags & 4) != 0
+      (flags & 8) != 0
     end    
   end
   
