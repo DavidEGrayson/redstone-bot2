@@ -138,10 +138,10 @@ module RedstoneBot
           src_slot_id = NormalSlotRange.min + slot_index
           destination_slot_id = HotbarSlotRange.min + hotbar_slot_index
 
-          @client.send_packet Packet::ClickWindow.new(0, src_slot_id, false, new_transaction, false, slots[src_slot_id])
-          @client.send_packet Packet::ClickWindow.new(0, destination_slot_id, false, new_transaction, false, slots[destination_slot_id])
+          @client.send_packet Packet::ClickWindow.new(0, src_slot_id, 0, new_transaction, 0, slots[src_slot_id])
+          @client.send_packet Packet::ClickWindow.new(0, destination_slot_id, 0, new_transaction, 0, slots[destination_slot_id])
           swap_slots src_slot_id, destination_slot_id
-          @client.send_packet Packet::ClickWindow.new(0, src_slot_id, false, new_transaction, false, nil)          
+          @client.send_packet Packet::ClickWindow.new(0, src_slot_id, 0, new_transaction, 0, nil)          
           select_hotbar_slot(hotbar_slot_index)
           return true
         end

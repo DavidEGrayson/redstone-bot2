@@ -173,7 +173,7 @@ module RedstoneBot
       
       # Report settings to the server.  There is some chance that the "far" render
       # distance will let us see more chunks.
-      send_packet Packet::ClientSettings.new("en_US", :far, :enabled, true, 2)
+      send_packet Packet::ClientSettings.new("en_US", :far, :enabled, true, 2, true)
       
       @connected = true
       @mutex = Mutex.new

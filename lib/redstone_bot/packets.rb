@@ -19,7 +19,7 @@ class String
 end
 
 module RedstoneBot
-  ProtocolVersion = 39
+  ProtocolVersion = 47
   
   class UnknownPacketError < StandardError
     attr_reader :packet_type
@@ -242,10 +242,11 @@ module RedstoneBot
     
   class Packet::TimeUpdate < Packet
     packet_type 0x04
-    attr_reader :ticks
+    attr_reader :time, :day_time
     
-    def receive_data(socket)
-      @ticks = socket.read_long
+    def receive_data(stream)
+      @time = stream.read_long
+      @day_time = stream.read_long
     end
   end
   
@@ -480,9 +481,7 @@ module RedstoneBot
   class Packet::SpawnDroppedItem < Packet
     packet_type 0x15
     attr_reader :eid
-    attr_reader :item_type_id, :item_type
-    attr_reader :count
-    attr_reader :metadata
+    attr_reader :slot
     attr_reader :x, :y, :z
     attr_reader :yaw, :pitch, :roll
     
@@ -490,19 +489,15 @@ module RedstoneBot
       Coords[@x, @y, @z]
     end
         
-    def receive_data(socket)
-      @eid = socket.read_int
-      @item_type_id = socket.read_short
-      @item_type = ItemType.from_id(@item_type_id)
-      raise "Unknown item type #{@item_type_id} enocunted." if !@item_type
-      @count = socket.read_byte
-      @metadata = socket.read_short
-      @x = socket.read_int/32.0
-      @y = socket.read_int/32.0
-      @z = socket.read_int/32.0
-      @yaw = socket.read_signed_byte
-      @pitch = socket.read_signed_byte
-      @roll = socket.read_signed_byte
+    def receive_data(stream)
+      @eid = stream.read_int
+      @slot = stream.read_slot
+      @x = stream.read_int/32.0
+      @y = stream.read_int/32.0
+      @z = stream.read_int/32.0
+      @yaw = stream.read_signed_byte
+      @pitch = stream.read_signed_byte
+      @roll = stream.read_signed_byte
     end
     
     def to_s
@@ -989,14 +984,15 @@ module RedstoneBot
   
   class Packet::SoundOrParticleEffect < Packet
     packet_type 0x3D
-    attr_reader :effect_id, :x, :y, :z, :data
+    attr_reader :effect_id, :x, :y, :z, :data, :no_volume_decrease
     
-    def receive_data(socket)
-      @effect_id = socket.read_int
-      @x = socket.read_int
-      @y = socket.read_byte
-      @z = socket.read_int
-      @data = socket.read_int
+    def receive_data(stream)
+      @effect_id = stream.read_int
+      @x = stream.read_int
+      @y = stream.read_byte
+      @z = stream.read_int
+      @data = stream.read_int
+      @no_volume_decrease = stream.read_bool
     end
   end
   
@@ -1065,13 +1061,16 @@ module RedstoneBot
   
   class Packet::ClickWindow < Packet
     packet_type 0x66
+
+    # TODO: clean up the interface of this packet, it's weird
+    # To send a middle click, set @shift to 2 and @right_click to 3.    
     
     attr_reader :window_id, :slot_id, :right_click, :action_number, :shift, :clicked_item
     
     def initialize(window_id, slot_id, right_click, action_number, shift, clicked_item)
       @window_id = window_id
       @slot_id = slot_id
-      @right_clock = right_click
+      @right_click = right_click
       @action_number = action_number
       @shift = shift
       @clicked_item = clicked_item
@@ -1082,7 +1081,7 @@ module RedstoneBot
     end
     
     def encode_data
-      byte(window_id) + short(slot_id) + bool(right_click) + unsigned_short(action_number) + bool(shift) + Slot.encode_data(clicked_item)
+      byte(window_id) + short(slot_id) + byte(right_click) + unsigned_short(action_number) + unsigned_byte(shift) + Slot.encode_data(clicked_item)
     end
   end
   
@@ -1236,21 +1235,23 @@ module RedstoneBot
   class Packet::ClientSettings < Packet  # AKA Locale and View Distance
     packet_type 0xCC
     
-    attr_reader :locale, :view_distance, :chat_mode, :colors_enabled, :difficulty
+    attr_reader :locale, :view_distance, :chat_mode, :colors_enabled, :difficulty, :show_cape
     
-    def initialize(locale, view_distance, chat_mode, colors_enabled, difficulty)
+    def initialize(locale, view_distance, chat_mode, colors_enabled, difficulty, show_cape)
       @locale = locale
       @view_distance = view_distance
       @chat_mode = chat_mode
       @colors_enabled = colors_enabled
       @difficulty = difficulty
+      @show_cape = show_cape
     end
     
     def encode_data
       string(locale) +
         byte([:far, :normal, :short, :tiny].index view_distance) +
         byte([:enabled, :commands_only, :hidden].index(chat_mode) | (colors_enabled ? 8 : 0)) +
-        byte(difficulty)
+        byte(difficulty) +
+        bool(show_cape)
     end
 
   end

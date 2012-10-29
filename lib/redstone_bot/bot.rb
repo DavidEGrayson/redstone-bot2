@@ -4,7 +4,7 @@ require_relative "body"
 require_relative "entity_tracker"
 require_relative "chunk_tracker"
 require_relative "inventory"
-require_relative "window_tracker"
+#require_relative "window_tracker"
 require_relative "brain"
 require_relative "block_manipulation"
 
@@ -43,7 +43,7 @@ module RedstoneBot
       @entity_tracker = EntityTracker.new(@client, @body)
       @chunk_tracker = ChunkTracker.new(@client)
       @inventory = Inventory.new(@client)
-      @window_tracker = WindowTracker.new(@client)
+      #@window_tracker = WindowTracker.new(@client)
     end
     
     def_delegator :@brain, :require, :require_brain
