@@ -73,6 +73,9 @@ module RedstoneBot
       buf
     end
   
+    def read_slot
+      Slot.receive_data(self)
+    end 
   end
   
   module DataEncoder
