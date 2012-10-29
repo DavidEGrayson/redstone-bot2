@@ -1197,7 +1197,7 @@ module RedstoneBot
     
     def receive_data(socket)
       @player_name = socket.read_string
-      @online = socket.read_byte
+      @online = socket.read_bool
       @ping = socket.read_short
     end
   end
