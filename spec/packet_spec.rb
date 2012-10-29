@@ -76,19 +76,20 @@ end
 describe RedstoneBot::Packet::SpawnDroppedItem do
   it "correctly parses binary data" do
      eid = 44
-     item = 2
+     item = RedstoneBot::ItemType::GrassBlock
      count = 13
      metadata = 3
+     slot = RedstoneBot::Slot.new(item, count, metadata)
      coords = RedstoneBot::Coords[100.25, 200, 300.03125]
      yaw = -3
      pitch = -128
      roll = 127
      
-     p = described_class.create(eid, item, count, metadata, coords, yaw, pitch, roll)
+     p = described_class.create(eid, slot, coords, yaw, pitch, roll)
      p.eid.should == eid
-     p.item_type.to_i.should == item
-     p.count.should == count
-     p.metadata.should == 3
+     p.slot.item_type.should == item
+     p.slot.count.should == count
+     p.slot.damage.should == metadata
      p.coords.should be_within(0.00001).of(coords)
      p.yaw.should == yaw
      p.pitch.should == pitch
@@ -133,8 +134,8 @@ end
 
 describe RedstoneBot::Packet::ClientSettings do
   it "encodes binary data correctly" do
-    described_class.new("en_US", :far, :enabled, true, 2).encode_data.should == "\x00\x05\x00e\x00n\x00_\x00U\x00S\x00\x08\x02"
-    described_class.new("en_US", :tiny, :enabled, true, 2).encode_data.should == "\x00\x05\x00e\x00n\x00_\x00U\x00S\x03\x08\x02"
+    described_class.new("en_US", :far, :enabled, true, 2, true).encode_data.should == "\x00\x05\x00e\x00n\x00_\x00U\x00S\x00\x08\x02\x01"
+    described_class.new("en_US", :tiny, :enabled, true, 2, false).encode_data.should == "\x00\x05\x00e\x00n\x00_\x00U\x00S\x03\x08\x02\x00"
   end
 end
 
