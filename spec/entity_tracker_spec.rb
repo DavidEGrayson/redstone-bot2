@@ -9,7 +9,7 @@ describe RedstoneBot::EntityTracker do
   
   it "tracks dropped items" do
     eid = 44
-    item = 256
+    item = RedstoneBot::ItemType::IronShovel
     count = 13
     damage = 3
     coords = [100, 200, 300]
@@ -17,7 +17,7 @@ describe RedstoneBot::EntityTracker do
     pitch = -128
     roll = 127
   
-    @client << RedstoneBot::Packet::SpawnDroppedItem.create(eid, item, count, damage, coords, yaw, pitch, roll)
+    @client << RedstoneBot::Packet::SpawnDroppedItem.create(eid, RedstoneBot::Slot.new(item, count, damage), coords, yaw, pitch, roll)
     
     shovels = @entity_tracker.entities_of_type(RedstoneBot::ItemType::IronShovel)
     shovels.size.should == 1

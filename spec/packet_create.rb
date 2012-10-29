@@ -1,4 +1,5 @@
 require "redstone_bot/packets"
+require "redstone_bot/slot"
 
 $e = Object.new.extend(RedstoneBot::DataEncoder)
 
@@ -45,11 +46,11 @@ module RedstoneBot
     receive_data test_stream [metadata.size, compressed_data.size].pack("S>L>") + compressed_data + binary_metadata
   end
   
-  def (Packet::SpawnDroppedItem).create(eid, item_type, count, metadata, coords, yaw=0, pitch=0, roll=0)
-    binary_data = [eid, item_type.to_i, count, metadata,
-     (coords[0]*32).round, (coords[1]*32).round, (coords[2]*32).round,
+  def (Packet::SpawnDroppedItem).create(eid, slot, coords, yaw=0, pitch=0, roll=0)
+    binary_data = [eid].pack("l>") + Slot.encode_data(slot) + 
+     [(coords[0]*32).round, (coords[1]*32).round, (coords[2]*32).round,
      yaw, pitch, roll
-    ].pack("l>s>Cs>l>l>l>ccc")
+    ].pack("l>l>l>ccc")
     receive_data test_stream binary_data
   end
   
