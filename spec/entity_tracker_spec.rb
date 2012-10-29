@@ -58,8 +58,8 @@ describe RedstoneBot::EntityTracker do
   
   context "with some stuff loaded" do
     before do
-      @client << RedstoneBot::Packet::SpawnDroppedItem.create(44, RedstoneBot::ItemType::Wool, 1, 2, [100, 200, 300])
-      @client << RedstoneBot::Packet::SpawnDroppedItem.create(45, RedstoneBot::ItemType::Seeds, 1, 0, [100, 201, 301])
+      @client << RedstoneBot::Packet::SpawnDroppedItem.create(44, RedstoneBot::Slot.new(RedstoneBot::ItemType::Wool, 1, 2), [100, 200, 300])
+      @client << RedstoneBot::Packet::SpawnDroppedItem.create(45, RedstoneBot::Slot.new(RedstoneBot::ItemType::Seeds), [100, 201, 301])
       @client << RedstoneBot::Packet::SpawnNamedEntity.create(46, "Bob", [100, 205, 305])
     end
     
