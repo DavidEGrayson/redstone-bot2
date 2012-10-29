@@ -66,7 +66,7 @@ module RedstoneBot
           when 2 then read_int
           when 3 then read_float
           when 4 then read_string
-          when 5 then read_slot
+          when 5 then Slot.receive_data_without_enchantments(self)
           when 6 then [read_int, read_int, read_int]
           end
       end

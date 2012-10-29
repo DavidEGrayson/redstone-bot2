@@ -11,6 +11,10 @@ module RedstoneBot
       allocate.receive_data(stream)
     end
     
+    def self.receive_data_without_enchantments(stream)
+      allocate.receive_data_without_enchantments(stream)
+    end
+    
     def self.encode_data(slot)
       if slot
         slot.encode_data
@@ -19,13 +23,19 @@ module RedstoneBot
       end
     end
     
-    def receive_data(stream)
+    def receive_data_without_enchantments(stream)
       item_id = stream.read_short
       return nil if item_id == -1
       self.item_type = ItemType.from_id(item_id)
       raise "Unknown item type #{item_id}." if !item_type      
       self.count = stream.read_byte
       self.damage = stream.read_unsigned_short
+      self
+    end
+    
+    def receive_data(stream)
+      return nil if !receive_data_without_enchantments(stream)
+    
       enchant_data_len = stream.read_short
       if enchant_data_len > 0
         self.enchant_data = stream.read(enchant_data_len)

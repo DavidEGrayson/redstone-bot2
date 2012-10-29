@@ -753,9 +753,9 @@ module RedstoneBot
     attr_reader :eid
     attr_reader :metadata
     
-    def receive_data(socket)
-      @eid = socket.read_int
-      @metadata = socket.read_metadata
+    def receive_data(stream)
+      @eid = stream.read_int
+      @metadata = stream.read_metadata
     end
   end
   

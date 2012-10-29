@@ -116,9 +116,9 @@ module RedstoneBot
         self.next_update_period = update_period
       end
       count = position_update_count
-      $stderr.puts "waiting..."
+      # $stderr.puts "waiting..."
       position_update_condition_variable.wait(@synchronizer.mutex)
-      $stderr.puts "awakened..."
+      # $stderr.puts "awakened..."
       diff = position_update_count - count
       if diff != 1
         $stderr.puts "Warning: Failed to context switch to thread #{Thread.current} in time after waiting for position update (diff=#{diff})."
