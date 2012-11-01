@@ -20,7 +20,7 @@ end
 describe "EncryptionStream and DecryptionStream" do
   before do
     iv = "\x44\xAA"*8
-    writeable, readable = Socket.pair(:INET, :STREAM, 0)
+    writeable, readable = socket_pair
     @enc_stream = RedstoneBot::EncryptionStream.new(writeable, iv)
     @dec_stream = RedstoneBot::DecryptionStream.new(readable, iv)
   end

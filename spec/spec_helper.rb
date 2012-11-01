@@ -9,6 +9,12 @@ def test_stream(string)
   stream.extend RedstoneBot::DataReader
 end
 
+def socket_pair
+  Socket.pair(:UNIX, :STREAM)   # works in Linux
+rescue Errno::EAFNOSUPPORT
+  Socket.pair(:INET, :STREAM)   # works in Windows
+end
+
 # monkeypatch to make tests more readable
 class RedstoneBot::ItemType
   def *(count)
