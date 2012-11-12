@@ -8,9 +8,7 @@ require "redstone_bot/profiler"
 require "redstone_bot/packet_printer"
 
 module RedstoneBot
-  module Bots; end
-
-  class Bots::DavidBot < RedstoneBot::Bot
+  class DavidBot < RedstoneBot::Bot
     include BodyMovers
     include Profiler
     
