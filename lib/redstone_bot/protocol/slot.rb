@@ -1,3 +1,5 @@
+require_relative 'item_types'
+
 module RedstoneBot
   class Slot < Struct.new(:item_type, :count, :damage, :enchant_data)
     def initialize(item_type, count=1, damage=0, enchant_data=nil)

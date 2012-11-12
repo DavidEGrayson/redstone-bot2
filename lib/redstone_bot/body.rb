@@ -2,6 +2,15 @@ require_relative 'coords'
 
 require 'thread'
 
+# monkeypatch
+class ConditionVariable
+  def waiters_count
+    @waiters_mutex.synchronize do
+      @waiters.count
+    end
+  end
+end
+
 module RedstoneBot
   class Look < Struct.new(:yaw, :pitch)
   end
@@ -25,6 +34,10 @@ module RedstoneBot
     
     def bumped?
       @bumped
+    end
+    
+    def busy?
+      @position_update_condition_variable.waiters_count > 0
     end
   
     def initialize(client, synchronizer)

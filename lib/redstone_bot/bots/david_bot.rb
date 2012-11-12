@@ -44,10 +44,6 @@ module RedstoneBot
       @ce.timeout = 2
       @cm = ChatMover.new(@chat_filter, self, @entity_tracker)
       
-      @body.on_position_update do
-        default_position_update unless @current_brain
-      end
-      
       @client.listen do |p|
         case p
         when Packet::Disconnect
@@ -122,13 +118,6 @@ module RedstoneBot
       
     end
     
-    def default_position_update
-      if !brain.alive?
-        fall_update
-        look_at @entity_tracker.closest_entity
-      end
-    end
-        
     def standing_on
       coord_array = (@body.position - Coords::Y*0.5).to_a.collect &:floor
       "#{block_type coord_array} #{@body.position.y}->#{coord_array[1]}"
