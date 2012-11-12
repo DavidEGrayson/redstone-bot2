@@ -2,6 +2,13 @@ module RedstoneBot
   # Represents x,y,z coordinates in the minecraft world.
   # x, y, and z can be a mixture of integers and floats, for now at least.
   class Coords < Struct.new(:x, :y, :z)
+    X = East = Coords[1,0,0]
+    Y = Up = Coords[0,1,0]
+    Z = South = Coords[0,0,1]
+    Down = Coords[0,-1,0]
+    North = Coords[0,0,-1]
+    West = Coords[-1,0,0]
+  
     def inspect
       self.class.name + to_s
     end
@@ -130,11 +137,5 @@ module RedstoneBot
       end
     end
     
-    X = East = Coords[1,0,0]
-    Y = Up = Coords[0,1,0]
-    Z = South = Coords[0,0,1]
-    Down = Coords[0,-1,0]
-    North = Coords[0,0,-1]
-    West = Coords[-1,0,0]
   end
 end

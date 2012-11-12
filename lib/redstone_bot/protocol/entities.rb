@@ -1,4 +1,4 @@
-require_relative 'coords'
+require_relative '../coords'
 require_relative 'item_types'
 
 module RedstoneBot

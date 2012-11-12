@@ -3,8 +3,8 @@
 # Section = 16x16x16 
 
 require 'stringio'
-require_relative 'item_types'
-require_relative 'uninspectable'
+require_relative '../protocol/item_types'
+require_relative '../uninspectable'
 
 module RedstoneBot
   class Chunk

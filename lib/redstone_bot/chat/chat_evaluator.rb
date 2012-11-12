@@ -1,3 +1,4 @@
+require "../protocol/packets"
 
 module RedstoneBot
   # Vulnerabilities:

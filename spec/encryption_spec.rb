@@ -1,5 +1,5 @@
 require "spec_helper"
-require "redstone_bot/packets"
+require "redstone_bot/protocol/packets"
 require "redstone_bot/client"
 require "stringio"
 

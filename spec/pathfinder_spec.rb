@@ -1,7 +1,7 @@
 require_relative "spec_helper"
 
-require "redstone_bot/item_types"
-require "redstone_bot/pathfinder"
+require "redstone_bot/protocol/item_types"
+require "redstone_bot/abilities/pathfinder"
 require "set"
 
 class TestMap

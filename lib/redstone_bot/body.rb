@@ -1,5 +1,6 @@
-require "thread"
-require_relative "coords"
+require_relative 'coords'
+
+require 'thread'
 
 module RedstoneBot
   class Look < Struct.new(:yaw, :pitch)

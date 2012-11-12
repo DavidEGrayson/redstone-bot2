@@ -1,5 +1,5 @@
 require_relative 'spec_helper'
-require 'redstone_bot/chunk_tracker'
+require 'redstone_bot/trackers/chunk_tracker'
 require 'zlib'
 
 class RedstoneBot::ChunkTracker

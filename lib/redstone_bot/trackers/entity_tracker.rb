@@ -1,4 +1,4 @@
-require_relative "entities"
+require_relative "../protocol/entities"
 
 module RedstoneBot
   class EntityTracker

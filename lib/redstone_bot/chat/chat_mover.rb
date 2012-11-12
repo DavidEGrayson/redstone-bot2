@@ -4,7 +4,7 @@
 # classes.
 
 require "forwardable"
-require_relative "packets"
+require_relative "../protocol/packets"
 
 module RedstoneBot
   class ChatMover

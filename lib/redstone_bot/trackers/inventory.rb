@@ -1,5 +1,5 @@
-require_relative "packets"
-require_relative "item_types"
+require_relative "../protocol/packets"
+require_relative "../protocol/item_types"
 
 module RedstoneBot
   # TODO: add a feature for couting food calories

@@ -1,5 +1,5 @@
 require "forwardable"
-require_relative "packets"
+require_relative "../protocol/packets"
 
 module RedstoneBot
   attr_accessor :master

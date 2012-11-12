@@ -1,5 +1,5 @@
 require_relative 'spec_helper'
-require 'redstone_bot/inventory'
+require 'redstone_bot/trackers/inventory'
 
 # do this to make the class and constant names in RedstoneBot and ItemType not
 # require prefixes, thus making them more readable

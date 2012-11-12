@@ -1,5 +1,5 @@
-require "redstone_bot/packets"
-require "redstone_bot/slot"
+require "redstone_bot/protocol/packets"
+require "redstone_bot/protocol/slot"
 
 $e = Object.new.extend(RedstoneBot::DataEncoder)
 

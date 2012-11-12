@@ -1,5 +1,5 @@
 require_relative 'spec_helper'
-require 'redstone_bot/entity_tracker'
+require 'redstone_bot/trackers/entity_tracker'
 
 describe RedstoneBot::EntityTracker do
   before do

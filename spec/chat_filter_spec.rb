@@ -1,5 +1,5 @@
 require_relative 'spec_helper'
-require 'redstone_bot/chat_filter'
+require 'redstone_bot/chat/chat_filter'
 
 ChatMessage = RedstoneBot::Packet::ChatMessage
 

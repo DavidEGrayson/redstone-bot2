@@ -1,5 +1,5 @@
-require "redstone_bot/pack"
-require "redstone_bot/packets"
+require "redstone_bot/protocol/pack"
+require "redstone_bot/protocol/packets"
 require "redstone_bot/synchronizer"
 
 require "socket"
@@ -20,8 +20,7 @@ module RedstoneBot
     def initialize(writeable, secret)
       @writeable = writeable
       @cipher = OpenSSL::Cipher::Cipher.new('AES-128-CFB8').encrypt
-      @cipher.key = secret   # is this right?
-      @cipher.iv = secret
+      @cipher.key = @cipher.iv = secret
     end
     
     def write(str)
@@ -38,8 +37,7 @@ module RedstoneBot
     def initialize(readable, secret)
       @readable = readable
       @cipher = OpenSSL::Cipher::Cipher.new('AES-128-CFB8').decrypt
-      @cipher.key = secret  # is this right?
-      @cipher.iv = secret
+      @cipher.key = @cipher.iv = secret
     end
 
     def read(num_bytes)

@@ -1,7 +1,7 @@
 require_relative 'spec_helper'
-require 'redstone_bot/item_types'
-require 'redstone_bot/entities'
-require 'redstone_bot/inventory'
+require 'redstone_bot/protocol/item_types'
+require 'redstone_bot/protocol/entities'
+require 'redstone_bot/trackers/inventory'
 
 describe RedstoneBot::ItemType do
   it "can flexibly figure out what block type you want" do
