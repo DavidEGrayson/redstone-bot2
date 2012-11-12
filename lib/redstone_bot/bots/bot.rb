@@ -1,12 +1,13 @@
-require "forwardable"
-require_relative "uninspectable"
-require_relative "body"
-require_relative "entity_tracker"
-require_relative "chunk_tracker"
-require_relative "inventory"
-#require_relative "window_tracker"
-require_relative "brain"
-require_relative "block_manipulation"
+require_relative '../uninspectable'
+require_relative '../body'
+require_relative '../trackers/entity_tracker'
+require_relative '../trackers/chunk_tracker'
+require_relative '../trackers/inventory'
+#require_relative '../trackers/window_tracker'
+require_relative '../brain'
+require_relative '../abilities/block_manipulation'
+
+require 'forwardable'
 
 # This class is not too useful on its own.  It is meant to be subclassed by
 # people making bots.

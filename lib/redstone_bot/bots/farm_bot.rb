@@ -1,5 +1,5 @@
 require_relative 'david_bot'
-require 'redstone_bot/simple_cache'
+require_relative '../simple_cache'
 
 # TODO: see if we can run an IRB thing in the console instead of using ChatEvaluator
 

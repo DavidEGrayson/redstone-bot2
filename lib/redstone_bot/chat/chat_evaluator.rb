@@ -1,4 +1,4 @@
-require "../protocol/packets"
+require_relative '../protocol/packets'
 
 module RedstoneBot
   # Vulnerabilities:

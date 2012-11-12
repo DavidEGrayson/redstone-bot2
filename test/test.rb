@@ -9,7 +9,7 @@ end
 
 bot_name = ARGV[0]
 require "redstone_bot/bots/" + bot_name.underscore
-bot_class = RedstoneBot::Bots.const_get bot_name.intern
+bot_class = RedstoneBot.const_get bot_name.intern
 
 puts "Starting #{bot_class}..."
 

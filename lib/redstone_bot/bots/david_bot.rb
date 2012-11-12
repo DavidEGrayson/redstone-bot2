@@ -1,11 +1,14 @@
-require "redstone_bot/bot"
-require "redstone_bot/chat_evaluator"
-require "redstone_bot/pathfinder"
-require "redstone_bot/body_movers"
-require "redstone_bot/chat_filter"
-require "redstone_bot/chat_mover"
-require "redstone_bot/profiler"
-require "redstone_bot/packet_printer"
+require 'redstone_bot/bots/bot'
+
+require 'redstone_bot/chat/chat_filter'
+require 'redstone_bot/chat/chat_evaluator'
+require 'redstone_bot/chat/chat_mover'
+
+require 'redstone_bot/abilities/pathfinder'
+require 'redstone_bot/abilities/body_movers'
+
+require 'redstone_bot/profiler'
+require 'redstone_bot/packet_printer'
 
 module RedstoneBot
   class DavidBot < RedstoneBot::Bot
