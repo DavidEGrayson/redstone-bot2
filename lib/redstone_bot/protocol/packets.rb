@@ -19,7 +19,7 @@ class String
 end
 
 module RedstoneBot
-  ProtocolVersion = 47
+  ProtocolVersion = 49
   
   class UnknownPacketError < StandardError
     attr_reader :packet_type
@@ -1021,7 +1021,7 @@ module RedstoneBot
   
   class Packet::Thunderbolt < Packet
     packet_type 0x47
-    attr_accessor :eid, :x, :y, :z
+    attr_accessor :eid, :coords
     
     def coords
       Coords[@x, @y, @z]
@@ -1030,9 +1030,7 @@ module RedstoneBot
     def receive_data(socket)
       @eid = socket.read_int
       socket.read_byte
-      @x = socket.read_int/32.0
-      @y = socket.read_int/32.0
-      @z = socket.read_int/32.0
+      @coords = Coords[socket.read_int/32.0, socket.read_int/32.0, socket.read_int/32.0]
     end
   end
   
@@ -1164,6 +1162,19 @@ module RedstoneBot
       @y = socket.read_short
       @z = socket.read_int
       @text = 4.times.collect { socket.read_string }.join("\n")
+    end
+  end
+  
+  class Packet::ItemData < Packet
+    packet_type 0x83
+      
+    attr_reader :item_type, :item_id, :text
+    
+    def receive_data(socket)
+      @item_type = ItemType.from_id(socket.read_int)
+      @item_id = socket.read_short
+      @text = socket.read_byte_array
+      puts self.inspect
     end
   end
   

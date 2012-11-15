@@ -1,6 +1,8 @@
 require_relative '../uninspectable'
 require_relative '../body'
 
+# TODO: add some primitive falling?
+
 module RedstoneBot
   class BasicBot
     include Synchronizer
