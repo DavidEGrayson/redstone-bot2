@@ -6,6 +6,9 @@
 # NOTE: David is not totally convinced that this should be a module instead
 # of a class.  Any class that calls these body-moving functions should be
 # built with the assumption that it could be either.
+
+require_relative 'pathfinder'
+
 module RedstoneBot
   module BodyMovers
     

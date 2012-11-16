@@ -1,14 +1,21 @@
 require_relative 'basic_bot'
+
+require_relative '../brain'
+
 require_relative '../trackers/entity_tracker'
 require_relative '../trackers/chunk_tracker'
 require_relative '../trackers/inventory'
 #require_relative '../trackers/window_tracker'
-require_relative '../brain'
+
 require_relative '../abilities/block_manipulation'
 require_relative '../abilities/falling'
 require_relative '../abilities/body_movers'
 
-require 'forwardable'
+require_relative '../chat/chat_filter'
+require_relative '../chat/chat_evaluator'
+require_relative '../chat/chat_chunk'
+require_relative '../chat/chat_inventory'
+require_relative '../chat/chat_mover'
 
 # This class is not too useful on its own.  It is meant to be subclassed by
 # people making bots.
@@ -17,6 +24,7 @@ module RedstoneBot
     include Falling
     include BlockManipulation
     include BodyMovers
+    include ChatChunk, ChatInventory, ChatMover
     
     attr_reader :brain, :chunk_tracker, :entity_tracker, :inventory    
     
@@ -35,6 +43,19 @@ module RedstoneBot
       @inventory = Inventory.new(@client)
       #@window_tracker = WindowTracker.new(@client)      
       
+      @chat_filter = ChatFilter.new(@client)
+      @chat_filter.only_player_chats
+      @chat_filter.reject_from_self
+      @chat_filter.aliases CHAT_ALIASES if defined?(CHAT_ALIASES)
+      @chat_filter.only_from_user(MASTER) if defined?(MASTER)
+
+      @chat_evaluator = ChatEvaluator.new(@chat_filter, self)
+      @chat_evaluator.safe_level = defined?(MASTER) ? 4 : 0
+      @chat_evaluator.timeout = 2
+
+      @chat_filter.listen &method(:chat_chunk)
+      @chat_filter.listen &method(:chat_inventory)
+      @chat_filter.listen &method(:chat_mover)
     end
     
     def default_position_update

@@ -4,7 +4,7 @@ require_relative '../simple_cache'
 # TODO: see if we can run an IRB thing in the console instead of using ChatEvaluator
 
 module RedstoneBot
-  class FarmBot < DavidBot
+  class FarmBot < Bot
   
     ExpectedWheatCount = 9759
     FarmBounds = [(-300..-150), (63..63), (670..800)]
