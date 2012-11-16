@@ -6,6 +6,7 @@ require_relative '../trackers/inventory'
 require_relative '../brain'
 require_relative '../abilities/block_manipulation'
 require_relative '../abilities/falling'
+require_relative '../abilities/body_movers'
 
 require 'forwardable'
 
@@ -15,6 +16,7 @@ module RedstoneBot
   class Bot < BasicBot
     include Falling
     include BlockManipulation
+    include BodyMovers
     
     attr_reader :brain, :chunk_tracker, :entity_tracker, :inventory    
     
@@ -38,8 +40,13 @@ module RedstoneBot
     def default_position_update
       if !body.busy?
         fall_update
-        look_at @entity_tracker.closest_entity
+        look_at entity_tracker.closest_entity
       end
+    end
+        
+    def standing_on
+      coord_array = (body.position - Coords::Y*0.5).to_a.collect &:floor
+      "#{block_type coord_array} #{body.position.y}->#{coord_array[1]}"
     end
     
     def_delegator :@brain, :require, :require_brain
