@@ -38,7 +38,7 @@ module RedstoneBot
     
     # Runs in a position update fiber
     def farm
-      return unless require_fiber { farm }
+      return unless require_brain { farm }
       
       while true
         if wheat_count < ExpectedWheatCount - 50
@@ -111,20 +111,20 @@ module RedstoneBot
     end
     
     def go_from_farm_to_storage
-      return unless require_fiber { go_from_farm_to_storage }
+      return unless require_brain { go_from_farm_to_storage }
       
       move_to StorageWaypoint if defined?(StorageWaypoint)
       path_to Storage
     end
     
     def go_from_storage_to_farm
-      return unless require_fiber { go_from_storage_to_farm }
+      return unless require_brain { go_from_storage_to_farm }
       
       path_to StorageWaypoint if defined?(StorageWaypoint)
     end
     
     def store_items
-      return unless require_fiber { store_items }
+      return unless require_brain { store_items }
     
       chat "hmmmm, how 2 store items in chests... I'll just dump it"
       
