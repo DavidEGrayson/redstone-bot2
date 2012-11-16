@@ -1,4 +1,4 @@
-require_relative 'david_bot'
+require_relative 'bot'
 require_relative '../simple_cache'
 
 # TODO: see if we can run an IRB thing in the console instead of using ChatEvaluator
