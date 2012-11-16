@@ -1059,26 +1059,29 @@ module RedstoneBot
   class Packet::ClickWindow < Packet
     packet_type 0x66
 
-    # TODO: clean up the interface of this packet, it's weird
-    # To send a middle click, set @shift to 2 and @right_click to 3.    
+    attr_reader :window_id, :slot_id, :mouse_button, :action_number, :shift, :clicked_item
     
-    attr_reader :window_id, :slot_id, :right_click, :action_number, :shift, :clicked_item
-    
-    def initialize(window_id, slot_id, right_click, action_number, shift, clicked_item)
+    def initialize(window_id, slot_id, mouse_button, action_number, shift, clicked_item)
       @window_id = window_id
       @slot_id = slot_id
-      @right_click = right_click
+      @mouse_button = mouse_button
       @action_number = action_number
       @shift = shift
       @clicked_item = clicked_item
     end
     
     def self.outside(transaction_id)
-      new 0, -999, false, transaction_id, false, nil
+      new 0, -999, :left, transaction_id, false, nil
+    end
+    
+    def encode_mouse_button
+      index = [:left, :right, :_, :middle].index(mouse_button)
+      raise "Invalid mouse button #{mouse_button.inspect}" if !index
+      byte index
     end
     
     def encode_data
-      byte(window_id) + short(slot_id) + byte(right_click) + unsigned_short(action_number) + unsigned_byte(shift) + Slot.encode_data(clicked_item)
+      byte(window_id) + short(slot_id) + encode_mouse_button + unsigned_short(action_number) + bool(shift) + Slot.encode_data(clicked_item)
     end
   end
   

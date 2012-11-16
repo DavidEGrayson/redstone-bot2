@@ -138,10 +138,10 @@ module RedstoneBot
           src_slot_id = NormalSlotRange.min + slot_index
           destination_slot_id = HotbarSlotRange.min + hotbar_slot_index
 
-          @client.send_packet Packet::ClickWindow.new(0, src_slot_id, 0, new_transaction, 0, slots[src_slot_id])
-          @client.send_packet Packet::ClickWindow.new(0, destination_slot_id, 0, new_transaction, 0, slots[destination_slot_id])
+          @client.send_packet Packet::ClickWindow.new(0, src_slot_id, :left, new_transaction, false, slots[src_slot_id])
+          @client.send_packet Packet::ClickWindow.new(0, destination_slot_id, :left, new_transaction, false, slots[destination_slot_id])
           swap_slots src_slot_id, destination_slot_id
-          @client.send_packet Packet::ClickWindow.new(0, src_slot_id, 0, new_transaction, 0, nil)          
+          @client.send_packet Packet::ClickWindow.new(0, src_slot_id, :left, new_transaction, false, nil)
           select_hotbar_slot(hotbar_slot_index)
           return true
         end
@@ -185,7 +185,7 @@ module RedstoneBot
     def send_shift_click(slot_id) 
       puts "Shift clicking slot #{slot_id} #{slots[slot_id]}" if debug
       action_number = new_transaction
-      @client.send_packet Packet::ClickWindow.new(0, slot_id, false, action_number, true, slots[slot_id])
+      @client.send_packet Packet::ClickWindow.new(0, slot_id, :left, action_number, true, slots[slot_id])
     end
     
     def new_transaction
@@ -226,7 +226,7 @@ module RedstoneBot
     
     def dump_slot_id(id)
       if slots[id] != nil
-        @client.send_packet Packet::ClickWindow.new(0, id, false, new_transaction, false, slots[id])
+        @client.send_packet Packet::ClickWindow.new(0, id, :left, new_transaction, false, slots[id])
         @client.send_packet Packet::ClickWindow.outside(new_transaction)
         slots[id] = nil
       end
