@@ -32,6 +32,7 @@ module RedstoneBot
       @chunk_tracker = ChunkTracker.new(@client)
       @inventory = Inventory.new(@client)
       #@window_tracker = WindowTracker.new(@client)      
+      
     end
     
     def default_position_update

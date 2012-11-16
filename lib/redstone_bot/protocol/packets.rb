@@ -1166,7 +1166,6 @@ module RedstoneBot
   
   class Packet::ItemData < Packet
     packet_type 0x83
-      
     attr_reader :item_type, :item_id, :text
     
     def receive_data(socket)

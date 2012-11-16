@@ -20,6 +20,14 @@ module RedstoneBot
         
     def setup
       @body = Body.new(@client, self)
+      
+      @client.listen do |p|
+        if p.is_a?(Packet::Disconnect)
+          puts "Connection terminated by server.  Position = #{@body.position}"
+          exit 2
+        end
+      end
+
     end
 
     def start_bot

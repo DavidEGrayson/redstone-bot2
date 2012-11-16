@@ -2,8 +2,6 @@ require "forwardable"
 require_relative "../protocol/packets"
 
 module RedstoneBot
-  attr_accessor :master
-  
   # TODO: perhaps generalize this to be a subclass of PacketFilter if we ever need to filter other
   # types of packets.
   class ChatFilter

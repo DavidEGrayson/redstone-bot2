@@ -7,7 +7,7 @@ require "forwardable"
 require_relative "../protocol/packets"
 
 module RedstoneBot
-  class ChatMover
+  class ChatMover  # TODO: make this just be a module included in Bot
     extend Forwardable
   
     attr_accessor :master

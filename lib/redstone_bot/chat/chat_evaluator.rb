@@ -1,10 +1,7 @@
 require_relative '../protocol/packets'
 
 module RedstoneBot
-  # Vulnerabilities:
-  #   Thread.new { while true; end }
-  #   "eval " + string
-  #   EvaluatesRuby.instance_method(:handle_chat).bind(self).call(message)
+
   class ChatEvaluator
     attr_accessor :permission_denied_message
     attr_accessor :safe_level
