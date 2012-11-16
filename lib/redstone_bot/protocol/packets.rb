@@ -337,7 +337,7 @@ module RedstoneBot
       @z = socket.read_double
       @yaw = socket.read_float
       @pitch = socket.read_float
-      @on_ground = socket.read_byte
+      @on_ground = socket.read_bool
     end
     
     def encode_data

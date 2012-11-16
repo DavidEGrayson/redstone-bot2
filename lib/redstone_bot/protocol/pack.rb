@@ -100,6 +100,8 @@ module RedstoneBot
     end
 
     def bool(b)
+      # we frequently switch back and forth between bytes and bools, and this will help us catch bugs
+      raise "Expected true or false but got #{b.inspect}" if b != true && b != false
       byte(b ? 1 : 0)
     end
 
