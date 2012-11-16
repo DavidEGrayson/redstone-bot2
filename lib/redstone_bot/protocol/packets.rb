@@ -3,6 +3,7 @@ raise "Please use Ruby 1.9.3 or later." if RUBY_VERSION < "1.9.3"
 
 require_relative "pack"
 require_relative "slot"
+require_relative "protocol_version"
 require "zlib"
 
 # TODO: implement the rest of the packets from http://www.wiki.vg/Protocol
@@ -19,8 +20,6 @@ class String
 end
 
 module RedstoneBot
-  ProtocolVersion = 49
-  
   class UnknownPacketError < StandardError
     attr_reader :packet_type
 
@@ -73,7 +72,7 @@ module RedstoneBot
     end
       
     def encode_data
-      raise "encode_data instance method not implemented in #{self.class.name}"      
+      raise "encode_data instance method not implemented in #{self.class.name}"
     end
     
     def type_byte
@@ -1171,10 +1170,9 @@ module RedstoneBot
     attr_reader :item_type, :item_id, :text
     
     def receive_data(socket)
-      @item_type = ItemType.from_id(socket.read_int)
+      @item_type = ItemType.from_id(socket.read_short)
       @item_id = socket.read_short
       @text = socket.read_byte_array
-      puts self.inspect
     end
   end
   
