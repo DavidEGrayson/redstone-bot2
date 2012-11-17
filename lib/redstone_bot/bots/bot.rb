@@ -71,6 +71,7 @@ module RedstoneBot
     end
     
     def_delegator :@brain, :require, :require_brain
+    def_delegators :@brain, :stop
     def_delegators :@chunk_tracker, :block_type, :block_metadata
     def_delegators :@inventory, :hold
     def_delegators :@entity_tracker, :entities_of_type
