@@ -122,10 +122,10 @@ describe Inventory do
     end
     
     it "can dump by slot id" do
-    @client.should_receive(:send_packet).exactly(2).times
+      @client.should_receive(:send_packet).exactly(2).times
       @inventory.dump_slot_id(36)
       @inventory.count(WheatItem).should == 0
-    @inventory.should be_pending
+      @inventory.should be_pending
     end
     
     it "can dump by item type" do
