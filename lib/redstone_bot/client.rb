@@ -56,7 +56,6 @@ module RedstoneBot
     attr_reader :hostname
     attr_reader :port
     attr_reader :eid
-    attr_reader :mutex
     attr_accessor :synchronizer  # an object that includes the Synchronizer module
     
     # password can be nil or empty for an offline server
@@ -174,12 +173,10 @@ module RedstoneBot
       send_packet Packet::ClientSettings.new("en_US", :far, :enabled, true, 2, true)
       
       @connected = true
-      @mutex = Mutex.new
       notify_listeners :start
 
       # Receive packets
       Thread.new do
-        @synchronizer.sleeping_allowed_in_this_thread = false
         begin
           while true
             packet = receive_packet   # this is the only blocking operationg that should happen in this thread

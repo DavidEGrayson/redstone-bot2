@@ -27,17 +27,6 @@ module RedstoneBot
         synchronize &block
       end
     end
-    
-    # TODO: move this to the Thread class?
-    def sleeping_allowed_in_this_thread=(value)
-      Thread.current[:non_sleeping] = !value
-    end
-    
-    # Returns true if blocking operations are allowed in this thread.
-    # TODO: move this to the Thread class?
-    def sleeping_allowed_in_this_thread?
-      !Thread.current[:non_sleeping]
-    end
 
     # timeout function that does NOT throw exceptions
     def timeout(*args, &block)

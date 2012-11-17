@@ -84,7 +84,6 @@ module RedstoneBot
     def start_regular_update_thread
       @position_update_count = 0
       Thread.new do
-        @synchronizer.sleeping_allowed_in_this_thread = false
         while true
           # TODO: get more reliable timing by using Time.now to compute how long to sleep
           @last_update_period = @next_update_period || @update_period
