@@ -6,7 +6,7 @@ class TestRegularUpdater < RedstoneBot::RegularUpdater
   end
   
   def update
-    update_periods
     proc.call
+    update_periods
   end
 end
