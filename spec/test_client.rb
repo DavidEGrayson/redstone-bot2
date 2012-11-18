@@ -4,11 +4,12 @@ require 'redstone_bot/client'
 require_relative 'test_synchronizer'
 
 class TestClient < RedstoneBot::Client
-  attr_accessor :synchronizer
+  attr_accessor :synchronizer, :sent_packets
 
   def initialize
     @listeners = []
     @synchronizer = TestSynchronizer.new  # gets overridden by TestBot
+    @sent_packets = []
   end
   
   def listen(&proc)
@@ -16,6 +17,10 @@ class TestClient < RedstoneBot::Client
   end
   
   alias :<< :notify_listeners
+  
+  def send_packet(packet)
+    sent_packets << packet
+  end
   
   def username
     "testbot"

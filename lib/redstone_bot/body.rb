@@ -53,7 +53,7 @@ module RedstoneBot
             # Either we moved into a solid block or the game is just beginning.
 
             # Store the new position and look.
-            puts "#{client.time_string} RX! #{p}"
+            announce_received_position
             @position = Coords[p.x, p.y, p.z]
             @stance = p.stance
             @look = Look.new(p.yaw, p.pitch)
@@ -75,6 +75,10 @@ module RedstoneBot
         end
       end
       
+    end
+    
+    def announce_received_position(packet)
+      puts "#{client.time_string} RX! #{packet}"
     end
     
     def on_position_update(&proc)

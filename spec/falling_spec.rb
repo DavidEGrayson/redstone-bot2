@@ -2,7 +2,7 @@ require_relative 'test_bot'
 
 describe RedstoneBot::Falling do
   let :bot do
-    b = TestBot.new(client)
+    b = TestBot.new
     b.start_bot
     b
   end
@@ -12,12 +12,7 @@ describe RedstoneBot::Falling do
   end
   
   before do
-    puts "opening up client"
-    c = client
-    puts "making nasty packet"
-    p = RedstoneBot::Packet::PlayerPositionAndLook.new(0, 70, 0, 70+1.62, 0, 0, false)    
-    puts "sending nasty crashy packet"
-    c << p
+    client << RedstoneBot::Packet::PlayerPositionAndLook.new(0, 70, 0, 70+1.62, 0, 0, false)    
   end
   
   it "falls" do
