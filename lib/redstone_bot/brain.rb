@@ -44,6 +44,5 @@ module RedstoneBot
       end
     end
     
-    
   end
 end
