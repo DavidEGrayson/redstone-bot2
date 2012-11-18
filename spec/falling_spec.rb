@@ -1,17 +1,11 @@
 describe RedstoneBot::Falling do
   let :bot do
-    b = TestBot.new
-    b.start_bot
-    b
+    TestBot.new_at_position RedstoneBot::Coords[0, 70, 0]
   end
 
-  before do
-    bot.client << RedstoneBot::Packet::PlayerPositionAndLook.new(0, 70, 0, 70+1.62, 0, 0, false)    
-  end
-  
   it "falls" do
     bot.body.updater.default_period.should == 0.05
-    default_fall_speed = 10
+    # Assumption: default fall speed is 10 m/s
     
     bot.body.updater.update   # should call fall_update
     bot.body.position.should be_within(0.001).of RedstoneBot::Coords[0, 69.5, 0]
