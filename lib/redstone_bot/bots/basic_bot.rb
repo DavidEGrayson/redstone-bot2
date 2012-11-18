@@ -13,13 +13,13 @@ module RedstoneBot
     def initialize(client)
       @client = client
       @client.synchronizer = self
-      @mutex = Mutex.new
       
       setup
     end
         
     def setup
-      @body = Body.new(@client, self)
+      setup_mutex
+      setup_body
       
       @client.listen do |p|
         if p.is_a?(Packet::Disconnect)
@@ -28,6 +28,14 @@ module RedstoneBot
         end
       end
 
+    end
+    
+    def setup_mutex
+      @mutex = Mutex.new
+    end
+    
+    def setup_body
+      @body = Body.new(@client, self)
     end
 
     def start_bot

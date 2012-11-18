@@ -61,10 +61,10 @@ module RedstoneBot
             
             # Confirm the new position with the server.
             send_update
-            if @regular_update_thread
+            if @position_updater
               @bumped = true
             else
-              @regular_update_thread = start_regular_update_thread
+              @position_updater = start_position_updater
             end
           when Packet::UpdateHealth
             @health = p.health
@@ -81,8 +81,7 @@ module RedstoneBot
       @position_updaters << proc
     end
     
-    def start_regular_update_thread
-      @position_update_count = 0
+    def start_position_updater
       Thread.new do
         while true
           # TODO: get more reliable timing by using Time.now to compute how long to sleep
@@ -91,15 +90,19 @@ module RedstoneBot
           sleep(@last_update_period)   # this is the only time sleeping should happen in this thread
           
           @synchronizer.synchronize do
-            @position_updaters.each &:call
-            self.stance = position.y + 1.62   # TODO: handle this better!
-            @bumped = false
-            send_update
-            @position_update_count += 1
-            @position_update_condition_variable.broadcast
+            position_update
           end
         end
       end
+    end
+    
+    def position_update
+      @position_updaters.each &:call
+      self.stance = position.y + 1.62   # TODO: handle this better!
+      @bumped = false
+      send_update
+      @position_update_count += 1
+      @position_update_condition_variable.broadcast
     end
     
     def look_at(target)

@@ -37,7 +37,7 @@ module RedstoneBot
         default_position_update
       end
       
-      @brain = Brain.new(self)
+      setup_brain
       @entity_tracker = EntityTracker.new(@client, @body)
       @chunk_tracker = ChunkTracker.new(@client)
       @inventory = Inventory.new(@client)
@@ -56,6 +56,10 @@ module RedstoneBot
       @chat_filter.listen &method(:chat_chunk)
       @chat_filter.listen &method(:chat_inventory)
       @chat_filter.listen &method(:chat_mover)
+    end
+    
+    def setup_brain
+      @brain = Brain.new(self)
     end
     
     def default_position_update
