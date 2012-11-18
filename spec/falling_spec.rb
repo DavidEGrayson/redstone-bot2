@@ -12,7 +12,13 @@ describe RedstoneBot::Falling do
   end
   
   it "falls" do
+    bot.body.updater.default_period.should == 0.05
+    default_fall_speed = 10
+    
     bot.fall_update
-    bot.body.position.should == nil
+    bot.body.position.should be_within(0.001).of RedstoneBot::Coords[0, 69.5, 0]
+
+    bot.fall_update
+    bot.body.position.should be_within(0.001).of RedstoneBot::Coords[0, 69.0, 0]
   end
 end

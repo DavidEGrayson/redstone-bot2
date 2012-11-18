@@ -8,7 +8,7 @@ class TestClient < RedstoneBot::Client
 
   def initialize
     @listeners = []
-    @synchronizer = TestSynchronizer.new  # gets overridden by TestBot
+    @synchronizer = TestStandaloneSynchronizer.new  # gets overridden by TestBot
     @sent_packets = []
   end
   

@@ -17,12 +17,10 @@ module RedstoneBot
 
   class Body
     attr_accessor :position, :look, :on_ground, :stance, :health
-    attr_accessor :update_period
-    attr_accessor :next_update_period
-    attr_accessor :last_update_period
     attr_accessor :debug
     attr_accessor :position_update_condition_variable
     attr_accessor :position_update_count
+    attr_accessor :updater
     
     def on_ground?
       @on_ground
@@ -53,19 +51,21 @@ module RedstoneBot
             # Either we moved into a solid block or the game is just beginning.
 
             # Store the new position and look.
-            announce_received_position
             @position = Coords[p.x, p.y, p.z]
             @stance = p.stance
             @look = Look.new(p.yaw, p.pitch)
             @on_ground = p.on_ground
+            announce_received_position(p)
             
             # Confirm the new position with the server.
             send_update
-            if @position_updater
+            
+            if @updater
               @bumped = true
             else
-              @position_updater = start_position_updater
+              @updater = @synchronizer.regular_updater 0.05, &method(:position_update)
             end
+            
           when Packet::UpdateHealth
             @health = p.health
             if @health <= 0
@@ -78,26 +78,11 @@ module RedstoneBot
     end
     
     def announce_received_position(packet)
-      puts "#{client.time_string} RX! #{packet}"
+      puts "#{@client.time_string} RX! #{packet}"
     end
     
     def on_position_update(&proc)
       @position_updaters << proc
-    end
-    
-    def start_position_updater
-      Thread.new do
-        while true
-          # TODO: get more reliable timing by using Time.now to compute how long to sleep
-          @last_update_period = @next_update_period || @update_period
-          @next_update_period = nil
-          sleep(@last_update_period)   # this is the only time sleeping should happen in this thread
-          
-          @synchronizer.synchronize do
-            position_update
-          end
-        end
-      end
     end
     
     def position_update

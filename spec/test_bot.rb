@@ -9,7 +9,7 @@ require_relative 'test_synchronizer'
 require_relative 'test_body'
 
 class TestBot < RedstoneBot::Bot
-  include NullSynchronizer
+  include TestSynchronizer
 
   def initialize
     super(TestClient.new)

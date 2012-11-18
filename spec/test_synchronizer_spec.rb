@@ -1,10 +1,10 @@
 require_relative 'test_synchronizer'
 require 'redstone_bot/synchronizer'
 
-describe NullSynchronizer do
+describe TestSynchronizer do
   RedstoneBot::Synchronizer.instance_methods.each do |method_name|
     describe "#{method_name} method" do
-      let(:test_method) { NullSynchronizer.instance_method(method_name) }
+      let(:test_method) { TestSynchronizer.instance_method(method_name) }
       let(:original_method) { RedstoneBot::Synchronizer.instance_method(method_name) }
 
       it "exists" do

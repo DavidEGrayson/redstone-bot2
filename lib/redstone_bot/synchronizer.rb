@@ -1,4 +1,6 @@
-require "timeout"
+require_relative 'regular_updater'
+
+require 'timeout'
 
 module RedstoneBot
   module Synchronizer
@@ -12,6 +14,11 @@ module RedstoneBot
       @mutex.sleep(time)
     end
     
+    def regular_updater(default_period, &block)
+      RegularUpdater.new self, default_period, &block
+    end
+    
+    # TODO: merge this with regular_updater somehow
     def regularly(time, &block)
       Thread.new do
         while true

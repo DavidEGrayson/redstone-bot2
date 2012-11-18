@@ -1,6 +1,8 @@
+require_relative 'test_regular_updater'
+
 # This module reimplements everything that RedstoneBot::Synchronizer does, but
 # in a way that makes it easier to test.
-module NullSynchronizer
+module TestSynchronizer
   def mutex
     raise "Direct access to the mutex should not happen during tests."
   end
@@ -10,6 +12,10 @@ module NullSynchronizer
   end
   
   def delay(time)
+  end
+  
+  def regular_updater(default_period, &block)
+    TestRegularUpdater.new(self, default_period, &block)
   end
   
   def regularly(time, &block)
@@ -33,6 +39,6 @@ module NullSynchronizer
   end
 end
 
-class TestSynchronizer
-  include NullSynchronizer
+class TestStandaloneSynchronizer
+  include TestSynchronizer
 end
