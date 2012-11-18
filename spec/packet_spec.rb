@@ -1,5 +1,4 @@
 require_relative "spec_helper"
-require_relative "packet_create"
 require "redstone_bot/coords"
 
 describe RedstoneBot::Packet::BlockChange do

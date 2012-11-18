@@ -1,5 +1,3 @@
-require_relative 'test_bot'
-
 describe RedstoneBot::Falling do
   let :bot do
     b = TestBot.new

@@ -1,7 +1,10 @@
 $LOAD_PATH.unshift File.join File.dirname(__FILE__), '..', 'lib'
+$LOAD_PATH.unshift File.join File.dirname(__FILE__), '..', 'test'
 
-require_relative 'test_client'
-require_relative 'packet_create'
+require 'test_client'
+require 'packet_create'
+require 'test_bot'
+
 require 'stringio'
 
 def test_stream(string)

@@ -1,5 +1,4 @@
 require_relative 'spec_helper'
-require_relative 'test_bot'
 
 describe TestBot do
   before do

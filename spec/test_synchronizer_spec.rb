@@ -1,4 +1,4 @@
-require_relative 'test_synchronizer'
+require 'test_synchronizer'
 require 'redstone_bot/synchronizer'
 
 describe TestSynchronizer do
