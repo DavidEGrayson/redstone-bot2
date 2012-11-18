@@ -1,4 +1,16 @@
-require_relative "test_helper"
+$LOAD_PATH.unshift File.join File.dirname(__FILE__), '..', 'lib'
+require_relative "config"
+
+class String
+  def underscore
+    self.gsub(/::/, '/').
+    gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
+    gsub(/([a-z\d])([A-Z])/,'\1_\2').
+    tr("-", "_").
+    downcase
+  end
+end
+
 require "redstone_bot/client"
 require_relative "config"
 
