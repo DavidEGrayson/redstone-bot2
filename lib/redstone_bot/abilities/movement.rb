@@ -10,7 +10,7 @@
 require_relative 'pathfinder'
 
 module RedstoneBot
-  module BodyMovers
+  module Movement
     
     def miracle_jump(x, z)
       return unless require_brain { miracle_jump x, z }

@@ -9,7 +9,7 @@ require_relative '../trackers/inventory'
 
 require_relative '../abilities/block_manipulation'
 require_relative '../abilities/falling'
-require_relative '../abilities/body_movers'
+require_relative '../abilities/movement'
 
 require_relative '../chat/chat_filter'
 require_relative '../chat/chat_evaluator'
@@ -23,7 +23,7 @@ module RedstoneBot
   class Bot < BasicBot
     include Falling
     include BlockManipulation
-    include BodyMovers
+    include Movement
     include ChatChunk, ChatInventory, ChatMover
     
     attr_reader :brain, :chunk_tracker, :entity_tracker, :inventory    
