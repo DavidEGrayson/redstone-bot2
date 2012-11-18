@@ -15,7 +15,7 @@ require "redstone_bot/client"
 require_relative "config"
 
 if ARGV.empty?
-  puts "Usage: test.rb BotClassName"
+  puts "Usage: run.rb BotClassName"
   exit 1
 end
 
