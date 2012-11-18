@@ -121,14 +121,5 @@ module RedstoneBot
       return nil
     end
 	
-    def fall(opts={})
-      return unless require_brain { fall opts }
-
-      while true
-        wait_for_next_position_update(opts[:update_period])
-        break if fall_update(opts)
-      end
-    end
-    
   end
 end

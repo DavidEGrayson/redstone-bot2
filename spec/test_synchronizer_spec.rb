@@ -16,7 +16,5 @@ describe NullSynchronizer do
       end
     end
   end
-
-  it "overrides all methods of the synchronizer module" do
-  end
+  
 end
