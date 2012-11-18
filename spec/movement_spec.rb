@@ -13,7 +13,8 @@ describe RedstoneBot::Movement do
     it "works" do
       bot.brain.run
       bot.body.updater.update
-      bot.body.position.should == :something
+      bot.brain.run
+      bot.body.position.should be_within(0.001).of(RedstoneBot::Coords[0.5, 70, 0])
     end
   end
 end

@@ -1,16 +1,5 @@
 require_relative 'coords'
 
-require 'thread'
-
-# monkeypatch
-class ConditionVariable
-  def waiters_count
-    @waiters_mutex.synchronize do
-      @waiters.count
-    end
-  end
-end
-
 module RedstoneBot
   class Look < Struct.new(:yaw, :pitch)
   end
@@ -41,7 +30,7 @@ module RedstoneBot
     def initialize(client, synchronizer)
       @synchronizer = synchronizer
       @position_updaters = []
-      @position_update_condition_variable = ConditionVariable.new
+      @position_update_condition_variable = @synchronizer.new_condition
       @client = client
       @update_period = 0.05
       @position_update_count = 0
@@ -122,7 +111,7 @@ module RedstoneBot
       end
       count = position_update_count
       # $stderr.puts "waiting..."
-      position_update_condition_variable.wait(@synchronizer.mutex)
+      position_update_condition_variable.wait
       # $stderr.puts "awakened..."
       diff = position_update_count - count
       if diff != 1

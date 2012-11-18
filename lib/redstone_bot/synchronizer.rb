@@ -1,4 +1,5 @@
 require_relative 'regular_updater'
+require_relative 'condition'
 
 require 'timeout'
 
@@ -65,5 +66,8 @@ module RedstoneBot
     rescue Timeout::Error
     end
     
+    def new_condition
+      Condition.new(self)
+    end
   end
 end

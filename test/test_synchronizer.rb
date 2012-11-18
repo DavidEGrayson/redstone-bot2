@@ -1,4 +1,5 @@
 require_relative 'test_regular_updater'
+require_relative 'test_condition'
 
 # This module reimplements everything that RedstoneBot::Synchronizer does, but
 # in a way that makes it easier to test.
@@ -36,6 +37,10 @@ module TestSynchronizer
   
   def timeout!(*args, &block)
     raise NotImplementedError.new
+  end
+  
+  def new_condition
+    TestCondition.new(self)
   end
 end
 
