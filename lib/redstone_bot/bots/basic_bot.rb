@@ -1,3 +1,6 @@
+require 'forwardable'
+
+require_relative '../synchronizer'
 require_relative '../uninspectable'
 require_relative '../body'
 

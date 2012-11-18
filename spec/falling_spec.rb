@@ -12,8 +12,12 @@ describe RedstoneBot::Falling do
   end
   
   before do
-    #client << Packet::PlayerPositionAndLook.new(0, 70, 0, 0, 0, false)
-    client << RedstoneBot::Packet::PlayerPositionAndLook.new(0, 70, 0, 70+1.62, 0, 0, false)
+    puts "opening up client"
+    c = client
+    puts "making nasty packet"
+    p = RedstoneBot::Packet::PlayerPositionAndLook.new(0, 70, 0, 70+1.62, 0, 0, false)    
+    puts "sending nasty crashy packet"
+    c << p
   end
   
   it "falls" do
