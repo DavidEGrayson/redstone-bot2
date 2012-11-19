@@ -79,14 +79,14 @@ module RedstoneBot
       axes = [Coords::X, Coords::Y, Coords::Z].cycle
       
       while true
-        wait_for_next_position_update(opts[:update_period])
-        body.look_at target
-
         d = target - body.position
         if d.norm < tolerance
           return # reached it
         end
       
+        wait_for_next_position_update(opts[:update_period])
+        body.look_at target
+        
         max_distance = speed*body.updater.last_period
         if d.norm > max_distance
           d = d.normalize*max_distance

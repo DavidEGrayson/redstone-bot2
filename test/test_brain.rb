@@ -1,6 +1,8 @@
 require 'fiber'
 
 class TestBrain
+  attr_reader :fiber
+
   def initialize(synchronizer)
   end
   
