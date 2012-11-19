@@ -50,7 +50,7 @@ module RedstoneBot
       @chat_filter.only_from_user(MASTER) if defined?(MASTER)
 
       @chat_evaluator = ChatEvaluator.new(@chat_filter, self)
-      @chat_evaluator.safe_level = defined?(MASTER) ? 4 : 0
+      @chat_evaluator.safe_level = defined?(MASTER) ? 0 : 4
       @chat_evaluator.timeout = 2
 
       @chat_filter.listen &method(:chat_chunk)
