@@ -112,7 +112,7 @@ module RedstoneBot
     
       while body.position.y <= y
         wait_for_next_position_update(opts[:update_period])
-        body.position += Coords::Y*(speed*body.last_update_period)
+        body.position += Coords::Y*(speed*body.updater.last_period)
         if body.bumped?
           chat "I bumped my head!"   # TODO: make this work!  requires funamental changes probably
           return :bumped
