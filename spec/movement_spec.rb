@@ -30,9 +30,22 @@ describe RedstoneBot::Movement do
       bot.brain.run
       bot.body.position_update_condition_variable.waiters.should == [bot.brain.fiber]
       
-      bot.body.updater.update
+      70.5.step(73, 0.5) do |y|
+        bot.body.updater.update
+        bot.brain.run
+        bot.body.position.should be_within(0.001).of(RedstoneBot::Coords[0, y, 0])
+      end
+      
+    end
+  end
+  
+  describe :miracle_jump do
+    it "works" do
+      bot.miracle_jump RedstoneBot::Coords[1000, 0, 0]
       bot.brain.run
-      bot.body.position.should be_within(0.001).of(RedstoneBot::Coords[0, 70.5, 0])
+      bot.body.position_update_condition_variable.waiters.should == [bot.brain.fiber]
+      
+      
     end
   end
 end

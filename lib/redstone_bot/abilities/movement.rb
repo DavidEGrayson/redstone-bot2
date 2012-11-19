@@ -110,7 +110,11 @@ module RedstoneBot
     
       speed = opts[:speed] || 10
     
-      while body.position.y <= y
+      while true
+        if body.position.y >= y
+          return
+        end
+        
         wait_for_next_position_update(opts[:update_period])
         body.position += Coords::Y*(speed*body.updater.last_period)
         if body.bumped?
@@ -118,7 +122,6 @@ module RedstoneBot
           return :bumped
         end
       end
-      return nil
     end
 	
   end
