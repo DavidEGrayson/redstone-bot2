@@ -77,14 +77,17 @@ module RedstoneBot
       tolerance = opts[:tolerance] || 0.2
       speed = opts[:speed] || 10
       axes = [Coords::X, Coords::Y, Coords::Z].cycle
+      waited = false
       
       while true
         d = target - body.position
         if d.norm < tolerance
+          wait_for_next_position_update(opts[:update_period]) unless waited
           return # reached it
         end
       
         wait_for_next_position_update(opts[:update_period])
+        waited = true
         body.look_at target
         
         max_distance = speed*body.updater.last_period

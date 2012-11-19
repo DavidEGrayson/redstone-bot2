@@ -22,6 +22,15 @@ describe RedstoneBot::Movement do
       bot.body.position.should be_within(0.001).of(RedstoneBot::Coords[1, 70, 0])
       bot.brain.should_not be_alive
     end
+    
+    it "wait for the position update at least once to ensure we don't accidentally block" do
+      bot.move_to bot.body
+      bot.brain.run
+      bot.body.position_update_condition_variable.waiters.should == [bot.brain.fiber]
+      bot.body.updater.update
+      bot.brain.run
+      bot.brain.should_not be_alive
+    end
   end
   
   describe :jump do
@@ -40,8 +49,8 @@ describe RedstoneBot::Movement do
   end
   
   describe :miracle_jump do
-    it "works" do
-      bot.miracle_jump RedstoneBot::Coords[1000, 0, 0]
+    pending "works" do
+      bot.miracle_jump 0, 1000
       bot.brain.run
       bot.body.position_update_condition_variable.waiters.should == [bot.brain.fiber]
       

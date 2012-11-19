@@ -119,6 +119,10 @@ module RedstoneBot
       end
     end
     
+    def to_coords
+      position
+    end
+    
     protected  
     def send_update
       packet = Packet::PlayerPositionAndLook.new(
