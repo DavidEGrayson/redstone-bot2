@@ -48,6 +48,13 @@ describe RedstoneBot::WindowTracker do
       subject.slots.should == slots
     end
     
+    it "responds to SetSlot packets" do
+      subject << RedstoneBot::Packet::SetSlot.create(2, 0, nil)
+      subject << RedstoneBot::Packet::SetSlot.create(2, 1, RedstoneBot::ItemType::GoldOre*64)
+      subject.slots[0].should == nil
+      subject.slots[1].should == RedstoneBot::ItemType::GoldOre*64
+    end
+    
     context "after closing" do
       before do
         subject << RedstoneBot::Packet::CloseWindow.create(2)

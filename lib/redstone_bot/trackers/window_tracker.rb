@@ -31,6 +31,9 @@ module RedstoneBot
       when Packet::SetWindowItems
         return if packet.window_id != @window_id
         @slots = packet.slots   # assumption: no other objects will be messing with the same array
+      when Packet::SetSlot
+        return if packet.window_id != @window_id
+        @slots[packet.slot_id] = packet.slot
       end
     end
     
