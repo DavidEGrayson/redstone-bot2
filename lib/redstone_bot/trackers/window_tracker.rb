@@ -2,7 +2,7 @@ require_relative '../packet_printer'
 
 module RedstoneBot
   class WindowTracker
-    attr_reader :window_id
+    attr_reader :window_id, :slots
   
     PrintPacketClasses = [
       Packet::OpenWindow, Packet::CloseWindow, Packet::SetWindowItems, Packet::SetSlot, Packet::UpdateWindowProperty, Packet::ConfirmTransaction
@@ -28,6 +28,9 @@ module RedstoneBot
         @window_id = packet.window_id
       when Packet::CloseWindow
         @window_id = nil
+      when Packet::SetWindowItems
+        return if packet.window_id != @window_id
+        @slots = packet.slots   # assumption: no other objects will be messing with the same array
       end
     end
     
