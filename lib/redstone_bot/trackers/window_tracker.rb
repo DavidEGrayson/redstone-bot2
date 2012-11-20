@@ -26,6 +26,8 @@ module RedstoneBot
       case packet
       when Packet::OpenWindow
         @window_id = packet.window_id
+      when Packet::CloseWindow
+        @window_id = nil
       end
     end
     
