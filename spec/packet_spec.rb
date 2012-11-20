@@ -156,3 +156,20 @@ describe RedstoneBot::Packet::SpawnNamedEntity do
     # TODO: test other fields of this packet
   end
 end
+
+describe RedstoneBot::Packet::OpenWindow do
+  it "parses binary data correctly" do
+    p = described_class.create(2, 0, "container.chest", 27)
+    p.window_id.should == 2
+    p.type.should == 0
+    p.title.should == "container.chest"
+    p.slot_count.should == 27
+  end
+end
+
+describe RedstoneBot::Packet::CloseWindow do
+  it "parses binary data correctly" do
+    p = described_class.create(44)
+    p.window_id.should == 44
+  end
+end

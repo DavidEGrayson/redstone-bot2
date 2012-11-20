@@ -48,13 +48,13 @@ describe RedstoneBot::Movement do
     end
   end
   
-  describe :miracle_jump do
-    pending "works" do
-      bot.miracle_jump 0, 1000
-      bot.brain.run
-      bot.body.position_update_condition_variable.waiters.should == [bot.brain.fiber]
-      
-      
-    end
-  end
+  #describe :miracle_jump do
+  #  pending "works" do
+  #    bot.miracle_jump 0, 1000
+  #    bot.brain.run
+  #    bot.body.position_update_condition_variable.waiters.should == [bot.brain.fiber]
+  #    
+  #    
+  #  end
+  #end
 end

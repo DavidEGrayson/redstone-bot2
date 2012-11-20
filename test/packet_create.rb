@@ -81,4 +81,14 @@ module RedstoneBot
   def (Packet::SetSlot).create(window_id, slot_id, slot)
     receive_data test_stream [window_id, slot_id].pack("CS>") + Slot.encode_data(slot)
   end
+  
+  def (Packet::OpenWindow).create(window_id, type, title, slot_count)
+    binary_data = [window_id, type].pack("CC") + $e.string(title) + [slot_count].pack("C")
+    receive_data test_stream binary_data
+  end
+
+  def (Packet::CloseWindow).create(window_id)
+    binary_data = [window_id].pack("C")
+    receive_data test_stream binary_data
+  end
 end

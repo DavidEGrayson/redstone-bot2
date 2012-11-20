@@ -7,14 +7,28 @@ module RedstoneBot
     ]
     
     def initialize(client)
+      @open = false
+    
       # for debugging
-      @packet_printer = PacketPrinter.new(client, PrintPacketClasses)
-      
-      client.listen do |p|
-        next unless p.respond_to?(:window_id)
+      if client
+        @packet_printer = PacketPrinter.new(client, PrintPacketClasses)
+        client.listen { |p| receive_packet p } if client
       end
-   
     end
+        
+    def open?
+      @open
+    end
+    
+    def receive_packet(packet)
+      return unless p.respond_to?(:window_id)
+    end
+    
+    # A handy function for unit testing.
+    def <<(packet)
+      receive_packet(packet)
+    end
+
   end
 
 end

@@ -6,6 +6,6 @@ module RedstoneBot
           file.puts source.time_string + " " + event.to_s
         end
       end
-    end
+    end    
   end
 end
