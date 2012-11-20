@@ -20,15 +20,13 @@ module RedstoneBot
       
       # Caches the coordinates of each fully-grown wheat by chunk.
       @fully_grown_wheats = SimpleCache.new(@chunk_tracker) do |chunk_id|
-        # TODO: reject wheats that are not in bounds
+        # TODO: reject wheats that are not within FarmBounds
         Coords.each_in_bounds([chunk_id[0]..(chunk_id[0]+15), FarmBounds[1], chunk_id[1]..(chunk_id[1]+15)]).select do |coords|
           block_type(coords) == ItemType::WheatBlock && block_metadata(coords) == ItemType::WheatBlock.fully_grown
         end
       end
       
       @chat_filter.listen do |p|
-        next unless p.is_a?(Packet::ChatMessage) && p.player_chat?
-        
         case p.chat
         when "farm"
           farm
