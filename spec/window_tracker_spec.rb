@@ -9,8 +9,9 @@ describe RedstoneBot::WindowTracker do
   end
   
   context "initially" do
-    it { should_not be_open }    
+    it { should_not be_open }
     it { subject.window_id.should == nil }
+    it { should_not be_loaded }
   end
   
   context "after a chest is opened" do
@@ -20,6 +21,7 @@ describe RedstoneBot::WindowTracker do
     
     it { should be_open }
     it { subject.window_id.should == 2 }
+    it { should_not be_loaded }
     
     it "ignores SetWindowItem packets for other windows" do
       subject << RedstoneBot::Packet::SetWindowItems.create(16, [nil, nil])
@@ -39,7 +41,8 @@ describe RedstoneBot::WindowTracker do
     
     it { should be_open }
     it { subject.window_id.should == 2 }
-
+    it { should be_loaded }
+    
     it "has the right slots" do
       slots = [nil]*27
       slots[0] = RedstoneBot::ItemType::Emerald * 30
@@ -55,6 +58,11 @@ describe RedstoneBot::WindowTracker do
       subject.slots[1].should == RedstoneBot::ItemType::GoldOre*64
     end
     
+    it "ignores SetSlot packets with wrong window_id" do
+      subject << RedstoneBot::Packet::SetSlot.create(90, 0, nil)    
+      subject.slots[0].should_not be_nil
+    end
+    
     context "after closing" do
       before do
         subject << RedstoneBot::Packet::CloseWindow.create(2)
@@ -62,6 +70,7 @@ describe RedstoneBot::WindowTracker do
       
       it { should_not be_open }      
       it { subject.window_id.should == nil }
+      it { should_not be_loaded }
     end
 
   end  

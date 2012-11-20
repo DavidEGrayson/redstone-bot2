@@ -16,10 +16,15 @@ module RedstoneBot
       end
     end
 
+    # open? is probably not very useful; use loaded? instead
     def open?
       @window_id ? true : false
     end
     
+    def loaded?
+      @slots ? true : false
+    end
+
     def receive_packet(packet)
       return unless packet.respond_to?(:window_id)
       
@@ -27,7 +32,7 @@ module RedstoneBot
       when Packet::OpenWindow
         @window_id = packet.window_id
       when Packet::CloseWindow
-        @window_id = nil
+        @window_id = @slots = nil
       when Packet::SetWindowItems
         return if packet.window_id != @window_id
         @slots = packet.slots   # assumption: no other objects will be messing with the same array
