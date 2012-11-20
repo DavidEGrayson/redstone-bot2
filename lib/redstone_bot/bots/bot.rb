@@ -1,11 +1,12 @@
 require_relative 'basic_bot'
 
 require_relative '../brain'
+require_relative '../packet_printer'
 
 require_relative '../trackers/entity_tracker'
 require_relative '../trackers/chunk_tracker'
 require_relative '../trackers/inventory'
-#require_relative '../trackers/window_tracker'
+require_relative '../trackers/window_tracker'
 
 require_relative '../abilities/block_manipulation'
 require_relative '../abilities/falling'
@@ -25,9 +26,9 @@ module RedstoneBot
     include BlockManipulation
     include Movement
     include ChatChunk, ChatInventory, ChatMover
-    
-    attr_reader :brain, :chunk_tracker, :entity_tracker, :inventory    
-    
+
+    attr_reader :brain, :chunk_tracker, :entity_tracker, :inventory
+
     # Sets up the logical connections of the different components
     # in this bot.
     def setup
@@ -36,13 +37,15 @@ module RedstoneBot
       @body.on_position_update do
         default_position_update
       end
-      
+
       setup_brain
       @entity_tracker = EntityTracker.new(@client, @body)
       @chunk_tracker = ChunkTracker.new(@client)
       @inventory = Inventory.new(@client)
-      #@window_tracker = WindowTracker.new(@client)      
-      
+      @window_tracker = WindowTracker.new(@client)
+
+      @chat_printer = PacketPrinter.new(@client, [Packet::ChatMessage])
+
       @chat_filter = ChatFilter.new(@client)
       @chat_filter.only_player_chats
       @chat_filter.reject_from_self
@@ -57,23 +60,23 @@ module RedstoneBot
       @chat_filter.listen &method(:chat_inventory)
       @chat_filter.listen &method(:chat_mover)
     end
-    
+
     def setup_brain
       @brain = Brain.new(self)
     end
-    
+
     def default_position_update
       if !body.busy?
         fall_update
         look_at entity_tracker.closest_entity
       end
     end
-        
+
     def standing_on
       coord_array = (body.position - Coords::Y*0.5).to_a.collect &:floor
       "#{block_type coord_array} #{body.position.y}->#{coord_array[1]}"
     end
-    
+
     def_delegator :@brain, :require, :require_brain
     def_delegators :@brain, :stop
     def_delegators :@chunk_tracker, :block_type, :block_metadata

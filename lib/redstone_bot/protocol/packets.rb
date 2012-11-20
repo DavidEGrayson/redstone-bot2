@@ -1044,6 +1044,10 @@ module RedstoneBot
       @title = stream.read_string
       @slot_count = stream.read_byte
     end
+    
+    def to_s
+      "OpenWindow(#{window_id}, type=#{type}, title=#{title}, slot_count=#{slot_count})"
+    end
   end
   
   class Packet::CloseWindow < Packet
@@ -1053,6 +1057,10 @@ module RedstoneBot
     
     def receive_data(stream)
       @window_id = stream.read_byte
+    end
+    
+    def to_s
+      "CloseWindow(#{window_id})"
     end
   end
   
@@ -1092,7 +1100,7 @@ module RedstoneBot
     def receive_data(socket)
       @window_id = socket.read_signed_byte
       @slot_id = socket.read_short
-      @slot = Slot.receive_data(socket)
+      @slot = socket.read_slot
     end
     
     # This packet is for the item attached to the cursor.
@@ -1100,8 +1108,8 @@ module RedstoneBot
       window_id == -1 && slot.nil?
     end
     
-    def inspect
-      "SetSlot(window=#{window_id}, slot_id=#{slot_id}, #{slot.inspect})"
+    def to_s
+      "SetSlot(window_id=#{window_id}, slot_id=#{slot_id}, #{slot})"
     end
   end
   
@@ -1113,12 +1121,12 @@ module RedstoneBot
       @window_id = socket.read_byte
       count = socket.read_short
       @slots = count.times.collect do
-        Slot.receive_data(socket)
+        socket.read_slot
       end
     end
     
-    def inspect
-      "SetWindowItems(#{window_id}, #{slots.inspect})"
+    def to_s
+      "SetWindowItems(#{window_id}, #{slots.join ','})"
     end
   end
   
@@ -1130,6 +1138,10 @@ module RedstoneBot
       @window_id = socket.read_byte
       @property = socket.read_unsigned_short
       @value = socket.read_unsigned_short
+    end
+    
+    def to_s
+      "UpdateWindowProperty(#{window_id}, #{property}, #{value})"
     end
   end
   
@@ -1151,6 +1163,14 @@ module RedstoneBot
     
     def encode_data
       byte(window_id) + unsigned_short(action_number) + bool(accepted)
+    end
+    
+    def to_s
+      if accepted
+        "ConfirmTransaction(#{window_id}, #{action_number})"
+      else
+        "ConfirmTransaction(#{window_id}, #{action_number}, TRANSACTION REJECTED!)"
+      end
     end
   end
   

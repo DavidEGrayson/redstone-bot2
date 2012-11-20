@@ -4,8 +4,7 @@ require_relative '../simple_cache'
 # TODO: see if we can run an IRB thing in the console instead of using ChatEvaluator
 
 module RedstoneBot
-  class FarmBot < Bot
-  
+  class FarmBot < Bot 
     ExpectedWheatCount = 9759
     FarmBounds = [(-300..-150), (63..63), (670..800)]
     Storage = Coords[-210, 68, 798] - Coords::Z*2
@@ -223,15 +222,16 @@ module RedstoneBot
     end
     
     def test
-      chest_coords = Coords[101, 72, 224]
-      #chest_coords = Coords[99, 72, 224]
+      chest_coords = Coords[-200, 67, 801]
       open_chest chest_coords
       
     end
-    
+
+    ###################### CHEST FUNCTIONS ##############################################
+    # TODO: move functions below to ChestManipulation module, or WindowManipulation module, or WindowTracker class? 
     def open_chest(coords)
-      @client.send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 8, 15, 8
-      @client.send_packet Packet::Animation.new @client.eid, 1
+      client.send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 8, 15, 8
+      client.send_packet Packet::Animation.new @client.eid, 1
     end
   end
 end
