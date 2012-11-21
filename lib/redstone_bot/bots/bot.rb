@@ -27,7 +27,7 @@ module RedstoneBot
     include Movement
     include ChatChunk, ChatInventory, ChatMover
 
-    attr_reader :brain, :chunk_tracker, :entity_tracker, :inventory
+    attr_reader :brain, :chunk_tracker, :entity_tracker, :inventory, :window_tracker
 
     # Sets up the logical connections of the different components
     # in this bot.
