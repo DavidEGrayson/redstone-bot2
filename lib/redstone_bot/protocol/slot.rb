@@ -63,10 +63,13 @@ module RedstoneBot
     
     def to_s
       s = item_type.to_s
-      s += "x#{count}" if count != 1
-      s += "(damage=#{damage}"
-      s += " enchant_data=#{enchant_data.inspect}" if enchant_data
-      s += ")"
+      s += "*#{count}" if count != 1
+      
+      details = []
+      details << "damage=#{damage}" if damage != 0
+      details << "enchant_data=#{enchant_data.inspect}" if enchant_data      
+      s += "(" + details.join(" ") + ")" if !details.empty?
+      
       s
     end
     

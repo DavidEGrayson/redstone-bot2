@@ -9,7 +9,7 @@ module RedstoneBot
     end
     
     def empty_spots
-      grep(RedstoneBot::Empty)
+      grep(Empty)
     end
     
     # Cannot call this count because that is already taken.
