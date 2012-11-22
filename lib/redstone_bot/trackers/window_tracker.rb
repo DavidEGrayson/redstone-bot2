@@ -27,8 +27,29 @@ module RedstoneBot
         @leggings_spot = Spot.new
         @boots_spot = Spot.new
         @armor_spots = [@helmet_spot, @chestplate_spot, @leggings_spot, @boots_spot]
-                
+        
         @spots = @regular_spots + @armor_spots
+      end
+    end
+    
+    class InternalCrafting
+      attr_reader :output_spot, :input_spots, :spots
+      attr_reader :upper_left, :upper_right, :lower_left, :lower_right
+    
+      def initialize
+        @upper_left = Spot.new
+        @upper_right = Spot.new
+        @lower_left = Spot.new
+        @lower_right = Spot.new
+        @input_spots = [@upper_left, @upper_right, @lower_left, @lower_right]
+        
+        @output_spot = Spot.new
+        
+        @spots = [@output_spot] + @input_spots
+      end
+      
+      def input_spot(row, column)
+        @input_spots[row*2 + column]
       end
     end
 
@@ -43,5 +64,6 @@ module RedstoneBot
     def <<(packet)
       receive_packet packet
     end
+
   end
 end

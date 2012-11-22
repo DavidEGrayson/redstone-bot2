@@ -54,13 +54,41 @@ describe RedstoneBot::WindowTracker::Inventory do
     subject.spots.should == subject.regular_spots + subject.armor_spots
   end
   
+  it "has no duplicate spots" do
+    subject.spots.uniq.should == subject.spots
+  end
+  
   it "initially has empty spots" do
     subject.spots.each do |spot|
       spot.should be_a RedstoneBot::WindowTracker::Spot
       spot.should be_empty
     end
+  end  
+end
+
+describe RedstoneBot::WindowTracker::InternalCrafting do
+  it "has four input spots" do
+    subject.input_spots.should == [subject.upper_left, subject.upper_right, subject.lower_left, subject.lower_right]
   end
   
+  it "can fetch input slots by row,column" do
+    subject.input_spot(0, 0).should == subject.upper_left
+    subject.input_spot(0, 1).should == subject.upper_right
+    subject.input_spot(1, 0).should == subject.lower_left
+    subject.input_spot(1, 1).should == subject.lower_right
+  end
+  
+  it "has an output spot" do
+    subject.output_spot.should be
+  end
+  
+  it "has easy access to all the spots" do
+    subject.spots.should == [subject.output_spot] + subject.input_spots
+  end
+  
+  it "has no duplicate spots" do
+    subject.spots.uniq.should == subject.spots
+  end  
 end
 
 describe RedstoneBot::WindowTracker do
