@@ -52,16 +52,18 @@ module RedstoneBot
             @slots[p.slot_id] = p.slot
           end
         when Packet::ConfirmTransaction
-          expected_action_number = @pending_actions.first
-          if p.action_number != expected_action_number
-            raise "Unexpected transaction confirmation from server.  Expected action number = #{expected_action_number}.  Actual = #{p.action_number}."
-          end
-          if p.accepted
-            @pending_actions.shift
-          else
-            # Our transaction was rejected, probably due to lag.  The server will send a SetWindowItems
-            # to tell us our entirey inventory, and until then lets us treat it as unloaded.
-            reset
+          if p.window_id == 0        
+            expected_action_number = @pending_actions.first
+            if p.action_number != expected_action_number
+              $stderr.puts "Unexpected transaction confirmation from server.  Expected action number = #{expected_action_number}.  Actual = #{p.action_number}."
+            end
+            if p.accepted
+              @pending_actions.shift
+            else
+              # Our transaction was rejected, probably due to lag.  The server will send a SetWindowItems
+              # to tell us our entirey inventory, and until then lets us treat it as unloaded.
+              reset
+            end
           end
         end
       end

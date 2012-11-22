@@ -2,7 +2,8 @@ require_relative 'spec_helper'
 require 'redstone_bot/trackers/window_tracker'
 
 describe RedstoneBot::WindowTracker do
-  subject { RedstoneBot::WindowTracker.new(nil) }
+  let(:client) { TestClient.new }
+  subject { RedstoneBot::WindowTracker.new(client) }
   
   it "ignores random other packets" do
     subject << RedstoneBot::Packet::KeepAlive.new
@@ -31,6 +32,14 @@ describe RedstoneBot::WindowTracker do
       subject << RedstoneBot::Packet::SetWindowItems.create(16, [nil, nil])
       subject.slots.should == nil
     end
+  end
+  
+  context "after a double chest is opened" do
+    before do
+      subject << RedstoneBot::Packet::OpenWindow.create(2, 0, "container.chestDouble", 54)
+    end
+    
+    it { subject.window_title.should == :chest_double }    
   end
 
   context "after a chest is opened and the items are set" do
@@ -66,6 +75,13 @@ describe RedstoneBot::WindowTracker do
     it "ignores SetSlot packets with wrong window_id" do
       subject << RedstoneBot::Packet::SetSlot.create(90, 0, nil)    
       subject.slots[0].should_not be_nil
+    end
+    
+    it "can dump by slot id" do
+      client.should_receive(:send_packet).exactly(2).times
+      subject.dump_slot_id(26)
+      #subject.count(WheatItem).should == 0
+      #subject.should be_pending
     end
     
     context "after closing" do

@@ -10,8 +10,14 @@ module RedstoneBot
     Storage = Coords[-210, 68, 798] - Coords::Z*2
     StorageWaypoint = Coords[-210, 63, 784]  # with a better pathinder we wouldn't need this
   
+    PrintPacketClasses = [
+      Packet::OpenWindow, Packet::CloseWindow, Packet::SetWindowItems, Packet::SetSlot, Packet::UpdateWindowProperty, Packet::ConfirmTransaction
+    ]
+  
     def setup
       super
+
+      @packet_printer = PacketPrinter.new(client, PrintPacketClasses)
       
       @wheat_count = SimpleCache.new(@chunk_tracker) do |chunk_id|
         count_wheat_in_chunk(chunk_id)

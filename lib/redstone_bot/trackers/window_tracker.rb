@@ -3,22 +3,24 @@ require_relative '../packet_printer'
 module RedstoneBot
   class WindowTracker
     attr_reader :window_id, :window_title, :slots
-  
-    PrintPacketClasses = [
-      Packet::OpenWindow, Packet::CloseWindow, Packet::SetWindowItems, Packet::SetSlot, Packet::UpdateWindowProperty, Packet::ConfirmTransaction
-    ]
-    
+      
     WindowTypes = {
       "container.chest" => :chest,
       "container.chestDouble" => :chest_double
     }
     
+    def reset
+      @window_id = nil
+      @window_title = nil
+      @slots = nil
+      @pending_actions = []
+    end
+    
     def initialize(client)
-      # for debugging
-      if client
-        @packet_printer = PacketPrinter.new(client, PrintPacketClasses)
-        client.listen { |p| receive_packet p } if client
-      end
+      reset
+    
+      @client = client
+      @client.listen { |p| receive_packet p }
     end
 
     # open? is probably not very useful; use loaded? instead
@@ -38,7 +40,7 @@ module RedstoneBot
         @window_id = packet.window_id
         @window_title = WindowTypes[packet.title]
       when Packet::CloseWindow
-        @window_id = @slots = @window_title = nil
+        reset
       when Packet::SetWindowItems
         return if packet.window_id != @window_id
         @slots = packet.slots   # assumption: no other objects will be messing with the same array
@@ -48,11 +50,27 @@ module RedstoneBot
       end
     end
     
+    def new_transaction
+      action_number = @client.next_action_number
+      @pending_actions.push action_number
+      action_number
+    end
+    
     # A handy function for unit testing.
     def <<(packet)
       receive_packet(packet)
     end
 
+    def dump_slot_id(id)
+      raise "Window is not loaded yet" if !loaded?
+      if slots[id] != nil
+        @client.send_packet Packet::ClickWindow.new(window_id, id, :left, new_transaction, false, slots[id])
+        # @client.send_packet Packet::ClickWindow.outside(new_transaction)
+        @client.send_packet Packet::ClickWindow.new window_id, -999, :left, new_transaction, false, nil
+        slots[id] = nil
+      end
+    end
+    
   end
 
 end

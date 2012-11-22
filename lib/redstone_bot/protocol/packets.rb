@@ -1055,8 +1055,16 @@ module RedstoneBot
     
     attr_accessor :window_id
     
+    def initialize(window_id)
+      @window_id = window_id
+    end
+    
     def receive_data(stream)
       @window_id = stream.read_byte
+    end
+    
+    def encode_data
+      byte(@window_id)
     end
     
     def to_s
