@@ -88,7 +88,35 @@ describe RedstoneBot::WindowTracker::InternalCrafting do
   
   it "has no duplicate spots" do
     subject.spots.uniq.should == subject.spots
-  end  
+  end
+end
+
+describe RedstoneBot::WindowTracker::ChestWindow do
+  let(:inventory) { RedstoneBot::WindowTracker::Inventory.new }
+
+  context "small chest" do
+    subject { described_class.new(27, inventory) }
+    
+    it "has 27 chest spots" do
+      subject.should have(27).chest_spots
+    end
+    
+    it "has 36 spots from the player's inventory" do
+      subject.should have(36).inventory_spots
+      subject.inventory_spots.should == inventory.regular_spots
+    end
+    
+    it "has 63 total spots" do
+      subject.should have(63).spots
+      subject.spots.should == subject.chest_spots + subject.inventory_spots
+    end
+    
+    it "can tell you the spot id of each spot" do
+      subject.spot_id(subject.chest_spots[5]).should == 5
+      subject.spot_id(inventory.regular_spots[3]).should == 27 + 3
+      subject.spot_id(inventory.regular_spots[35]).should == 62
+    end
+  end
 end
 
 describe RedstoneBot::WindowTracker do
@@ -99,7 +127,14 @@ describe RedstoneBot::WindowTracker do
     subject << RedstoneBot::Packet::KeepAlive.new
   end
   
+  it "has an inventory" do
+    subject.inventory.should be_a RedstoneBot::WindowTracker::Inventory
+  end
+  
   context "initially" do
+    it "has no open window" do
+      subject.open_window.should == nil
+    end
   end
   
   context "after a chest is opened" do

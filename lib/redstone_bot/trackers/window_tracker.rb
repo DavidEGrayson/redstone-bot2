@@ -2,6 +2,25 @@ require_relative '../packet_printer'
 
 module RedstoneBot
   class WindowTracker
+    attr_reader :inventory, :open_window
+    
+    def initialize(client)
+      @inventory = Inventory.new
+      @client = client
+      @client.listen { |p| receive_packet p }
+    end
+    
+    def receive_packet(packet)
+    end
+    
+    def <<(packet)
+      receive_packet packet
+    end
+
+  end
+
+
+  class WindowTracker
     class Spot
       attr_accessor :item
       
@@ -52,18 +71,26 @@ module RedstoneBot
         @input_spots[row*2 + column]
       end
     end
-
-    def initialize(client)
-      @client = client
-      @client.listen { |p| receive_packet p }
+    
+    class Window
+      attr_reader :spots
+      
+      def spot_id(spot)
+        @spots.index(spot)
+      end
     end
     
-    def receive_packet(packet)
-    end
+    class ChestWindow < Window
+      attr_reader :chest_spots, :inventory_spots
     
-    def <<(packet)
-      receive_packet packet
+      def initialize(chest_spot_count, inventory)
+        @chest_spots = chest_spot_count.times.collect { Spot.new }        
+        @inventory_spots = inventory.regular_spots
+        
+        # This array defines the relationship between spot ID and spots.
+        @spots = @chest_spots + @inventory_spots
+      end
     end
-
   end
+  
 end
