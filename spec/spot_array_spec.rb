@@ -33,7 +33,18 @@ describe RedstoneBot::SpotArray do
     subject.grep(RedstoneBot::ItemType::Gravel).should == [subject[3], subject[4]]
   end
   
-  it "can retrieve empty spots" do
+  it "can retrieve empty spots using #grep" do
     subject.grep(RedstoneBot::Empty).should == [subject[1], subject[2]]
   end
+
+  it "can retrieve empty spots using #empty_spots" do
+    subject.empty_spots.should == [subject[1], subject[2]]
+  end
+  
+  it "#quantity counts the total quatnity of an item type" do
+    subject.quantity(RedstoneBot::ItemType::WoodenShovel).should == 1
+    subject.quantity(RedstoneBot::ItemType::DiamondShovel).should == 0
+    subject.quantity(RedstoneBot::ItemType::Gravel).should == 15
+  end
+  
 end
