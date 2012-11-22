@@ -1,4 +1,5 @@
 require_relative '../packet_printer'
+require_relative 'spot'
 
 module RedstoneBot
   class WindowTracker
@@ -21,18 +22,7 @@ module RedstoneBot
 
 
   class WindowTracker
-    class Spot
-      attr_accessor :item
-      
-      def initialize(item=nil)
-        @item = item
-      end
-      
-      def empty?
-        !@item
-      end
-    end
-    
+   
     class Inventory
       attr_reader :regular_spots, :hotbar_spots, :spots
       attr_reader :armor_spots, :helmet_spot, :chestplate_spot, :leggings_spot, :boots_spot
