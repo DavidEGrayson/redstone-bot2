@@ -1,10 +1,15 @@
 require_relative 'spec_helper'
 require 'redstone_bot/trackers/spot'
+require 'redstone_bot/protocol/item_types'
 
 describe RedstoneBot::Spot do
   context "when initialized without arguments" do
     it "is empty" do
       subject.should be_empty
+    end
+    
+    it "returns nil for item_type" do
+      subject.item_type.should == nil
     end
   end
 
@@ -17,6 +22,11 @@ describe RedstoneBot::Spot do
     
     it "is not empty" do
       subject.should_not be_empty
+    end
+    
+    it "delegates item_type to the item" do
+      subject.item.should_receive(:item_type).and_return(RedstoneBot::ItemType::DiamondBlock)
+      subject.item_type.should == RedstoneBot::ItemType::DiamondBlock
     end
   end
 

@@ -74,6 +74,7 @@ module RedstoneBot
     end
   end
 
+  # TODO: call this a DroppedItem and have it just contain a Slot object, but rename Slot to Item?
   class Item < Entity
     attitude_is :passive   # this probably does not matter
 
