@@ -41,10 +41,14 @@ describe RedstoneBot::SpotArray do
     subject.empty_spots.should == [subject[1], subject[2]]
   end
   
-  it "#quantity counts the total quatnity of an item type" do
+  it "#quantity counts the total quantity of an item type" do
     subject.quantity(RedstoneBot::ItemType::WoodenShovel).should == 1
     subject.quantity(RedstoneBot::ItemType::DiamondShovel).should == 0
     subject.quantity(RedstoneBot::ItemType::Gravel).should == 15
+  end
+  
+  it "#quantity counts the total quantity of all items" do
+    subject.quantity.should == 16
   end
   
 end
