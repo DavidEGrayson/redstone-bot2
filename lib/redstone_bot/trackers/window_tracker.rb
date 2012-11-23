@@ -1,15 +1,15 @@
 require_relative '../packet_printer'
+require_relative '../tracks_types'
 require_relative 'spot'
 require_relative 'spot_array'
 
 module RedstoneBot
   class WindowTracker
-    attr_reader :inventory_window
-    attr_reader :open_window
+    attr_reader :inventory_window, :open_windows
     
     def initialize(client)
       @inventory_window = InventoryWindow.new
-      @window_ids = { 0 => @inventory_window }
+      @open_windows = { 0 => @inventory_window }
       
       @client = client
       @client.listen { |p| receive_packet p }
@@ -18,7 +18,12 @@ module RedstoneBot
     def receive_packet(packet)
       return unless packet.respond_to?(:window_id)
       
-      window = @window_ids[packet.window_id]
+      if packet.is_a?(Packet::OpenWindow)
+        @open_windows[packet.window_id] = Window.open(packet.type, packet.spot_count)
+        return
+      end
+      
+      window = @open_windows[packet.window_id]
       if !window
         $stderr.puts "#{@client.time_string}: warning: received packet for non-open window: #{packet}"
         return
@@ -93,7 +98,13 @@ module RedstoneBot
     end
     
     class Window
+      extend TracksTypes
+    
       attr_reader :spots
+      
+      def self.open
+        
+      end
             
       def spot_id(spot)
         @spots.index(spot)
@@ -137,6 +148,8 @@ module RedstoneBot
     end
     
     class ChestWindow < Window
+      #type_is 0
+    
       attr_reader :chest_spots, :inventory_spots
     
       def initialize(chest_spot_count, inventory)

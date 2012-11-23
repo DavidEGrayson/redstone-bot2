@@ -1036,17 +1036,17 @@ module RedstoneBot
   class Packet::OpenWindow < Packet
     packet_type 0x64
     
-    attr_accessor :window_id, :type, :title, :slot_count
+    attr_accessor :window_id, :type, :title, :spot_count
     
     def receive_data(stream)
       @window_id = stream.read_byte
       @type = stream.read_byte
       @title = stream.read_string
-      @slot_count = stream.read_byte
+      @spot_count = stream.read_byte
     end
     
     def to_s
-      "OpenWindow(#{window_id}, type=#{type}, title=#{title}, slot_count=#{slot_count})"
+      "OpenWindow(#{window_id}, type=#{type}, title=#{title}, spot_count=#{spot_count})"
     end
   end
   

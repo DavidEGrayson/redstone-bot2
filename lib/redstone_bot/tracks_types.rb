@@ -3,12 +3,12 @@ module RedstoneBot
   # classes and then create them using the integer.
   module TracksTypes
     def self.extended(klass)
-      t = {}
-      
+      # Use a closure because for some reason @@types didn't work
+      # when there were multiple classes extending TracksTypes.
+      types = {}
       klass.singleton_class.send(:define_method, :types) do
-        t
+        types
       end
-      
     end
     
     # This is called in the subclass definitions.
@@ -19,7 +19,16 @@ module RedstoneBot
 
      # This is only called on self.
     def create(type, *args)
-      (types[type] || self).new(*args)
+      klass = types[type]
+      
+      # To override this behavior, just write
+      #   types.default = some_klass
+      # in the parent class definition.
+      if !klass
+        raise "Unrecognized type of #{name}: #{type}"
+      end
+      
+      klass.new(*args)
     end
   end
 end

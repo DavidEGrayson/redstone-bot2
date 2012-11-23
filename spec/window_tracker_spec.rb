@@ -72,6 +72,12 @@ describe RedstoneBot::WindowTracker::InventoryCrafting do
   it_has_behavior 'uses SpotArray for', :input_spots, :spots
 end
 
+describe RedstoneBot::WindowTracker::Window do
+  it "complains if it doesn't recognize the window type" do
+    lambda { RedstoneBot::WindowTracker::Window.create(66, nil) }.should raise_error "Unrecognized type of RedstoneBot::WindowTracker::Window: 66"
+  end
+end
+
 describe RedstoneBot::WindowTracker::InventoryWindow do
   let(:inventory) { subject.inventory }
   let(:crafting) { subject.crafting }
@@ -151,8 +157,8 @@ describe RedstoneBot::WindowTracker do
   end
   
   context "initially" do
-    it "has no open window" do
-      subject.open_window.should == nil
+    it "has one open window (the inventory)" do
+      subject.open_windows.size.should == 1
     end
     
     it "has an inventory window" do
@@ -188,14 +194,18 @@ describe RedstoneBot::WindowTracker do
     end
   end
   
-  context "after a chest is opened" do
+  context "after a OpenWindow packet for a chest is received" do
     before do
       subject << RedstoneBot::Packet::OpenWindow.create(2, 0, "container.chest", 27)
     end
+
+    it "has an open ChestWindow" do
+      subject.window(2).should be_a RedstoneBot::ChestWindow
+    end
     
-    #pending "ignores SetWindowItem packets for other windows" do
-    #  subject << RedstoneBot::Packet::SetWindowItems.create(16, [nil, nil])
-    #end
+    it "doesn't have a chest model yet" do
+      subject.chest.should == nil
+    end
   end
   
   context "after a double chest is opened" do
@@ -203,7 +213,6 @@ describe RedstoneBot::WindowTracker do
       subject << RedstoneBot::Packet::OpenWindow.create(2, 0, "container.chestDouble", 54)
     end
     
-    #pending { subject.window_title.should == :chest_double }    
   end
 
 end

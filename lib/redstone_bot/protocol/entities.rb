@@ -44,6 +44,9 @@ module RedstoneBot
 
   class Mob < Entity
     extend TracksTypes
+
+    # If the type ID isn't recognized, that's OK.  Just create an instance of the parent class.    
+    types.default = self
     
     def to_s
       "#{self.class.name.split('::').last}(#{eid}, #{position})"
