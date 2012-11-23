@@ -83,6 +83,7 @@ describe RedstoneBot::WindowTracker::InventoryWindow do
   end
 
   it "has the right spot ids" do
+    # This matches http://www.wiki.vg/File:Inventory-slots.png
     spots[0].should == crafting.output_spot
     spots[1].should == crafting.upper_left
     spots[2].should == crafting.upper_right
@@ -114,7 +115,13 @@ describe RedstoneBot::WindowTracker::ChestWindow do
     
     it "has 63 total spots" do
       subject.should have(63).spots
-      subject.spots.should == subject.chest_spots + subject.inventory_spots
+    end
+    
+    it "has the right spot ids" do
+      # http://www.wiki.vg/Inventory#Chest
+      subject.spots[0..26].should == subject.chest_spots
+      subject.spots[27..53].should == inventory.regular_spots - inventory.hotbar_spots
+      subject.spots[54..62].should == inventory.hotbar_spots
     end
     
     it "can tell you the spot id of each spot" do
