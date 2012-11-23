@@ -9,8 +9,8 @@ module RedstoneBot
     
     def initialize(client)
       @windows_by_id = {}
-      @windows_by_class= {}
-      @inventory_window = open_window 0, InventoryWindow.new
+      @windows_by_class = {}
+      @inventory_window = register_window 0, InventoryWindow.new
       
       @client = client
       @client.listen { |p| receive_packet p }
@@ -25,7 +25,7 @@ module RedstoneBot
       window_id = packet.window_id
       
       if packet.is_a?(Packet::OpenWindow)
-        open_window window_id, Window.create(packet.type, packet.spot_count, inventory_window.inventory)
+        register_window window_id, Window.create(packet.type, packet.spot_count, inventory_window.inventory)
         return
       end
       
@@ -41,7 +41,7 @@ module RedstoneBot
       when Packet::SetSlot
         window.server_set_item packet.slot_id, packet.slot
       when Packet::CloseWindow
-        close_window window_id, window
+        unregister_window window_id, window
       end
     end
     
@@ -50,11 +50,11 @@ module RedstoneBot
     end
     
     private
-    def open_window(window_id, window)
+    def register_window(window_id, window)
       @windows_by_id[window_id] = @windows_by_class[window.class] = window
     end
     
-    def close_window(window_id, window)
+    def unregister_window(window_id, window)
       @windows_by_id.delete window_id
       @windows_by_class.delete window.class
       # perhaps we should call a window.close function that forces loaded? to return false

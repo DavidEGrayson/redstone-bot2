@@ -151,15 +151,35 @@ end
 describe RedstoneBot::WindowTracker do
   let(:client) { TestClient.new }
   subject { RedstoneBot::WindowTracker.new(client) }
+
+  def server_open_window(*args)
+    subject << RedstoneBot::Packet::OpenWindow.create(*args)
+  end
+
+  def load_window(window_id, items)
+    subject << RedstoneBot::Packet::SetWindowItems.create(window_id, items)
+    items.each_with_index do |item, spot_id|
+      subject << RedstoneBot::Packet::SetSlot.create(window_id, spot_id, item) if item
+    end    
+  end
+    
+  shared_examples_for "no windows are open" do
+    it "has no chest model" do
+      subject.chest_spots.should_not be
+    end
+  
+    it "has just one open window (inventory)" do
+      subject.should have(1).open_windows
+    end
+  end
+
   
   it "ignores random other packets" do
     subject << RedstoneBot::Packet::KeepAlive.new
   end
   
   context "initially" do
-    it "has one open window (the inventory)" do
-      subject.open_windows.size.should == 1
-    end
+    it_behaves_like "no windows are open"
     
     it "has an inventory window" do
       subject.inventory_window.should be_a RedstoneBot::WindowTracker::InventoryWindow
@@ -237,19 +257,6 @@ describe RedstoneBot::WindowTracker do
       subject.should have(54).chest_spots
     end
     
-    context "and closed" do
-      before do
-        subject << RedstoneBot::Packet::CloseWindow.create(window_id)
-      end
-      
-      it "has no chest model" do
-        subject.chest_spots.should_not be
-      end
-      
-      it "has just one open window (inventory)" do
-        subject.should have(1).open_windows
-      end
-    end
   end
   
   context "after the inventory and a double chest is loaded" do
@@ -257,10 +264,32 @@ describe RedstoneBot::WindowTracker do
     let(:chest_items) do
       [RedstoneBot::ItemType::Flint*30, RedstoneBot::ItemType::Flint*16] +
       [nil]*51 +
-      [RedstoneBot::ItemType::NetherRack*64]
+      [RedstoneBot::ItemType::Netherrack*64]
     end
-    let (:inventory_items) do
+    let (:initial_inventory) do
+      inventory = RedstoneBot::WindowTracker::Inventory.new
+      inventory
+    end
+    let(:crafting_items) do
+      [nil]*5
+    end
+    
+    before do
+      load_window 0, crafting_items + initial_inventory.spots.items      
+      server_open_window window_id, 0, "container.chestDouble", 54      
+      load_window window_id, chest_items + initial_inventory.regular_spots.items
+    end
+    
+    it "has a chest model with 54 spots" do
+      subject.should have(54).chest_spots
+    end
+    
+    context "and closed and closed by the server" do
+      before do
+        subject << RedstoneBot::Packet::CloseWindow.create(window_id)
+      end
       
+      it_behaves_like "no windows are open"
     end
     
   end
