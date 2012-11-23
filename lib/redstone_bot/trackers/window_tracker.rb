@@ -4,14 +4,34 @@ require_relative 'spot_array'
 
 module RedstoneBot
   class WindowTracker
-    attr_reader :inventory, :open_window
+    attr_reader :inventory_window
+    attr_reader :open_window
     
     def initialize(client)
+      @inventory_window = InventoryWindow.new
+      @window_ids = { 0 => @inventory_window }
+      
       @client = client
       @client.listen { |p| receive_packet p }
     end
     
     def receive_packet(packet)
+      return unless packet.respond_to?(:window_id)
+      
+      window = @window_ids[packet.window_id]
+      if !window
+        $stderr.puts "#{@client.time_string}: warning: received packet for non-open window: #{packet}"
+        return
+      end
+      
+      case packet
+      when Packet::SetWindowItems
+        window.server_set_items packet.slots
+      end
+    end
+    
+    def inventory
+      inventory_window.inventory if inventory_window.loaded?
     end
     
     def <<(packet)
@@ -72,7 +92,7 @@ module RedstoneBot
     
     class Window
       attr_reader :spots
-      
+            
       def spot_id(spot)
         @spots.index(spot)
       end
@@ -80,12 +100,24 @@ module RedstoneBot
       def spot_array(a)
         a.extend SpotArray
       end
+      
+      def server_set_items(items)
+        spots.items = items
+        @awaiting_set_spots = spots.grep(NonEmpty)
+      end
+      
+      def loaded?
+        @awaiting_set_spots
+        # TODO: finish this method
+      end
+            
     end
     
     class InventoryWindow < Window
       attr_reader :inventory, :crafting
       
       def initialize
+        super
         @inventory = Inventory.new
         @crafting = InventoryCrafting.new
         spot_array @spots = crafting.spots + inventory.spots
@@ -96,6 +128,7 @@ module RedstoneBot
       attr_reader :chest_spots, :inventory_spots
     
       def initialize(chest_spot_count, inventory)
+        super()
         spot_array @chest_spots = chest_spot_count.times.collect { Spot.new }        
         @inventory_spots = inventory.regular_spots
         

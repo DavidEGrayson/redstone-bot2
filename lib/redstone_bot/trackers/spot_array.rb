@@ -19,5 +19,16 @@ module RedstoneBot
       grep(type).inject(0){ |sum, spot| sum + spot.item.count }
     end
     
+    def items=(items)
+      raise ArgumentError, "expected #{count} items but received #{items.count}" if items.count != count
+      zip(items).each do |spot, item|
+        spot.item = item
+      end
+    end
+    
+    def items
+      collect &:item
+    end
+    
   end
 end

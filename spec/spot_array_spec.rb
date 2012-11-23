@@ -51,4 +51,13 @@ describe RedstoneBot::SpotArray do
     subject.quantity.should == 16
   end
   
+  it "can get and set items" do
+    items = [RedstoneBot::ItemType::Jukebox * 1, nil, RedstoneBot::ItemType::LapisOre * 5, nil, nil]        
+    subject.items = items
+    subject.items.should == items
+  end
+  
+  it "complains if you set the wrong number of items" do
+    lambda { subject.items = [nil] }.should raise_error    
+  end
 end

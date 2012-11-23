@@ -1124,7 +1124,7 @@ module RedstoneBot
   class Packet::SetWindowItems < Packet
     packet_type 0x68
     attr_reader :window_id, :slots
-    
+        
     def receive_data(socket)
       @window_id = socket.read_byte
       count = socket.read_short

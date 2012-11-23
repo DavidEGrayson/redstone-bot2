@@ -155,6 +155,10 @@ describe RedstoneBot::WindowTracker do
       subject.open_window.should == nil
     end
     
+    it "has an inventory window" do
+      subject.inventory_window.should be_a RedstoneBot::WindowTracker::InventoryWindow
+    end
+    
     it "has a nil inventory" do
       subject.inventory.should be_nil
     end
@@ -165,7 +169,7 @@ describe RedstoneBot::WindowTracker do
       subject << RedstoneBot::Packet::SetWindowItems.create(0, [nil]*45)
       subject.inventory.should be
     end
-  end if false # TODO
+  end
   
   context "loading a non-empty inventory" do
     let (:items) do
