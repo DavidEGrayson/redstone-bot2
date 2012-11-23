@@ -183,13 +183,16 @@ describe RedstoneBot::WindowTracker do
     end
     
     it "is done after all the SetSlot packets have been received" do
+      inventory_window = subject.inventory_window
+    
       subject << RedstoneBot::Packet::SetWindowItems.create(0, items)
       subject.inventory.should_not be
       subject << RedstoneBot::Packet::SetSlot.create(0, 43, RedstoneBot::ItemType::Melon * 2)
       subject.inventory.should_not be
       subject << RedstoneBot::Packet::SetSlot.create(0, 44, RedstoneBot::ItemType::MushroomSoup * 2)
-      subject.inventory_window.instance_variable_get(:@awaiting_set_spots).should == []
-      subject.inventory_window.should be_loaded
+      inventory_window.instance_variable_get(:@awaiting_set_spots).should == []
+      inventory_window.should be_loaded
+      subject.instance_variable_get(:@windows_by_class).should == {RedstoneBot::WindowTracker::InventoryWindow => inventory_window}
       subject.inventory.should be
     end
   end

@@ -5,26 +5,34 @@ require_relative 'spot_array'
 
 module RedstoneBot
   class WindowTracker
-    attr_reader :inventory_window, :open_windows
+    attr_reader :inventory_window
     
     def initialize(client)
-      @inventory_window = InventoryWindow.new
-      @open_windows = { 0 => @inventory_window }
+      @windows_by_id = { }
+      @windows_by_class= { }
+      @inventory_window = open_window 0, InventoryWindow.new
       
       @client = client
       @client.listen { |p| receive_packet p }
+    end
+    
+    def open_windows
+      @windows_by_id
+    end
+    
+    def open_window(window_id, window)
+      @windows_by_id[window_id] = @windows_by_class[window.class] = window
     end
     
     def receive_packet(packet)
       return unless packet.respond_to?(:window_id)
       
       if packet.is_a?(Packet::OpenWindow)
-        window = Window.create(packet.type, packet.spot_count, inventory_window.inventory)
-        @open_windows[packet.window_id] = window
+        open_window packet.window_id, Window.create(packet.type, packet.spot_count, inventory_window.inventory)
         return
       end
       
-      window = @open_windows[packet.window_id]
+      window = @windows_by_id[packet.window_id]
       if !window
         $stderr.puts "#{@client.time_string}: warning: received packet for non-open window: #{packet}"
         return
@@ -36,10 +44,6 @@ module RedstoneBot
       when Packet::SetSlot
         window.server_set_item packet.slot_id, packet.slot
       end
-    end
-    
-    def inventory
-      inventory_window.inventory if inventory_window.loaded?
     end
     
     def <<(packet)
@@ -102,7 +106,22 @@ module RedstoneBot
       extend TracksTypes
     
       attr_reader :spots
-       
+      
+      # Call this in a subclass in order to provide methods to the WindowTracker.
+      # The methods will always return nil unless this window is loaded.
+      def self.provide(*method_names)
+        method_names.each do |method_name|
+          if WindowTracker.instance_methods.include?(method_name)
+            raise "#{self} cannot provide #{method_name} method: WindowTracker already has it."
+          end
+          klass = self
+          WindowTracker.send(:define_method, method_name) do
+            window = @windows_by_class[klass]
+            window.send(method_name) if window and window.loaded?
+          end
+        end
+      end
+      
       def spot_id(spot)
         @spots.index(spot)
       end
@@ -134,18 +153,23 @@ module RedstoneBot
     end
     
     class InventoryWindow < Window
-      attr_reader :inventory, :crafting
-      
+      provide :inventory, :inventory_crafting
+
+      attr_reader :inventory, :inventory_crafting
+            
       def initialize
         super
         @inventory = Inventory.new
-        @crafting = InventoryCrafting.new
-        spot_array @spots = crafting.spots + inventory.spots
+        @inventory_crafting = InventoryCrafting.new
+        spot_array @spots = inventory_crafting.spots + inventory.spots
       end
+      
+      alias :crafting :inventory_crafting
     end
     
     class ChestWindow < Window
       type_is 0
+      provide :chest
     
       attr_reader :chest_spots, :inventory_spots
     
@@ -156,6 +180,10 @@ module RedstoneBot
         
         # This array defines the relationship between spot ID and spots.
         spot_array @spots = @chest_spots + @inventory_spots        
+      end
+      
+      def chest
+        chest_spots
       end
     end
   end
