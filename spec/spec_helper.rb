@@ -18,6 +18,10 @@ rescue Errno::EAFNOSUPPORT
   Socket.pair(:INET, :STREAM)   # works in Windows
 end
 
+RSpec.configure do |c|
+  c.alias_it_should_behave_like_to :it_has_behavior, 'has behavior:'
+end
+
 # monkeypatch to make tests more readable
 class RedstoneBot::ItemType
   def *(count)

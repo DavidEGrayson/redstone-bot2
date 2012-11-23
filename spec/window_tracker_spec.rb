@@ -1,6 +1,14 @@
 require_relative 'spec_helper'
 require 'redstone_bot/trackers/window_tracker'
 
+shared_examples_for 'uses SpotArray for' do |*array_names|
+  array_names.each do |array_name|
+    it array_name.to_s do
+      subject.send(array_name).should be_a RedstoneBot::SpotArray
+    end
+  end
+end
+
 describe RedstoneBot::WindowTracker::Inventory do
   it "has general purpose spots" do
     subject.should have(36).regular_spots
@@ -31,7 +39,9 @@ describe RedstoneBot::WindowTracker::Inventory do
       spot.should be_a RedstoneBot::Spot
       spot.should be_empty
     end
-  end  
+  end
+  
+  it_has_behavior 'uses SpotArray for', :armor_spots, :regular_spots, :hotbar_spots, :spots
 end
 
 describe RedstoneBot::WindowTracker::InternalCrafting do
@@ -57,6 +67,8 @@ describe RedstoneBot::WindowTracker::InternalCrafting do
   it "has no duplicate spots" do
     subject.spots.uniq.should == subject.spots
   end
+  
+  it_has_behavior 'uses SpotArray for', :input_spots, :spots
 end
 
 #describe RedstoneBot::WindowTracker::InventoryWindow do
@@ -89,6 +101,8 @@ describe RedstoneBot::WindowTracker::ChestWindow do
       subject.spot_id(inventory.regular_spots[3]).should == 27 + 3
       subject.spot_id(inventory.regular_spots[35]).should == 62
     end
+    
+    it_has_behavior 'uses SpotArray for', :chest_spots, :inventory_spots, :spots
   end
   
   context "large chest" do

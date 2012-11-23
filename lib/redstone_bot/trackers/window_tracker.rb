@@ -1,5 +1,6 @@
 require_relative '../packet_printer'
 require_relative 'spot'
+require_relative 'spot_array'
 
 module RedstoneBot
   class WindowTracker
@@ -37,6 +38,10 @@ module RedstoneBot
         @armor_spots = [@helmet_spot, @chestplate_spot, @leggings_spot, @boots_spot]
         
         @spots = @regular_spots + @armor_spots
+        
+        [@hotbar_spots, @regular_spots, @armor_spots, @spots].each do |array|
+          array.extend SpotArray
+        end
       end
     end
     
@@ -54,6 +59,10 @@ module RedstoneBot
         @output_spot = Spot.new
         
         @spots = [@output_spot] + @input_spots
+        
+        [@spots, @input_spots].each do |array|
+          array.extend SpotArray
+        end
       end
       
       def input_spot(row, column)
@@ -78,6 +87,10 @@ module RedstoneBot
         
         # This array defines the relationship between spot ID and spots.
         @spots = @chest_spots + @inventory_spots
+        
+        [@chest_spots, @spots].each do |array|
+          array.extend SpotArray
+        end
       end
     end
   end
