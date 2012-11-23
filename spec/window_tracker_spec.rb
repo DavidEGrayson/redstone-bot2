@@ -19,6 +19,7 @@ describe RedstoneBot::WindowTracker::Inventory do
   end
   
   it "has hotbar spots at the end of the regular spots array" do
+    # This is required for the slot ids in the InventoryWindow and ChestWindow to be correct
     subject.hotbar_spots.should == subject.regular_spots[-9,9]
   end
 
@@ -27,13 +28,13 @@ describe RedstoneBot::WindowTracker::Inventory do
   end
   
   it "has easy access to all the spots" do
-    subject.spots.should == subject.regular_spots + subject.armor_spots
+    subject.spots.should == subject.armor_spots + subject.regular_spots
   end
   
   it "has no duplicate spots" do
     subject.spots.uniq.should == subject.spots
   end
-  
+    
   it "initially has empty spots" do
     subject.spots.each do |spot|
       spot.should be_a RedstoneBot::Spot
@@ -44,7 +45,7 @@ describe RedstoneBot::WindowTracker::Inventory do
   it_has_behavior 'uses SpotArray for', :armor_spots, :regular_spots, :hotbar_spots, :spots
 end
 
-describe RedstoneBot::WindowTracker::InternalCrafting do
+describe RedstoneBot::WindowTracker::InventoryCrafting do
   it "has four input spots" do
     subject.input_spots.should == [subject.upper_left, subject.upper_right, subject.lower_left, subject.lower_right]
   end
@@ -71,10 +72,30 @@ describe RedstoneBot::WindowTracker::InternalCrafting do
   it_has_behavior 'uses SpotArray for', :input_spots, :spots
 end
 
-#describe RedstoneBot::WindowTracker::InventoryWindow do
-#  let(:inventory) { RedstoneBot::WindowTracker::Inventory.new }
-#  subject { described_class.new(inventory, crafting) }
-#end
+describe RedstoneBot::WindowTracker::InventoryWindow do
+  let(:inventory) { subject.inventory }
+  let(:crafting) { subject.crafting }
+  let(:spots) { subject.spots }
+  
+  it "combines inventory and inventory crafting in the proper order" do
+    spots.should == crafting.spots + inventory.armor_spots +
+      (inventory.regular_spots - inventory.hotbar_spots) + inventory.hotbar_spots
+  end
+
+  it "has the right spot ids" do
+    spots[0].should == crafting.output_spot
+    spots[1].should == crafting.upper_left
+    spots[2].should == crafting.upper_right
+    spots[3].should == crafting.lower_left
+    spots[4].should == crafting.lower_right
+    spots[5].should == inventory.helmet_spot
+    spots[6].should == inventory.chestplate_spot
+    spots[7].should == inventory.leggings_spot
+    spots[8].should == inventory.boots_spot
+    spots[9..35].should == inventory.regular_spots - inventory.hotbar_spots
+    spots[36..44].should == inventory.hotbar_spots
+  end
+end
 
 describe RedstoneBot::WindowTracker::ChestWindow do
   let(:inventory) { RedstoneBot::WindowTracker::Inventory.new }

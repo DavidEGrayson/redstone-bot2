@@ -24,7 +24,7 @@ module RedstoneBot
   class WindowTracker
    
     class Inventory
-      attr_reader :regular_spots, :hotbar_spots, :spots
+      attr_reader :regular_spots, :hotbar_spots, :non_hotbar_spots, :spots
       attr_reader :armor_spots, :helmet_spot, :chestplate_spot, :leggings_spot, :boots_spot
     
       def initialize
@@ -37,15 +37,15 @@ module RedstoneBot
         @boots_spot = Spot.new
         @armor_spots = [@helmet_spot, @chestplate_spot, @leggings_spot, @boots_spot]
         
-        @spots = @regular_spots + @armor_spots
+        @spots = @armor_spots + @regular_spots
         
-        [@hotbar_spots, @regular_spots, @armor_spots, @spots].each do |array|
+        [@hotbar_spots, @regular_spots, @armor_spots, @spots, @non_hotbar_spots].each do |array|
           array.extend SpotArray
         end
       end
     end
     
-    class InternalCrafting
+    class InventoryCrafting
       attr_reader :output_spot, :input_spots, :spots
       attr_reader :upper_left, :upper_right, :lower_left, :lower_right
     
@@ -76,21 +76,31 @@ module RedstoneBot
       def spot_id(spot)
         @spots.index(spot)
       end
+      
+      def spot_array(a)
+        a.extend SpotArray
+      end
+    end
+    
+    class InventoryWindow < Window
+      attr_reader :inventory, :crafting
+      
+      def initialize
+        @inventory = Inventory.new
+        @crafting = InventoryCrafting.new
+        spot_array @spots = crafting.spots + inventory.spots
+      end
     end
     
     class ChestWindow < Window
       attr_reader :chest_spots, :inventory_spots
     
       def initialize(chest_spot_count, inventory)
-        @chest_spots = chest_spot_count.times.collect { Spot.new }        
+        spot_array @chest_spots = chest_spot_count.times.collect { Spot.new }        
         @inventory_spots = inventory.regular_spots
         
         # This array defines the relationship between spot ID and spots.
-        @spots = @chest_spots + @inventory_spots
-        
-        [@chest_spots, @spots].each do |array|
-          array.extend SpotArray
-        end
+        spot_array @spots = @chest_spots + @inventory_spots        
       end
     end
   end
