@@ -152,15 +152,21 @@ describe RedstoneBot::WindowTracker do
   let(:client) { TestClient.new }
   subject { RedstoneBot::WindowTracker.new(client) }
 
+  # Helper function to simulate an event happening from the server side.
   def server_open_window(*args)
     subject << RedstoneBot::Packet::OpenWindow.create(*args)
   end
 
-  def load_window(window_id, items)
+  def server_load_window(window_id, items)
     subject << RedstoneBot::Packet::SetWindowItems.create(window_id, items)
     items.each_with_index do |item, spot_id|
       subject << RedstoneBot::Packet::SetSlot.create(window_id, spot_id, item) if item
     end    
+  end
+  
+  def server_close_window(window_id=nil)
+    window_id ||= (subject.open_windows.keys - [0]).first
+    subject << RedstoneBot::Packet::CloseWindow.create(window_id)
   end
     
   shared_examples_for "no windows are open" do
@@ -246,11 +252,8 @@ describe RedstoneBot::WindowTracker do
     end
     
     before do
-      subject << RedstoneBot::Packet::OpenWindow.create(window_id, 0, "container.chestDouble", 54)
-      subject << RedstoneBot::Packet::SetWindowItems.create(window_id, items)
-      items.each_with_index do |item, spot_id|
-        subject << RedstoneBot::Packet::SetSlot.create(window_id, spot_id, item) if item
-      end
+      server_open_window window_id, 0, "container.chestDouble", 54
+      server_load_window window_id, items
     end
     
     it "has a chest model with 54 spots" do
@@ -275,9 +278,9 @@ describe RedstoneBot::WindowTracker do
     end
     
     before do
-      load_window 0, crafting_items + initial_inventory.spots.items      
+      server_load_window 0, crafting_items + initial_inventory.spots.items      
       server_open_window window_id, 0, "container.chestDouble", 54      
-      load_window window_id, chest_items + initial_inventory.regular_spots.items
+      server_load_window window_id, chest_items + initial_inventory.regular_spots.items
     end
     
     it "has a chest model with 54 spots" do
@@ -286,7 +289,7 @@ describe RedstoneBot::WindowTracker do
     
     context "and closed and closed by the server" do
       before do
-        subject << RedstoneBot::Packet::CloseWindow.create(window_id)
+        server_close_window
       end
       
       it_behaves_like "no windows are open"
