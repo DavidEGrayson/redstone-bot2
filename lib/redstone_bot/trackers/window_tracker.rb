@@ -27,6 +27,8 @@ module RedstoneBot
       case packet
       when Packet::SetWindowItems
         window.server_set_items packet.slots
+      when Packet::SetSlot
+        window.server_set_item packet.slot_id, packet.slot
       end
     end
     
@@ -100,17 +102,27 @@ module RedstoneBot
       def spot_array(a)
         a.extend SpotArray
       end
+
+      # The Notchian server always sends several SetSlot packets after SetWindowItems,
+      # one for each non-empty spot.      
+      # To avoid annoying issues caused by those redundant packets, we just wait until
+      # we receive all of those SetSpot packets before we consider the window to be
+      # fully loaded.
+      def loaded?
+        @awaiting_set_spots && @awaiting_set_spots.empty?
+      end      
       
       def server_set_items(items)
         spots.items = items
         @awaiting_set_spots = spots.grep(NonEmpty)
       end
       
-      def loaded?
-        @awaiting_set_spots
-        # TODO: finish this method
+      def server_set_item(spot_id, item)
+        spot = spots[spot_id]
+        spot.item = item
+        @awaiting_set_spots.delete(spot)
       end
-            
+      
     end
     
     class InventoryWindow < Window

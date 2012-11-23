@@ -179,12 +179,14 @@ describe RedstoneBot::WindowTracker do
     it "is done after all the SetSlot packets have been received" do
       subject << RedstoneBot::Packet::SetWindowItems.create(0, items)
       subject.inventory.should_not be
-      subject << RedstoneBot::Packet::SetSlot(0, 43, RedstoneBot::ItemType::Melon * 2)
+      subject << RedstoneBot::Packet::SetSlot.create(0, 43, RedstoneBot::ItemType::Melon * 2)
       subject.inventory.should_not be
-      subject << RedstoneBot::Packet::SetSlot(0, 44, RedstoneBot::ItemType::MushroomSoup * 2)
+      subject << RedstoneBot::Packet::SetSlot.create(0, 44, RedstoneBot::ItemType::MushroomSoup * 2)
+      subject.inventory_window.instance_variable_get(:@awaiting_set_spots).should == []
+      subject.inventory_window.should be_loaded
       subject.inventory.should be
     end
-  end if false # TODO
+  end
   
   context "after a chest is opened" do
     before do
