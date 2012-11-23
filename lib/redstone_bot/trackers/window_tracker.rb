@@ -24,15 +24,23 @@ module RedstoneBot
       @windows_by_id[window_id] = @windows_by_class[window.class] = window
     end
     
+    def close_window(window_id, window)
+      @windows_by_id.delete window_id
+      @windows_by_class.delete window.class
+      # perhaps we should call a window.close function that forces loaded? to return false
+      # just in case old copies of the window are lying around somewhere.
+    end
+    
     def receive_packet(packet)
       return unless packet.respond_to?(:window_id)
+      window_id = packet.window_id
       
       if packet.is_a?(Packet::OpenWindow)
-        open_window packet.window_id, Window.create(packet.type, packet.spot_count, inventory_window.inventory)
+        open_window window_id, Window.create(packet.type, packet.spot_count, inventory_window.inventory)
         return
       end
       
-      window = @windows_by_id[packet.window_id]
+      window = @windows_by_id[window_id]
       if !window
         $stderr.puts "#{@client.time_string}: warning: received packet for non-open window: #{packet}"
         return
@@ -43,6 +51,8 @@ module RedstoneBot
         window.server_set_items packet.slots
       when Packet::SetSlot
         window.server_set_item packet.slot_id, packet.slot
+      when Packet::CloseWindow
+        close_window window_id, window
       end
     end
     

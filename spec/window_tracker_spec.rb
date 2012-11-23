@@ -236,6 +236,33 @@ describe RedstoneBot::WindowTracker do
     it "has a chest model with 54 spots" do
       subject.should have(54).chest_spots
     end
+    
+    context "and closed" do
+      before do
+        subject << RedstoneBot::Packet::CloseWindow.create(window_id)
+      end
+      
+      it "has no chest model" do
+        subject.chest_spots.should_not be
+      end
+      
+      it "has just one open window (inventory)" do
+        subject.should have(1).open_windows
+      end
+    end
+  end
+  
+  context "after the inventory and a double chest is loaded" do
+    let(:window_id) { 7 }
+    let(:chest_items) do
+      [RedstoneBot::ItemType::Flint*30, RedstoneBot::ItemType::Flint*16] +
+      [nil]*51 +
+      [RedstoneBot::ItemType::NetherRack*64]
+    end
+    let (:inventory_items) do
+      
+    end
+    
   end
 
 end
