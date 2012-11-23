@@ -20,17 +20,6 @@ module RedstoneBot
       @windows_by_id
     end
     
-    def open_window(window_id, window)
-      @windows_by_id[window_id] = @windows_by_class[window.class] = window
-    end
-    
-    def close_window(window_id, window)
-      @windows_by_id.delete window_id
-      @windows_by_class.delete window.class
-      # perhaps we should call a window.close function that forces loaded? to return false
-      # just in case old copies of the window are lying around somewhere.
-    end
-    
     def receive_packet(packet)
       return unless packet.respond_to?(:window_id)
       window_id = packet.window_id
@@ -58,6 +47,18 @@ module RedstoneBot
     
     def <<(packet)
       receive_packet packet
+    end
+    
+    private
+    def open_window(window_id, window)
+      @windows_by_id[window_id] = @windows_by_class[window.class] = window
+    end
+    
+    def close_window(window_id, window)
+      @windows_by_id.delete window_id
+      @windows_by_class.delete window.class
+      # perhaps we should call a window.close function that forces loaded? to return false
+      # just in case old copies of the window are lying around somewhere.
     end
 
   end
