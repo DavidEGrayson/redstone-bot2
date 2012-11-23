@@ -200,7 +200,7 @@ describe RedstoneBot::WindowTracker do
     end
 
     it "has an open ChestWindow" do
-      subject.window(2).should be_a RedstoneBot::ChestWindow
+      subject.open_windows[2].should be_a RedstoneBot::WindowTracker::ChestWindow
     end
     
     it "doesn't have a chest model yet" do

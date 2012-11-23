@@ -19,7 +19,8 @@ module RedstoneBot
       return unless packet.respond_to?(:window_id)
       
       if packet.is_a?(Packet::OpenWindow)
-        @open_windows[packet.window_id] = Window.open(packet.type, packet.spot_count)
+        window = Window.create(packet.type, packet.spot_count, inventory_window.inventory)
+        @open_windows[packet.window_id] = window
         return
       end
       
@@ -101,11 +102,7 @@ module RedstoneBot
       extend TracksTypes
     
       attr_reader :spots
-      
-      def self.open
-        
-      end
-            
+       
       def spot_id(spot)
         @spots.index(spot)
       end
@@ -148,7 +145,7 @@ module RedstoneBot
     end
     
     class ChestWindow < Window
-      #type_is 0
+      type_is 0
     
       attr_reader :chest_spots, :inventory_spots
     
