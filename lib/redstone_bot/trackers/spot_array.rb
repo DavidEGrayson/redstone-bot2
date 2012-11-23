@@ -15,8 +15,8 @@ module RedstoneBot
     # Cannot call this count because that is already taken.
     # TODO: consider changing "count" to quantity in the Slot/Item class and everywhere else
     # make it consistent with the name of this function!
-    def quantity(type=nil)
-      grep(type || NonEmpty).inject(0){ |sum, spot| sum + spot.item.count }
+    def quantity(type=NonEmpty)
+      grep(type).inject(0){ |sum, spot| sum + spot.item.count }
     end
     
   end

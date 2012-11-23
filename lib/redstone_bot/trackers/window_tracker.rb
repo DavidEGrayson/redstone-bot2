@@ -6,7 +6,6 @@ module RedstoneBot
     attr_reader :inventory, :open_window
     
     def initialize(client)
-      @inventory = Inventory.new
       @client = client
       @client.listen { |p| receive_packet p }
     end

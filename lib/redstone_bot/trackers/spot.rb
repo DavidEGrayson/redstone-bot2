@@ -16,5 +16,9 @@ module RedstoneBot
     def item_type
       @item.item_type if @item
     end
+    
+    def to_s
+      "(" + @item.to_s + ")"
+    end
   end
 end

@@ -108,15 +108,37 @@ describe RedstoneBot::WindowTracker do
     subject << RedstoneBot::Packet::KeepAlive.new
   end
   
-  it "has an inventory" do
-    subject.inventory.should be_a RedstoneBot::WindowTracker::Inventory
-  end
-  
   context "initially" do
     it "has no open window" do
       subject.open_window.should == nil
     end
+    
+    it "has a nil inventory" do
+      subject.inventory.should be_nil
+    end
   end
+
+  context "loading an empty inventory" do
+    it "is done after the SetWindowItems packet" do
+      subject << RedstoneBot::Packet::SetWindowItems.create(0, [nil]*45)
+      subject.inventory.should be
+    end
+  end if false # TODO
+  
+  context "loading a non-empty inventory" do
+    let (:items) do
+      [nil]*43 + [ RedstoneBot::ItemType::Melon * 2, RedstoneBot::ItemType::MushroomSoup * 2 ]
+    end
+    
+    it "is done after all the SetSlot packets have been received" do
+      subject << RedstoneBot::Packet::SetWindowItems.create(0, items)
+      subject.inventory.should_not be
+      subject << RedstoneBot::Packet::SetSlot(0, 43, RedstoneBot::ItemType::Melon * 2)
+      subject.inventory.should_not be
+      subject << RedstoneBot::Packet::SetSlot(0, 44, RedstoneBot::ItemType::MushroomSoup * 2)
+      subject.inventory.should be
+    end
+  end if false # TODO
   
   context "after a chest is opened" do
     before do
