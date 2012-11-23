@@ -8,8 +8,8 @@ module RedstoneBot
     attr_reader :inventory_window
     
     def initialize(client)
-      @windows_by_id = { }
-      @windows_by_class= { }
+      @windows_by_id = {}
+      @windows_by_class= {}
       @inventory_window = open_window 0, InventoryWindow.new
       
       @client = client
@@ -169,7 +169,7 @@ module RedstoneBot
     
     class ChestWindow < Window
       type_is 0
-      provide :chest
+      provide :chest_spots
     
       attr_reader :chest_spots, :inventory_spots
     
@@ -182,9 +182,6 @@ module RedstoneBot
         spot_array @spots = @chest_spots + @inventory_spots        
       end
       
-      def chest
-        chest_spots
-      end
     end
   end
   

@@ -198,24 +198,44 @@ describe RedstoneBot::WindowTracker do
   end
   
   context "after a OpenWindow packet for a chest is received" do
+    let(:window_id) { 2 }
+    
     before do
-      subject << RedstoneBot::Packet::OpenWindow.create(2, 0, "container.chest", 27)
+      subject << RedstoneBot::Packet::OpenWindow.create(window_id, 0, "container.chest", 27)
     end
 
     it "has an open ChestWindow" do
-      subject.open_windows[2].should be_a RedstoneBot::WindowTracker::ChestWindow
+      subject.open_windows[window_id].should be_a RedstoneBot::WindowTracker::ChestWindow
+    end
+    
+    it "has an open ChestWindow with 27 chest_spots" do
+      subject.open_windows[window_id].should have(27).chest_spots
     end
     
     it "doesn't have a chest model yet" do
-      subject.chest.should == nil
+      subject.chest_spots.should == nil
     end
   end
   
-  context "after a double chest is opened" do
-    before do
-      subject << RedstoneBot::Packet::OpenWindow.create(2, 0, "container.chestDouble", 54)
+  context "after a double chest is loaded" do
+    let(:window_id) { 2 }
+    let(:items) do
+      chest = [RedstoneBot::ItemType::Stick*64] + [nil]*52 + [RedstoneBot::ItemType::WoodenPlanks*64]
+      inventory = [nil]*36
+      chest + inventory
     end
     
+    before do
+      subject << RedstoneBot::Packet::OpenWindow.create(window_id, 0, "container.chestDouble", 54)
+      subject << RedstoneBot::Packet::SetWindowItems.create(window_id, items)
+      items.each_with_index do |item, spot_id|
+        subject << RedstoneBot::Packet::SetSlot.create(window_id, spot_id, item) if item
+      end
+    end
+    
+    it "has a chest model with 54 spots" do
+      subject.should have(54).chest_spots
+    end
   end
 
 end
