@@ -23,7 +23,7 @@ module RedstoneBot
       
       # To override this behavior, just write
       #   types.default = some_klass
-      # in the parent class definition.
+      # in the class definition of some appropriate class.
       if !klass
         raise "Unrecognized type of #{name}: #{type}"
       end
