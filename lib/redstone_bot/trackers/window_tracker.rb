@@ -47,10 +47,10 @@ module RedstoneBot
       @cursor_spot = Spot.new
       
       @client = client
-      @client.listen { |p| receive_packet_unfiltered p }
+      @client.listen &method(:receive_packet)
     end
 
-    def receive_packet_unfiltered(packet)
+    def receive_packet(packet)
       if @packet_ignorer
         if @packet_ignorer.call(packet)
           #$stderr.puts "ignored packet #{packet}"
@@ -60,11 +60,11 @@ module RedstoneBot
         end
       end
     
-      receive_packet(packet)
+      receive_packet_filtered(packet)
       @last_packet = packet
     end
     
-    def receive_packet(packet)
+    def receive_packet_filtered(packet)
       return unless packet.respond_to?(:window_id)
       window_id = packet.window_id
       
@@ -116,7 +116,7 @@ module RedstoneBot
     end
     
     def <<(packet)  # this is for testing only
-      receive_packet_unfiltered(packet)
+      receive_packet(packet)
     end
 
     def ignore_packets_while(&condition)
