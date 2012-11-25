@@ -108,7 +108,7 @@ describe RedstoneBot::WindowTracker::ChestWindow do
   let(:inventory) { RedstoneBot::WindowTracker::Inventory.new }
 
   context "small chest" do
-    subject { described_class.new(27, inventory) }
+    subject { described_class.new(4, 27, inventory) }
     
     it "has 27 chest spots" do
       subject.should have(27).chest_spots
@@ -140,7 +140,7 @@ describe RedstoneBot::WindowTracker::ChestWindow do
   end
   
   context "large chest" do
-    subject { described_class.new(54, inventory) }
+    subject { described_class.new(4, 54, inventory) }
     
     it "has 54 chest spots" do
       subject.should have(54).chest_spots
@@ -165,8 +165,7 @@ describe RedstoneBot::WindowTracker do
   end
   
   def server_close_window(window_id=nil)
-    window_id ||= (subject.open_windows.keys - [0]).first
-    subject << RedstoneBot::Packet::CloseWindow.create(window_id)
+    subject << RedstoneBot::Packet::CloseWindow.create(subject.windows[1].id)
   end
     
   shared_examples_for "no windows are open" do
@@ -175,7 +174,7 @@ describe RedstoneBot::WindowTracker do
     end
   
     it "has just one open window (inventory)" do
-      subject.should have(1).open_windows
+      subject.should have(1).windows
     end
   end
 
@@ -218,7 +217,6 @@ describe RedstoneBot::WindowTracker do
       subject << RedstoneBot::Packet::SetSlot.create(0, 44, RedstoneBot::ItemType::MushroomSoup * 2)
       inventory_window.instance_variable_get(:@awaiting_set_spots).should == []
       inventory_window.should be_loaded
-      subject.instance_variable_get(:@windows_by_class).should == {RedstoneBot::WindowTracker::InventoryWindow => inventory_window}
       subject.inventory.should be
     end
   end
@@ -231,11 +229,11 @@ describe RedstoneBot::WindowTracker do
     end
 
     it "has an open ChestWindow" do
-      subject.open_windows[window_id].should be_a RedstoneBot::WindowTracker::ChestWindow
+      subject.windows[1].should be_a RedstoneBot::WindowTracker::ChestWindow
     end
     
     it "has an open ChestWindow with 27 chest_spots" do
-      subject.open_windows[window_id].should have(27).chest_spots
+      subject.windows[1].should have(27).chest_spots
     end
     
     it "doesn't have a chest model yet" do
@@ -262,6 +260,11 @@ describe RedstoneBot::WindowTracker do
     
   end
   
+  it "responds to SetSlot packets for the cursor" do
+    subject << RedstoneBot::Packet::SetSlot.create(-1, -1, RedstoneBot::ItemType::RedstoneRepeater * 10)
+    subject.cursor_spot.item.should == RedstoneBot::ItemType::RedstoneRepeater * 10
+  end
+  
   context "after the inventory and a double chest is loaded" do
     let(:window_id) { 7 }
     let(:chest_items) do
@@ -285,6 +288,10 @@ describe RedstoneBot::WindowTracker do
     
     it "has a chest model with 54 spots" do
       subject.should have(54).chest_spots
+    end
+    
+    it "has no item on the cursor" do
+      subject.cursor_spot.should be_empty
     end
     
     context "and closed by the server" do

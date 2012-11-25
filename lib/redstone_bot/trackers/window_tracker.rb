@@ -5,19 +5,15 @@ require_relative 'spot_array'
 
 module RedstoneBot
   class WindowTracker
-    attr_reader :inventory_window
+    attr_reader :inventory_window, :windows, :cursor_spot
     
     def initialize(client)
-      @windows_by_id = {}
-      @windows_by_class = {}
-      @inventory_window = register_window 0, InventoryWindow.new
+      @windows = []
+      register_window @inventory_window = InventoryWindow.new
+      @cursor_spot = Spot.new
       
       @client = client
       @client.listen { |p| receive_packet p }
-    end
-    
-    def open_windows
-      @windows_by_id
     end
     
     def receive_packet(packet)
@@ -25,11 +21,16 @@ module RedstoneBot
       window_id = packet.window_id
       
       if packet.is_a?(Packet::OpenWindow)
-        register_window window_id, Window.create(packet.type, packet.spot_count, inventory_window.inventory)
+        register_window Window.create(packet.type, packet.window_id, packet.spot_count, inventory_window.inventory)
         return
       end
       
-      window = @windows_by_id[window_id]
+      if packet.is_a?(Packet::SetSlot) && packet.cursor?
+        cursor_spot.item = packet.slot
+        return
+      end
+      
+      window = windows.find { |w| w.id == window_id }
       if !window
         $stderr.puts "#{@client.time_string}: warning: received packet for non-open window: #{packet}"
         return
@@ -41,7 +42,7 @@ module RedstoneBot
       when Packet::SetSlot
         window.server_set_item packet.slot_id, packet.slot
       when Packet::CloseWindow
-        unregister_window window_id, window
+        unregister_window window
       end
     end
     
@@ -50,13 +51,12 @@ module RedstoneBot
     end
     
     private
-    def register_window(window_id, window)
-      @windows_by_id[window_id] = @windows_by_class[window.class] = window
+    def register_window(window)
+      @windows << window
     end
     
-    def unregister_window(window_id, window)
-      @windows_by_id.delete window_id
-      @windows_by_class.delete window.class
+    def unregister_window(window)
+      @windows.delete window
       # perhaps we should call a window.close function that forces loaded? to return false
       # just in case old copies of the window are lying around somewhere.
     end
@@ -116,7 +116,11 @@ module RedstoneBot
     class Window
       extend TracksTypes
     
-      attr_reader :spots
+      attr_reader :id, :spots
+      
+      def initialize(id, spot_count, inventory)
+        @id = id
+      end      
       
       # Call this in a subclass in order to provide methods to the WindowTracker.
       # The methods will always return nil unless this window is loaded.
@@ -127,7 +131,7 @@ module RedstoneBot
           end
           klass = self
           WindowTracker.send(:define_method, method_name) do
-            window = @windows_by_class[klass]
+            window = windows.find { |w| klass === w }
             window.send(method_name) if window and window.loaded?
           end
         end
@@ -169,8 +173,8 @@ module RedstoneBot
       attr_reader :inventory, :inventory_crafting
             
       def initialize
-        super
         @inventory = Inventory.new
+        super(0, nil, inventory)
         @inventory_crafting = InventoryCrafting.new
         spot_array @spots = inventory_crafting.spots + inventory.spots
       end
@@ -184,8 +188,8 @@ module RedstoneBot
     
       attr_reader :chest_spots, :inventory_spots
     
-      def initialize(chest_spot_count, inventory)
-        super()
+      def initialize(id, chest_spot_count, inventory)
+        super(id, inventory, chest_spot_count)
         spot_array @chest_spots = chest_spot_count.times.collect { Spot.new }        
         @inventory_spots = inventory.regular_spots
         
