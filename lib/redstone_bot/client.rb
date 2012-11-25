@@ -57,7 +57,7 @@ module RedstoneBot
     attr_reader :port
     attr_reader :eid
     attr_accessor :synchronizer  # an object that includes the Synchronizer module
-    attr_reader :packets_received
+    attr_reader :packets_received, :last_packets
     
     # password can be nil or empty for an offline server
     def initialize(username, password, hostname, port)
@@ -207,11 +207,15 @@ module RedstoneBot
     end
     
     def receive_packet
-      packet = Packet.receive(@rx_stream)
+      packet = Packet.receive(@rx_stream)      
+      record_packet packet
+      packet 
+    end
+    
+    def record_packet(packet)
       @packets_received += 1
       @last_packets.shift
       @last_packets.push packet
-      packet
     end
 
     def send_packet(packet)

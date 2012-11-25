@@ -10,18 +10,23 @@ class TestClient < RedstoneBot::Client
     @listeners = []
     @synchronizer = TestStandaloneSynchronizer.new  # gets overridden by TestBot
     @sent_packets = []
+    @last_packets = [nil]*4   # keep track of last 4 packets
+    @packets_received = 0
   end
   
   def listen(&proc)
     @listeners << proc
   end
   
-  alias :<< :notify_listeners
+  def <<(packet)
+    record_packet packet
+    notify_listeners packet
+  end
   
   def send_packet(packet)
     sent_packets << packet
   end
-  
+    
   def username
     "testbot"
   end

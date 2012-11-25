@@ -179,7 +179,7 @@ describe RedstoneBot::WindowTracker do
     subject << RedstoneBot::Packet::SetSlot.create(-1, -1, item)
   end
   
-  def server_set_window_items(items)
+  def server_set_items(items)
     window = subject.windows.last
     subject << RedstoneBot::Packet::SetWindowItems.create(window.id, items)
   end
@@ -195,7 +195,7 @@ describe RedstoneBot::WindowTracker do
   # This is what the server does after a transaction is rejected.
   # It sends the packets in THIS order, which is kind of inconvenient.
   def server_reload_window(items, cursor_item=nil)
-    server_set_window_items items
+    server_set_items items
     server_set_cursor cursor_item
   end
   
@@ -326,8 +326,9 @@ describe RedstoneBot::WindowTracker do
     end
     
   end
-  
-  it "responds to SetSlot packets for the cursor" do
+
+  it "responds to SetSlot packets for the cursor after SetWindowItems packets" do
+    server_set_items [nil]*45
     subject << RedstoneBot::Packet::SetSlot.create(-1, -1, RedstoneBot::ItemType::RedstoneRepeater * 10)
     subject.cursor_spot.item.should == RedstoneBot::ItemType::RedstoneRepeater * 10
   end
@@ -426,7 +427,7 @@ describe RedstoneBot::WindowTracker do
         
         context "and setting the window items" do
           before do
-            server_set_window_items [RedstoneBot::ItemType::Wood * 2] * 90
+            server_set_items [RedstoneBot::ItemType::Wood * 2] * 90
           end
           
           # We still need to wait for the cursor to be set and for the slot you clicked on to be set.

@@ -62,12 +62,15 @@ module RedstoneBot
       if packet.is_a?(Packet::SetSlot) && packet.cursor?
         cursor_spot.item = packet.slot
         
-        #if client.last_packets[-2].is_a?(Packet::SetWindowItems)
-        #  swi_packet = client.last_packets[-2]
-        #  ignore_packets_while do |packet|
-        #    packet.redundant_after?(swi_packet)
-        #  end
-        #end
+        if @client.last_packets[-2].is_a?(Packet::SetWindowItems)
+          swi_packet = @client.last_packets[-2]
+          ignore_packets_while do |packet|
+            packet.is_a?(Packet::SetSlot) && packet.redundant_after?(swi_packet)
+          end
+        else
+          $stderr.puts "Warning: received SetCursor packet but it was not right after a SetWindowItems packet."
+          @client.report_last_packets
+        end
         
         # The window needs to know when the cursor is changed; it helps keep track of the rejection state.
         windows.last.server_set_cursor
@@ -98,8 +101,12 @@ module RedstoneBot
       end
     end
     
-    def <<(packet)
-      receive_packet packet
+    def <<(packet)  # this is for testing only
+      @client << packet
+    end
+
+    def ignore_packets_while(&condition)
+      # TODO: this
     end
     
     # The Notchian server ignores inventory clicks while another window
