@@ -9,7 +9,6 @@ module RedstoneBot
     
     def initialize(client)
       @windows = []
-      @pending_actions = []
       register_window @inventory_window = InventoryWindow.new
       @cursor_spot = Spot.new
       
@@ -17,10 +16,6 @@ module RedstoneBot
       @client.listen { |p| receive_packet p }
     end
 
-    def synced?
-      usable_window && @pending_actions.empty?
-    end
-    
     def receive_packet(packet)
       return unless packet.respond_to?(:window_id)
       window_id = packet.window_id
@@ -49,7 +44,7 @@ module RedstoneBot
       when Packet::CloseWindow
         unregister_window window
       when Packet::ConfirmTransaction
-        @pending_actions.delete packet.action_number
+        window.pending_actions.delete packet.action_number
       end
     end
     
@@ -62,6 +57,11 @@ module RedstoneBot
     def usable_window
       window = @windows.last
       window if window.loaded?
+    end
+    
+    def synced?
+      window = @windows.last
+      (window && window.synced?) ? true : false
     end
     
     def left_click(spot)
@@ -106,7 +106,7 @@ module RedstoneBot
     
     def new_transaction
       action_number = @client.next_action_number
-      @pending_actions.push action_number
+      @windows.last.pending_actions.push action_number
       action_number
     end
     
@@ -125,6 +125,66 @@ module RedstoneBot
 
   class WindowTracker
    
+    class Window
+      extend TracksTypes
+    
+      attr_reader :id, :spots, :pending_actions
+      
+      def initialize(id, spot_count, inventory)
+        @id = id
+        @pending_actions = []
+      end      
+      
+      # Call this in a subclass in order to provide methods to the WindowTracker.
+      # The methods will always return nil unless this window is loaded.
+      def self.provide(*method_names)
+        method_names.each do |method_name|
+          if WindowTracker.instance_methods.include?(method_name)
+            raise "#{self} cannot provide #{method_name} method: WindowTracker already has it."
+          end
+          klass = self
+          WindowTracker.send(:define_method, method_name) do
+            window = windows.find { |w| klass === w }
+            window.send(method_name) if window and window.loaded?
+          end
+        end
+      end
+      
+      def spot_id(spot)
+        @spots.index(spot)
+      end
+      
+      def spot_array(a)
+        a.extend SpotArray
+      end
+
+      # The Notchian server always sends several SetSlot packets after SetWindowItems,
+      # one for each non-empty spot.      
+      # To avoid annoying issues caused by those redundant packets, we just wait until
+      # we receive all of those SetSpot packets before we consider the window to be
+      # fully loaded.
+      def loaded?
+        @loaded ||= @awaiting_set_spots && @awaiting_set_spots.empty?
+      end
+      
+      def synced?
+        loaded? && @pending_actions.empty?
+      end
+      
+      def server_set_items(items)
+        spots.items = items
+        if !@loaded
+          @awaiting_set_spots = spots.grep(NonEmpty)
+        end
+      end
+      
+      def server_set_item(spot_id, item)
+        spot = spots[spot_id]
+        spot.item = item
+        @awaiting_set_spots.delete(spot)
+      end
+    end
+    
     class Inventory
       attr_reader :regular_spots, :hotbar_spots, :non_hotbar_spots, :spots
       attr_reader :armor_spots, :helmet_spot, :chestplate_spot, :leggings_spot, :boots_spot
@@ -170,62 +230,6 @@ module RedstoneBot
       def input_spot(row, column)
         @input_spots[row*2 + column]
       end
-    end
-    
-    class Window
-      extend TracksTypes
-    
-      attr_reader :id, :spots
-      
-      def initialize(id, spot_count, inventory)
-        @id = id
-      end      
-      
-      # Call this in a subclass in order to provide methods to the WindowTracker.
-      # The methods will always return nil unless this window is loaded.
-      def self.provide(*method_names)
-        method_names.each do |method_name|
-          if WindowTracker.instance_methods.include?(method_name)
-            raise "#{self} cannot provide #{method_name} method: WindowTracker already has it."
-          end
-          klass = self
-          WindowTracker.send(:define_method, method_name) do
-            window = windows.find { |w| klass === w }
-            window.send(method_name) if window and window.loaded?
-          end
-        end
-      end
-      
-      def spot_id(spot)
-        @spots.index(spot)
-      end
-      
-      def spot_array(a)
-        a.extend SpotArray
-      end
-
-      # The Notchian server always sends several SetSlot packets after SetWindowItems,
-      # one for each non-empty spot.      
-      # To avoid annoying issues caused by those redundant packets, we just wait until
-      # we receive all of those SetSpot packets before we consider the window to be
-      # fully loaded.
-      def loaded?
-        @loaded ||= @awaiting_set_spots && @awaiting_set_spots.empty?
-      end
-      
-      def server_set_items(items)
-        spots.items = items
-        if !@loaded
-          @awaiting_set_spots = spots.grep(NonEmpty)
-        end
-      end
-      
-      def server_set_item(spot_id, item)
-        spot = spots[spot_id]
-        spot.item = item
-        @awaiting_set_spots.delete(spot)
-      end
-      
     end
     
     class InventoryWindow < Window

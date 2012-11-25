@@ -169,8 +169,8 @@ describe RedstoneBot::WindowTracker do
   end
   
   def server_transaction_decision(confirm)
-    window_id = subject.usable_window.id
-    transaction_id = subject.instance_variable_get(:@pending_actions).first
+    window_id = subject.windows.last.id
+    transaction_id = subject.windows.last.pending_actions.first
     subject << RedstoneBot::Packet::ConfirmTransaction.new(window_id, transaction_id, confirm)
   end
 
