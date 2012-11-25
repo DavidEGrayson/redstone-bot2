@@ -163,7 +163,7 @@ describe RedstoneBot::Packet::OpenWindow do
     p.window_id.should == 2
     p.type.should == 0
     p.title.should == "container.chest"
-    p.slot_count.should == 27
+    p.spot_count.should == 27
   end
 end
 

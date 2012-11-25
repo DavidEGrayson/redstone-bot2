@@ -1036,17 +1036,17 @@ module RedstoneBot
   class Packet::OpenWindow < Packet
     packet_type 0x64
     
-    attr_accessor :window_id, :type, :title, :slot_count
+    attr_accessor :window_id, :type, :title, :spot_count
     
     def receive_data(stream)
       @window_id = stream.read_byte
       @type = stream.read_byte
       @title = stream.read_string
-      @slot_count = stream.read_byte
+      @spot_count = stream.read_byte
     end
     
     def to_s
-      "OpenWindow(#{window_id}, type=#{type}, title=#{title}, slot_count=#{slot_count})"
+      "OpenWindow(#{window_id}, type=#{type}, title=#{title}, spot_count=#{spot_count})"
     end
   end
   
@@ -1098,7 +1098,7 @@ module RedstoneBot
     
     def encode_data
       byte(window_id) + short(slot_id) + encode_mouse_button + unsigned_short(action_number) + bool(shift) + Slot.encode_data(clicked_item)
-    end
+    end    
   end
   
   class Packet::SetSlot < Packet
@@ -1111,20 +1111,27 @@ module RedstoneBot
       @slot = socket.read_slot
     end
     
-    # This packet is for the item attached to the cursor.
     def cursor?
-      window_id == -1 && slot.nil?
+      window_id == -1 && slot_id == -1
+    end
+    
+    def redundant_after?(packet)
+      packet.is_a?(Packet::SetWindowItems) && window_id == packet.window_id && slot == packet.slots[slot_id]
     end
     
     def to_s
-      "SetSlot(window_id=#{window_id}, slot_id=#{slot_id}, #{slot})"
+      if cursor?
+        "SetSlot(cursor, #{slot})"
+      else
+        "SetSlot(window_id=#{window_id}, slot_id=#{slot_id}, #{slot})"
+      end
     end
   end
   
   class Packet::SetWindowItems < Packet
     packet_type 0x68
     attr_reader :window_id, :slots
-    
+        
     def receive_data(socket)
       @window_id = socket.read_byte
       count = socket.read_short

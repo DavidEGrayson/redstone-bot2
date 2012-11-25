@@ -41,7 +41,7 @@ module RedstoneBot
       setup_brain
       @entity_tracker = EntityTracker.new(@client, @body)
       @chunk_tracker = ChunkTracker.new(@client)
-      @inventory = Inventory.new(@client)
+      @inventory = Inventory.new(@client)  # TODO: remove this and get FarmBot working again without it
       @window_tracker = WindowTracker.new(@client)
 
       @chat_printer = PacketPrinter.new(@client, [Packet::ChatMessage])

@@ -227,17 +227,69 @@ module RedstoneBot
       inventory.empty_slot_count < 2
     end
     
-    def test
-      chest_coords = Coords[-200, 67, 801]
+    def openy
+      chest_coords = Coords[-248, 69, 661]
       open_chest chest_coords
-      
     end
 
+    def move_wheat
+      unless window_tracker.chest_spots
+        chat "chest not open"
+        return
+      end
+        
+      spots = if window_tracker.inventory.spots.quantity(ItemType::WheatItem) > 0
+        window_tracker.inventory.spots
+      else
+        window_tracker.chest_spots
+      end
+      
+      spots.grep(ItemType::WheatItem).each do |spot|
+        window_tracker.shift_click spot
+      end
+      nil
+    end
+    
+    def conflict(spot, item)
+      if spot.item == item
+        chat "hmm, that wouldn't cause a conflict, that spot already has that item in it"
+        return
+      end
+      
+      spot.item = item
+    end
+    
+    def left_conflict(index=0)
+      spot = window_tracker.inventory.hotbar_spots[index]
+      item = ItemType::DiamondAxe * 1
+
+      conflict spot, item
+      
+      window_tracker.left_click spot
+    end
+    
+    def test
+      send_packet packet = Packet::ClickWindow.new(0, 42, :left, window_tracker.send(:new_transaction), false, nil)
+      puts "#{client.time_string} TX: #{packet}"
+    end
+    
+    def shift_conflict
+      spot = window_tracker.inventory.hotbar_spots[0]
+      item = ItemType::WheatItem * 64
+
+      conflict spot, item
+      window_tracker.shift_click spot  
+    end
+    
+    def swap_in_chest
+      window_tracker.swap *window_tracker.chest_spots[0..1]
+    end
+    
     ###################### CHEST FUNCTIONS ##############################################
     # TODO: move functions below to ChestManipulation module, or WindowManipulation module, or WindowTracker class? 
     def open_chest(coords)
-      client.send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 8, 15, 8
-      client.send_packet Packet::Animation.new @client.eid, 1
+      send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 8, 15, 8
+      send_packet Packet::Animation.new @client.eid, 1
     end
   end
 end

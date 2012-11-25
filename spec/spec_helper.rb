@@ -18,10 +18,6 @@ rescue Errno::EAFNOSUPPORT
   Socket.pair(:INET, :STREAM)   # works in Windows
 end
 
-# monkeypatch to make tests more readable
-class RedstoneBot::ItemType
-  def *(count)
-    raise ArgumentError.new("count must be an integer larger then 0") unless count > 0
-    RedstoneBot::Slot.new(self, count)
-  end
+RSpec.configure do |c|
+  c.alias_it_should_behave_like_to :it_has_behavior, 'has behavior:'
 end

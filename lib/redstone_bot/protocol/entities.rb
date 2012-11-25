@@ -1,4 +1,5 @@
 require_relative '../coords'
+require_relative '../tracks_types'
 require_relative 'item_types'
 
 module RedstoneBot
@@ -41,39 +42,18 @@ module RedstoneBot
     end
   end
 
-  # Lets you associate some kind id (usually an integer) to different
-  # classes and then create them using the integer.
-  module TracksTypes
-    def self.extended(klass)
-      klass.instance_eval do
-        @@types = {}
-      end
-    end
-
-    def types
-      @@types
-    end
-    
-    # This is called in the subclass definitions.
-    def type_is(type)
-      @type = type
-      types[type] = self
-    end
-
-     # This is only called on self.
-    def create(type, *args)
-      (types[type] || self).new(*args)
-    end
-  end
-
   class Mob < Entity
     extend TracksTypes
+
+    # If the type ID isn't recognized, that's OK.  Just create an instance of the parent class.    
+    types.default = self
     
     def to_s
       "#{self.class.name.split('::').last}(#{eid}, #{position})"
     end
   end
 
+  # TODO: call this a DroppedItem and have it just contain a Slot object, but rename Slot to Item?
   class Item < Entity
     attitude_is :passive   # this probably does not matter
 
