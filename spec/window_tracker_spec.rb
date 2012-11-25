@@ -167,7 +167,21 @@ describe RedstoneBot::WindowTracker do
   def server_close_window(window_id=nil)
     subject << RedstoneBot::Packet::CloseWindow.create(subject.windows[1].id)
   end
-    
+  
+  def server_transaction_decision(confirm)
+    window_id = subject.usable_window.id
+    transaction_id = subject.instance_variable_get(:@pending_actions).first
+    subject << RedstoneBot::Packet::ConfirmTransaction.new(window_id, transaction_id, confirm)
+  end
+
+  def server_confirm_transaction
+    server_transaction_decision true
+  end
+  
+  def server_reject_transaction
+    server_transaction_decision false
+  end
+      
   shared_examples_for "no windows are open" do
     it "has no chest model" do
       subject.chest_spots.should_not be
@@ -193,12 +207,17 @@ describe RedstoneBot::WindowTracker do
     it "has a nil inventory" do
       subject.inventory.should be_nil
     end
+    
+    it "has no usable window" do
+      subject.usable_window.should be_nil
+    end
   end
 
   context "loading an empty inventory" do
     it "is done after the SetWindowItems packet" do
       subject << RedstoneBot::Packet::SetWindowItems.create(0, [nil]*45)
       subject.inventory.should be
+      subject.usable_window.should == subject.inventory_window
     end
   end
   
@@ -218,6 +237,7 @@ describe RedstoneBot::WindowTracker do
       inventory_window.instance_variable_get(:@awaiting_set_spots).should == []
       inventory_window.should be_loaded
       subject.inventory.should be
+      subject.usable_window.should == subject.inventory_window
     end
   end
   
@@ -239,6 +259,10 @@ describe RedstoneBot::WindowTracker do
     it "doesn't have a chest model yet" do
       subject.chest_spots.should == nil
     end
+    
+    it "has no usable window (waiting for chest to load)" do
+      subject.usable_window.should be_nil
+    end
   end
   
   context "after a double chest is loaded" do
@@ -258,6 +282,10 @@ describe RedstoneBot::WindowTracker do
       subject.should have(54).chest_spots
     end
     
+    it "has a usuable window" do
+      subject.usable_window.should be_a RedstoneBot::WindowTracker::ChestWindow
+    end
+    
   end
   
   it "responds to SetSlot packets for the cursor" do
@@ -274,6 +302,7 @@ describe RedstoneBot::WindowTracker do
     end
     let (:initial_inventory) do
       inventory = RedstoneBot::WindowTracker::Inventory.new
+      inventory.hotbar_spots[0].item = RedstoneBot::ItemType::IronSword * 1
       inventory
     end
     let(:crafting_items) do
@@ -292,6 +321,73 @@ describe RedstoneBot::WindowTracker do
     
     it "has no item on the cursor" do
       subject.cursor_spot.should be_empty
+    end
+    
+    context "after left clicking on a empty spot in the chest" do
+      let (:spot) { subject.chest_spots.empty_spots.first }
+      before do
+        subject.left_click(spot)
+      end
+      
+      it "the spot is still empty" do
+        spot.should be_empty
+      end
+      
+      it "the cursor is still empty" do
+        subject.cursor_spot.should be_empty
+      end
+      
+      it "is be synced because no clicks happened" do
+        subject.should be_synced
+      end
+    end
+    
+    context "after left clicking on 30 Flint in the chest" do
+      let(:spot) { subject.chest_spots[0] }
+      before do
+        subject.left_click(spot)
+      end
+      
+      it "sent the correct ClickWindow packet" do
+        packet = client.sent_packets.last
+        packet.should be_a RedstoneBot::Packet::ClickWindow
+        packet.slot_id.should == 0
+        packet.mouse_button.should == :left
+        packet.shift.should == false
+        packet.clicked_item.should == RedstoneBot::ItemType::Flint*30
+      end
+      
+      it "the spot is empty" do
+        spot.should be_empty
+      end
+      
+      it "the cursor has 30 Flint" do
+        subject.cursor_spot.item.should == RedstoneBot::ItemType::Flint*30
+      end
+      
+      it { should_not be_synced }
+      
+      context "after confirming the transaction" do
+        before do
+          server_confirm_transaction
+        end
+        
+        it { should be_synced }
+      end
+    end
+    
+    context "after swapping the items in two spots" do
+      let(:spot1) { subject.inventory.hotbar_spots[0] }
+      let(:spot2) { subject.chest_spots[0] }
+      
+      before do 
+        subject.swap spot1, spot2
+      end
+      
+      it "has swapped them" do
+        subject.inventory.hotbar_spots[0].item.should == RedstoneBot::ItemType::Flint*30
+        subject.chest_spots[0].item.should == RedstoneBot::ItemType::IronSword * 1
+      end
     end
     
     context "and closed by the server" do

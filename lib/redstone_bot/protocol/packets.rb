@@ -1098,7 +1098,7 @@ module RedstoneBot
     
     def encode_data
       byte(window_id) + short(slot_id) + encode_mouse_button + unsigned_short(action_number) + bool(shift) + Slot.encode_data(clicked_item)
-    end
+    end    
   end
   
   class Packet::SetSlot < Packet

@@ -9,11 +9,16 @@ module RedstoneBot
     
     def initialize(client)
       @windows = []
+      @pending_actions = []
       register_window @inventory_window = InventoryWindow.new
       @cursor_spot = Spot.new
       
       @client = client
       @client.listen { |p| receive_packet p }
+    end
+
+    def synced?
+      usable_window && @pending_actions.empty?
     end
     
     def receive_packet(packet)
@@ -43,6 +48,8 @@ module RedstoneBot
         window.server_set_item packet.slot_id, packet.slot
       when Packet::CloseWindow
         unregister_window window
+      when Packet::ConfirmTransaction
+        @pending_actions.delete packet.action_number
       end
     end
     
@@ -50,7 +57,51 @@ module RedstoneBot
       receive_packet packet
     end
     
+    # The Notchian server ignores inventory clicks while another window
+    # is open.  This function tells you which window is currently usable.
+    def usable_window
+      window = @windows.last
+      window if window.loaded?
+    end
+    
+    def left_click(spot)
+      return if cursor_spot.empty? && spot.empty?
+    
+      window_id, spot_id = ensure_clickable(spot)
+      @client.send_packet Packet::ClickWindow.new(window_id, spot_id, :left, new_transaction, false, spot.item)
+      
+      cursor_spot.item, spot.item = spot.item, cursor_spot.item
+      nil
+    end
+    
+    def swap(spot1, spot2)
+      # TODO: expand this to do the right thing if the two spots have the same kind of item
+      if !spot1.empty? && spot1.item_type == spot2.item_type
+        raise "Not implemented: swapping two spots holding the same type of item."
+      end
+      
+      left_click(spot1)
+      left_click(spot2)
+      left_click(spot1)      
+      nil
+    end
+    
     private
+    def ensure_clickable(spot)
+      window = usable_window
+      spot_id = window.spot_id(spot)
+      if !spot_id
+        raise "Cannot left click on #{spot}; it is not in the currently-usable window."
+      end
+      [window.id, spot_id]
+    end
+    
+    def new_transaction
+      action_number = @client.next_action_number
+      @pending_actions.push action_number
+      action_number
+    end
+    
     def register_window(window)
       @windows << window
     end
