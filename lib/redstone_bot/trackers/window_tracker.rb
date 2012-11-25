@@ -50,6 +50,19 @@ module RedstoneBot
       @client.listen { |p| receive_packet p }
     end
 
+    def receive_packet_unfiltered(packet)
+      if @packet_ignorer
+        if @packet_ignorer.call(packet)
+          return
+        else
+          @packet_ignorer = nil
+        end
+      end
+    
+      receive_packet(packet)
+      @last_packet = packet
+    end
+    
     def receive_packet(packet)
       return unless packet.respond_to?(:window_id)
       window_id = packet.window_id
@@ -62,8 +75,8 @@ module RedstoneBot
       if packet.is_a?(Packet::SetSlot) && packet.cursor?
         cursor_spot.item = packet.slot
         
-        if @client.last_packets[-2].is_a?(Packet::SetWindowItems)
-          swi_packet = @client.last_packets[-2]
+        if @last_packet.is_a?(Packet::SetWindowItems)
+          swi_packet = @last_packet
           ignore_packets_while do |packet|
             packet.is_a?(Packet::SetSlot) && packet.redundant_after?(swi_packet)
           end
@@ -102,11 +115,11 @@ module RedstoneBot
     end
     
     def <<(packet)  # this is for testing only
-      @client << packet
+      receive_packet_unfiltered(packet)
     end
 
     def ignore_packets_while(&condition)
-      # TODO: this
+      @packet_ignorer = condition
     end
     
     # The Notchian server ignores inventory clicks while another window

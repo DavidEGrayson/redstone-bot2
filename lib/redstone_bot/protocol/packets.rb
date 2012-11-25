@@ -1115,6 +1115,10 @@ module RedstoneBot
       window_id == -1 && slot_id == -1
     end
     
+    def redundant_after?(packet)
+      packet.is_a?(Packet::SetWindowItems) && window_id == packet.window_id && slot == packet.slots[slot_id]
+    end
+    
     def to_s
       if cursor?
         "SetSlot(cursor, #{slot})"
