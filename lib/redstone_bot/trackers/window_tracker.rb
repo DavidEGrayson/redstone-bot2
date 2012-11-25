@@ -3,6 +3,40 @@ require_relative '../tracks_types'
 require_relative 'spot'
 require_relative 'spot_array'
 
+# Rejection experiments, trying to figure out exactly 
+#
+# cursor = nil
+# hotbar spot 8 = WheatItem*64
+# tmphax set hotbar spot 8 to a Diamond Axe
+# left click on hotbar spot 8:
+#   SetWindowItems
+#   SetSlot for the cursor: Wheat * 64
+#   SetSlot for the item you clicked on: nil
+#
+# cursor = nil
+# hotbar spot 1 = nil
+# tmphax set hotbar spot 1 to a Diamond Axe
+# left click on hotbar spot 1:
+#   SetWindowItems
+#   SetSlot for cursor: nil
+#
+# cursor = nil
+# hotbar spot 6 = WheatItem * 64
+# tmphax set hotbar spot 6 to nil and pretend we have something on the cursor
+# left click on hotbar spot 6:
+#   SetWindowItems
+#   SetSlot for cursor: WheatItem*64
+#   SetSlot for the clicked spot: nil
+#
+# cursor = WheatItem*64
+# hotbar spot 8 = nil
+# tmphax set hotbar spot 8 to Diamond Axe
+# left click on hotbar spot 8
+#   SetWindowItems
+#   SetSlot for cursor: nil
+#   SetSlot for clicked spot: WheatItem*64
+
+
 module RedstoneBot
   class WindowTracker
     attr_reader :inventory_window, :windows, :cursor_spot
@@ -28,6 +62,13 @@ module RedstoneBot
       if packet.is_a?(Packet::SetSlot) && packet.cursor?
         cursor_spot.item = packet.slot
         
+        #if client.last_packets[-2].is_a?(Packet::SetWindowItems)
+        #  swi_packet = client.last_packets[-2]
+        #  ignore_packets_while do |packet|
+        #    packet.redundant_after?(swi_packet)
+        #  end
+        #end
+        
         # The window needs to know when the cursor is changed; it helps keep track of the rejection state.
         windows.last.server_set_cursor
         
@@ -47,10 +88,12 @@ module RedstoneBot
         window.server_set_item packet.slot_id, packet.slot
       when Packet::CloseWindow
         unregister_window window
-      when Packet::ConfirmTransaction        
-        window.pending_actions.delete packet.action_number
-        if !packet.accepted
+      when Packet::ConfirmTransaction
+        if packet.accepted
+          window.pending_actions.delete packet.action_number        
+        else
           window.rejected!
+          window.pending_actions.clear
         end
       end
     end
@@ -105,7 +148,8 @@ module RedstoneBot
     
       window, spot_id = ensure_clickable(spot)
             
-      @client.send_packet Packet::ClickWindow.new(window.id, spot_id, :left, new_transaction, false, spot.item)      
+      @client.send_packet packet = Packet::ClickWindow.new(window.id, spot_id, :left, new_transaction, false, spot.item)      
+      #puts "#{@client.time_string} click: #{packet}"
       cursor_spot.item, spot.item = spot.item, cursor_spot.item
       nil
     end
@@ -172,6 +216,7 @@ module RedstoneBot
         @id = id
         @pending_actions = []
         @rejected = false
+        @loading = :awaiting_items
       end
       
       # Call this in a subclass in order to provide methods to the WindowTracker.
@@ -203,7 +248,7 @@ module RedstoneBot
       # we receive all of those SetSpot packets before we consider the window to be
       # fully loaded.
       def loaded?
-        @loaded ||= @awaiting_set_spots && @awaiting_set_spots.empty?
+        !@loading
       end
       
       def synced?
@@ -227,8 +272,8 @@ module RedstoneBot
       
       def server_set_items(items)
         spots.items = items
-        if !@loaded
-          @awaiting_set_spots = spots.grep(NonEmpty)
+        if @loading == :awaiting_items
+          @loading = :awaiting_cursor
         end
         if @rejected == :awaiting_items
           @rejected = :awaiting_cursor
@@ -236,19 +281,17 @@ module RedstoneBot
       end
       
       def server_set_cursor
+        if @loading == :awaiting_cursor
+          @loading = nil
+        end
         if @rejected == :awaiting_cursor
-          @rejected = :awaiting_set_item
+          @rejected = nil
         end
       end
       
       def server_set_item(spot_id, item)
         spot = spots[spot_id]
-        spot.item = item
-        @awaiting_set_spots.delete(spot)
-        
-        if @rejected == :awaiting_set_item
-          @rejected = false
-        end
+        spot.item = item        
       end
       
       # spots is an array of possible destinations to send the item to,

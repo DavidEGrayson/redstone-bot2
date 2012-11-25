@@ -13,6 +13,11 @@ module RedstoneBot
       self == other or other.respond_to?(:item_type) && self == other.item_type
     end
   
+    def *(count)
+      raise ArgumentError.new("count must be an integer larger then 0") unless count > 0
+      RedstoneBot::Slot.new(self, count)
+    end
+  
     def solid?
       @solid
     end

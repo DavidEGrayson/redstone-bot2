@@ -76,7 +76,7 @@ module RedstoneBot
     end
     
     def stacks_with?(other)
-      other && self.item_type == other.item_type && self.damage == other.damage
+      other && self.item_type == other.item_type && self.damage == other.damage && item_type.stackable?
     end
     
     # Tries to stack this item with another item.

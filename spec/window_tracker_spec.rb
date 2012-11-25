@@ -250,31 +250,33 @@ describe RedstoneBot::WindowTracker do
     it { should_not be_rejected }
   end
 
-  context "loading an empty inventory" do
-    it "is done after the SetWindowItems packet" do
-      subject << RedstoneBot::Packet::SetWindowItems.create(0, [nil]*45)
-      subject.inventory.should be
-      subject.usable_window.should == subject.inventory_window
-    end
-  end
-  
-  context "loading a non-empty inventory" do
+  context "loading an inventory" do
     let (:items) do
       [nil]*43 + [ RedstoneBot::ItemType::Melon * 2, RedstoneBot::ItemType::MushroomSoup * 2 ]
     end
     
-    it "is done after all the SetSlot packets have been received" do
+    it "is done after all the cursor has been set" do
       inventory_window = subject.inventory_window
     
       subject << RedstoneBot::Packet::SetWindowItems.create(0, items)
       subject.inventory.should_not be
-      subject << RedstoneBot::Packet::SetSlot.create(0, 43, RedstoneBot::ItemType::Melon * 2)
-      subject.inventory.should_not be
-      subject << RedstoneBot::Packet::SetSlot.create(0, 44, RedstoneBot::ItemType::MushroomSoup * 2)
-      inventory_window.instance_variable_get(:@awaiting_set_spots).should == []
-      inventory_window.should be_loaded
+      
+      subject << RedstoneBot::Packet::SetSlot.create(-1, -1, nil)  # set the cursor
       subject.inventory.should be
       subject.usable_window.should == subject.inventory_window
+      
+      # The server will actually send packets after this, but they are redundant so we just ignore
+      # them at a low level in WindowTracker.
+      subject.inventory_window.spots[43].item = nil
+      subject.inventory_window.spots[44].item = nil
+      subject << RedstoneBot::Packet::SetSlot.create(0, 43, RedstoneBot::ItemType::Melon * 2)
+      subject << RedstoneBot::Packet::SetSlot.create(0, 44, RedstoneBot::ItemType::MushroomSoup * 2)
+      subject.inventory_window.spots[43].should be_empty
+      subject.inventory_window.spots[44].should be_empty
+      
+      # But if they send a non-redundant packet then we start paying attention.
+      subject << RedstoneBot::Packet::SetSlot.create(0, 43, RedstoneBot::ItemType::Melon * 20)
+      subject.inventory_window.spots[43].item.should == RedstoneBot::ItemType::Melon * 20
     end
   end
   
@@ -438,20 +440,11 @@ describe RedstoneBot::WindowTracker do
             
             # We still need to wait for the slot you clicked on to be set
             
-            it { should_not be_synced }
-            it { should be_rejected }
+            it { should be_synced }
+            it { should_not be_rejected }
           end
         end
-                
-        context "and reloading the window" do
-          before do
-            server_reload_window [RedstoneBot::ItemType::Wood * 2] * 90
-            server_set_spot subject.chest_spots[0], RedstoneBot::ItemType::Wood * 2
-          end
-          
-          it { should_not be_rejected }
-          it { should be_synced }
-        end
+
       end
       
       context "and closing the window" do

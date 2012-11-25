@@ -250,9 +250,35 @@ module RedstoneBot
       nil
     end
     
-    def cause_conflict
-      window_tracker.inventory.hotbar_spots[8].item = Slot.new(ItemType::DiamondAxe)
-      window_tracker.left_click window_tracker.inventory.hotbar_spots[8]
+    def conflict(spot, item)
+      if spot.item == item
+        chat "hmm, that wouldn't cause a conflict, that spot already has that item in it"
+        return
+      end
+      
+      spot.item = item
+    end
+    
+    def left_conflict(index=0)
+      spot = window_tracker.inventory.hotbar_spots[index]
+      item = ItemType::DiamondAxe * 1
+
+      conflict spot, item
+      
+      window_tracker.left_click spot
+    end
+    
+    def test
+      send_packet packet = Packet::ClickWindow.new(0, 42, :left, window_tracker.send(:new_transaction), false, nil)
+      puts "#{client.time_string} TX: #{packet}"
+    end
+    
+    def shift_conflict
+      spot = window_tracker.inventory.hotbar_spots[0]
+      item = ItemType::WheatItem * 64
+
+      conflict spot, item
+      window_tracker.shift_click spot  
     end
     
     def swap_in_chest
