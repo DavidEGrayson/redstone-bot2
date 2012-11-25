@@ -442,6 +442,19 @@ describe RedstoneBot::WindowTracker do
             
             it { should be_synced }
             it { should_not be_rejected }
+            
+            it "ignores redundant packets" do
+              spot = subject.inventory.hotbar_spots[0]
+              spot.item = nil
+              server_set_spot spot, RedstoneBot::ItemType::Wood * 2
+              spot.should be_empty   # the packet was ignored
+            end
+            
+            it "pays attention to non-redundant packets" do
+              spot = subject.inventory.hotbar_spots[0]
+              server_set_spot spot, RedstoneBot::ItemType::Wood * 30
+              spot.item.should == RedstoneBot::ItemType::Wood * 30  
+            end
           end
         end
 
