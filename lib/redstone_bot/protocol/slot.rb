@@ -75,14 +75,18 @@ module RedstoneBot
       item_type.max_stack - count
     end
     
+    def stacks_with?(other)
+      other && self.item_type == other.item_type && self.damage == other.damage
+    end
+    
     # Tries to stack this item with another item.
     # Returns [stack, leftovers].
     def try_stack(other)
-      if other && self.item_type == other.item_type && self.damage == other.damage
+      if stacks_with?(other)
         transfer_quantity = [self.free_space, other.count].min
         [self + transfer_quantity, other - transfer_quantity]
       else
-        [self, other]   # these two items don't stack
+        [self, other]
       end
     end
     

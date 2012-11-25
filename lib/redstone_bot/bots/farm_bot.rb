@@ -230,9 +230,26 @@ module RedstoneBot
     def openy
       chest_coords = Coords[-248, 69, 661]
       open_chest chest_coords
-      
     end
 
+    def move_wheat
+      unless window_tracker.chest_spots
+        chat "chest not open"
+        return
+      end
+        
+      spots = if window_tracker.inventory.spots.quantity(ItemType::WheatItem) > 0
+        window_tracker.inventory.spots
+      else
+        window_tracker.chest_spots
+      end
+      
+      spots.grep(ItemType::WheatItem).each do |spot|
+        window_tracker.shift_click spot
+      end
+      nil
+    end
+    
     def cause_conflict
       window_tracker.inventory.hotbar_spots[8].item = Slot.new(ItemType::DiamondAxe)
       window_tracker.left_click window_tracker.inventory.hotbar_spots[8]
