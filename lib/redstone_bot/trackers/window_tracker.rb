@@ -27,6 +27,10 @@ module RedstoneBot
       
       if packet.is_a?(Packet::SetSlot) && packet.cursor?
         cursor_spot.item = packet.slot
+        
+        # The window needs to know when the cursor is changed; it helps keep track of the rejection state.
+        windows.last.server_set_cursor
+        
         return
       end
       
@@ -43,8 +47,11 @@ module RedstoneBot
         window.server_set_item packet.slot_id, packet.slot
       when Packet::CloseWindow
         unregister_window window
-      when Packet::ConfirmTransaction
+      when Packet::ConfirmTransaction        
         window.pending_actions.delete packet.action_number
+        if !packet.accepted
+          window.rejected!
+        end
       end
     end
     
@@ -60,8 +67,11 @@ module RedstoneBot
     end
     
     def synced?
-      window = @windows.last
-      (window && window.synced?) ? true : false
+      @windows.last.synced?
+    end
+    
+    def rejected?
+      @windows.last.rejected?
     end
 
     def shift_click(spot)
@@ -156,11 +166,13 @@ module RedstoneBot
     
       attr_reader :spots, :shift_region_top, :shift_region_bottom
       attr_reader :id, :pending_actions
+      attr_writer :rejected
       
       def initialize(id, spot_count, inventory)
         @id = id
         @pending_actions = []
-      end      
+        @rejected = false
+      end
       
       # Call this in a subclass in order to provide methods to the WindowTracker.
       # The methods will always return nil unless this window is loaded.
@@ -195,7 +207,22 @@ module RedstoneBot
       end
       
       def synced?
-        loaded? && @pending_actions.empty?
+        loaded? && @pending_actions.empty? && !rejected?
+      end
+
+      # NOTE: The logic for computing 'rejected?' this is rather brittle; it ASSUMES that after a
+      # transaction is rejected the server will send exactly three packets and in this order:
+      #   SetWindowItems
+      #   SetSlot for the cursor
+      #   SetSlot for the item you clicked on.
+      # It is quite possible that under more complicated circumstances (e.g. a shift click rejection
+      # or a crafting rejection) it might send other packets.  TODO: investigate this!
+      def rejected?
+        @rejected ? true : false
+      end
+      
+      def rejected!
+        @rejected = :awaiting_items
       end
       
       def server_set_items(items)
@@ -203,12 +230,25 @@ module RedstoneBot
         if !@loaded
           @awaiting_set_spots = spots.grep(NonEmpty)
         end
+        if @rejected == :awaiting_items
+          @rejected = :awaiting_cursor
+        end
+      end
+      
+      def server_set_cursor
+        if @rejected == :awaiting_cursor
+          @rejected = :awaiting_set_item
+        end
       end
       
       def server_set_item(spot_id, item)
         spot = spots[spot_id]
         spot.item = item
         @awaiting_set_spots.delete(spot)
+        
+        if @rejected == :awaiting_set_item
+          @rejected = false
+        end
       end
       
       # spots is an array of possible destinations to send the item to,

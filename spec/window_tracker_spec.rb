@@ -168,12 +168,35 @@ describe RedstoneBot::WindowTracker do
   def server_open_window(*args)
     subject << RedstoneBot::Packet::OpenWindow.create(*args)
   end
+ 
+  def server_set_spot(spot, item)
+    window = subject.windows.last
+    spot_id = window.spot_id(spot)
+    subject << RedstoneBot::Packet::SetSlot.create(window.id, spot_id, item)
+  end
 
-  def server_load_window(window_id, items)
+  def server_set_cursor(item)
+    subject << RedstoneBot::Packet::SetSlot.create(-1, -1, item)
+  end
+  
+  def server_set_window_items(items)
+    window = subject.windows.last
+    subject << RedstoneBot::Packet::SetWindowItems.create(window.id, items)
+  end
+  
+  def server_load_window(window_id, items, cursor_item=nil)
     subject << RedstoneBot::Packet::SetWindowItems.create(window_id, items)
+    subject << RedstoneBot::Packet::SetSlot.create(-1, -1, cursor_item)
     items.each_with_index do |item, spot_id|
       subject << RedstoneBot::Packet::SetSlot.create(window_id, spot_id, item) if item
     end    
+  end
+  
+  # This is what the server does after a transaction is rejected.
+  # It sends the packets in THIS order, which is kind of inconvenient.
+  def server_reload_window(items, cursor_item=nil)
+    server_set_window_items items
+    server_set_cursor cursor_item
   end
   
   def server_close_window(window_id=nil)
@@ -223,6 +246,8 @@ describe RedstoneBot::WindowTracker do
     it "has no usable window" do
       subject.usable_window.should be_nil
     end
+    
+    it { should_not be_rejected }
   end
 
   context "loading an empty inventory" do
@@ -378,6 +403,7 @@ describe RedstoneBot::WindowTracker do
       end
       
       it { should_not be_synced }
+      it { should_not be_rejected }
       
       context "and confirming the transaction" do
         before do
@@ -385,6 +411,47 @@ describe RedstoneBot::WindowTracker do
         end
         
         it { should be_synced }
+        it { should_not be_rejected }
+      end
+      
+      context "and rejecting the transaction" do
+        before do
+          server_reject_transaction
+        end
+        
+        it { should be_rejected }
+        it { should_not be_synced }
+        
+        context "and setting the window items" do
+          before do
+            server_set_window_items [RedstoneBot::ItemType::Wood * 2] * 90
+          end
+          
+          # We still need to wait for the cursor to be set and for the slot you clicked on to be set.
+          it { should be_rejected }
+          it { should_not be_synced }
+          
+          context "and setting the cursor" do
+            before do
+              server_set_cursor nil
+            end
+            
+            # We still need to wait for the slot you clicked on to be set
+            
+            it { should_not be_synced }
+            it { should be_rejected }
+          end
+        end
+                
+        context "and reloading the window" do
+          before do
+            server_reload_window [RedstoneBot::ItemType::Wood * 2] * 90
+            server_set_spot subject.chest_spots[0], RedstoneBot::ItemType::Wood * 2
+          end
+          
+          it { should_not be_rejected }
+          it { should be_synced }
+        end
       end
       
       context "and closing the window" do
@@ -508,6 +575,33 @@ describe RedstoneBot::WindowTracker do
         subject.inventory.normal_spots[0].item.should == RedstoneBot::ItemType::Coal * 20
         subject.inventory.normal_spots[2].item.should == RedstoneBot::ItemType::Coal * 64
         subject.inventory.normal_spots[4].item.should == RedstoneBot::ItemType::Coal * 64
+      end
+    end
+    
+    context "on a normal spot with an almost-full hotbar" do
+      before do
+        subject.inventory.normal_spots[4].item = RedstoneBot::ItemType::Coal * 44
+        
+        subject.inventory.hotbar_spots.items = [RedstoneBot::ItemType::Coal * 64] * 9
+        subject.inventory.hotbar_spots[4].item -= 1
+        subject.inventory.hotbar_spots[6].item -= 2
+        subject.inventory.hotbar_spots[8].item -= 3
+
+        @initial_coal_quantity = subject.inventory.spots.quantity(RedstoneBot::ItemType::Coal)
+        
+        subject.shift_click subject.inventory.normal_spots[4]
+      end
+      
+      it "conserves the quantity of coal" do
+        subject.inventory.spots.quantity(RedstoneBot::ItemType::Coal).should == @initial_coal_quantity
+      end
+      
+      it "removes 6 from the clicked spot" do
+        subject.inventory.normal_spots[4].item.count.should == 44 - 6
+      end
+      
+      it "fills up the hotbar" do
+        subject.inventory.hotbar_spots.items.should == [RedstoneBot::ItemType::Coal * 64] * 9
       end
     end
   end
