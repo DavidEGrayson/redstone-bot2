@@ -390,6 +390,16 @@ describe RedstoneBot::WindowTracker do
       end
     end
     
+    context "and another SetWindowItems packet is received" do
+      before do
+        subject << RedstoneBot::Packet::SetWindowItems.create(subject.usable_window.id, chest_items + initial_inventory.regular_spots.items)
+      end
+      
+      it "window is still loaded" do
+        subject.usable_window.should be_loaded
+      end
+    end
+    
     context "and closed by the server" do
       before do
         server_close_window

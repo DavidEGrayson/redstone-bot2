@@ -91,6 +91,7 @@ module RedstoneBot
       window = @windows.last
       @client.send_packet Packet::CloseWindow.new(window.id)
       unregister_window(window)
+      nil
     end
     
     private
@@ -209,12 +210,14 @@ module RedstoneBot
       # we receive all of those SetSpot packets before we consider the window to be
       # fully loaded.
       def loaded?
-        @awaiting_set_spots && @awaiting_set_spots.empty?
-      end      
+        @loaded ||= @awaiting_set_spots && @awaiting_set_spots.empty?
+      end
       
       def server_set_items(items)
         spots.items = items
-        @awaiting_set_spots = spots.grep(NonEmpty)
+        if !@loaded
+          @awaiting_set_spots = spots.grep(NonEmpty)
+        end
       end
       
       def server_set_item(spot_id, item)

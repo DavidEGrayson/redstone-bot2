@@ -227,15 +227,19 @@ module RedstoneBot
       inventory.empty_slot_count < 2
     end
     
-    def test
+    def openy
       chest_coords = Coords[-248, 69, 661]
       open_chest chest_coords
       
     end
 
     def cause_conflict
-      send_packet Packet::ClickWindow.new(0, 36, :left, 19, false, nil) 
-      #send_packet Packet::ClickWindow.new(0, 25, :left, 20, false, Slot.new(ItemType::DiamondAxe))
+      window_tracker.inventory.hotbar_spots[8].item = Slot.new(ItemType::DiamondAxe)
+      window_tracker.left_click window_tracker.inventory.hotbar_spots[8]
+    end
+    
+    def swap_in_chest
+      window_tracker.swap *window_tracker.chest_spots[0..1]
     end
     
     ###################### CHEST FUNCTIONS ##############################################
