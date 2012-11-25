@@ -47,12 +47,13 @@ module RedstoneBot
       @cursor_spot = Spot.new
       
       @client = client
-      @client.listen { |p| receive_packet p }
+      @client.listen { |p| receive_packet_unfiltered p }
     end
 
     def receive_packet_unfiltered(packet)
       if @packet_ignorer
         if @packet_ignorer.call(packet)
+          #$stderr.puts "ignored packet #{packet}"
           return
         else
           @packet_ignorer = nil
@@ -81,8 +82,8 @@ module RedstoneBot
             packet.is_a?(Packet::SetSlot) && packet.redundant_after?(swi_packet)
           end
         else
-          $stderr.puts "Warning: received SetCursor packet but it was not right after a SetWindowItems packet."
-          @client.report_last_packets
+          $stderr.puts "Warning: received SetCursor packet but it was not right after a SetWindowItems packet.  @last_packet=#@last_packet"
+          #@client.report_last_packets
         end
         
         # The window needs to know when the cursor is changed; it helps keep track of the rejection state.
