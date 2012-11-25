@@ -111,6 +111,8 @@ module RedstoneBot
         else
           window.rejected!
           window.pending_actions.clear
+          
+          @client.send_packet packet
         end
       end
     end

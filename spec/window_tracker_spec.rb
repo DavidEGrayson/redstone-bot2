@@ -425,6 +425,14 @@ describe RedstoneBot::WindowTracker do
         it { should be_rejected }
         it { should_not be_synced }
         
+        it "sends the rejection packet back to the server" do
+          packet = client.sent_packets[-1]
+          packet.should be_a RedstoneBot::Packet::ConfirmTransaction
+          packet.window_id.should == window_id
+          packet.action_number.should == 1
+          packet.accepted.should == false
+        end
+        
         context "and setting the window items" do
           before do
             server_set_items [RedstoneBot::ItemType::Wood * 2] * 90
