@@ -11,16 +11,16 @@ end
 
 describe RedstoneBot::WindowTracker::Inventory do
   it "has general purpose spots" do
-    subject.should have(36).regular_spots
+    subject.should have(36).general_spots
   end  
 
   it "has 9 hotbar spots" do
     subject.should have(9).hotbar_spots
   end
   
-  it "has hotbar spots at the end of the regular spots array" do
+  it "has hotbar spots at the end of the general spots array" do
     # This is required for the slot ids in the InventoryWindow and ChestWindow to be correct
-    subject.hotbar_spots.should == subject.regular_spots[-9,9]
+    subject.hotbar_spots.should == subject.general_spots[-9,9]
   end
 
   it "has four spots for armor" do
@@ -28,7 +28,7 @@ describe RedstoneBot::WindowTracker::Inventory do
   end
   
   it "has easy access to all the spots" do
-    subject.spots.should == subject.armor_spots + subject.regular_spots
+    subject.spots.should == subject.armor_spots + subject.general_spots
   end
   
   it "has no duplicate spots" do
@@ -42,7 +42,7 @@ describe RedstoneBot::WindowTracker::Inventory do
     end
   end
   
-  it_has_behavior 'uses SpotArray for', :armor_spots, :regular_spots, :hotbar_spots, :spots
+  it_has_behavior 'uses SpotArray for', :armor_spots, :general_spots, :hotbar_spots, :spots
 end
 
 describe RedstoneBot::WindowTracker::InventoryCrafting do
@@ -85,7 +85,12 @@ describe RedstoneBot::WindowTracker::InventoryWindow do
   
   it "combines inventory and inventory crafting in the proper order" do
     spots.should == crafting.spots + inventory.armor_spots +
-      (inventory.regular_spots - inventory.hotbar_spots) + inventory.hotbar_spots
+      inventory.normal_spots + inventory.hotbar_spots
+  end
+  
+  it "defines the shift regions" do
+    subject.shift_region_top.should == inventory.normal_spots
+    subject.shift_region_bottom.should == inventory.hotbar_spots
   end
 
   it "has the right spot ids" do
@@ -99,9 +104,11 @@ describe RedstoneBot::WindowTracker::InventoryWindow do
     spots[6].should == inventory.chestplate_spot
     spots[7].should == inventory.leggings_spot
     spots[8].should == inventory.boots_spot
-    spots[9..35].should == inventory.regular_spots - inventory.hotbar_spots
+    spots[9..35].should == inventory.general_spots - inventory.hotbar_spots
     spots[36..44].should == inventory.hotbar_spots
   end
+  
+  it_has_behavior 'uses SpotArray for', :spots, :shift_region_top, :shift_region_bottom
 end
 
 describe RedstoneBot::WindowTracker::ChestWindow do
@@ -116,7 +123,7 @@ describe RedstoneBot::WindowTracker::ChestWindow do
     
     it "has 36 spots from the player's inventory" do
       subject.should have(36).inventory_spots
-      subject.inventory_spots.should == inventory.regular_spots
+      subject.inventory_spots.should == inventory.general_spots
     end
     
     it "has 63 total spots" do
@@ -126,17 +133,22 @@ describe RedstoneBot::WindowTracker::ChestWindow do
     it "has the right spot ids" do
       # http://www.wiki.vg/Inventory#Chest
       subject.spots[0..26].should == subject.chest_spots
-      subject.spots[27..53].should == inventory.regular_spots - inventory.hotbar_spots
+      subject.spots[27..53].should == inventory.general_spots - inventory.hotbar_spots
       subject.spots[54..62].should == inventory.hotbar_spots
     end
     
     it "can tell you the spot id of each spot" do
       subject.spot_id(subject.chest_spots[5]).should == 5
-      subject.spot_id(inventory.regular_spots[3]).should == 27 + 3
-      subject.spot_id(inventory.regular_spots[35]).should == 62
+      subject.spot_id(inventory.general_spots[3]).should == 27 + 3
+      subject.spot_id(inventory.general_spots[35]).should == 62
     end
     
-    it_has_behavior 'uses SpotArray for', :chest_spots, :inventory_spots, :spots
+    it "has the right shift regions" do
+      subject.shift_region_top.should == subject.chest_spots
+      subject.shift_region_bottom.should == subject.inventory_spots
+    end
+    
+    it_has_behavior 'uses SpotArray for', :chest_spots, :inventory_spots, :spots, :shift_region_top, :shift_region_bottom
   end
   
   context "large chest" do
@@ -312,7 +324,7 @@ describe RedstoneBot::WindowTracker do
     before do
       server_load_window 0, crafting_items + initial_inventory.spots.items      
       server_open_window window_id, 0, "container.chestDouble", 54      
-      server_load_window window_id, chest_items + initial_inventory.regular_spots.items
+      server_load_window window_id, chest_items + initial_inventory.general_spots.items
     end
     
     it "has a chest model with 54 spots" do
@@ -337,7 +349,7 @@ describe RedstoneBot::WindowTracker do
         subject.cursor_spot.should be_empty
       end
       
-      it "is be synced because no clicks happened" do
+      it "is synced because no clicks happened" do
         subject.should be_synced
       end
     end
@@ -367,11 +379,20 @@ describe RedstoneBot::WindowTracker do
       
       it { should_not be_synced }
       
-      context "after confirming the transaction" do
+      context "and confirming the transaction" do
         before do
           server_confirm_transaction
         end
         
+        it { should be_synced }
+      end
+      
+      context "and closing the window" do
+        before do
+          subject.close_window
+        end
+        
+        # The chest window was out of sync but the inventory should still be in sync, I guess.
         it { should be_synced }
       end
     end
@@ -392,7 +413,7 @@ describe RedstoneBot::WindowTracker do
     
     context "and another SetWindowItems packet is received" do
       before do
-        subject << RedstoneBot::Packet::SetWindowItems.create(subject.usable_window.id, chest_items + initial_inventory.regular_spots.items)
+        subject << RedstoneBot::Packet::SetWindowItems.create(subject.usable_window.id, chest_items + initial_inventory.general_spots.items)
       end
       
       it "window is still loaded" do
@@ -416,6 +437,79 @@ describe RedstoneBot::WindowTracker do
       it_behaves_like "no windows are open"
     end
     
+  end
+  
+  describe "shift_click in the inventory window" do
+    before do
+      server_load_window 0, [nil] * (5+4+27+9)
+      client.sent_packets.clear      
+    end
+    
+    context "for an empty inventory" do
+      before do
+        subject.shift_click subject.inventory.hotbar_spots[0]
+      end
+      
+      it "doesn't do anything" do
+        client.should have(0).sent_packets
+        subject.should be_synced
+      end
+    end
+    
+    context "on an item in the hotbar" do
+      before do
+        subject.inventory.general_spots[0].item = RedstoneBot::ItemType::Dirt * 64
+        subject.inventory.hotbar_spots[8].item = RedstoneBot::ItemType::DiamondSword * 1
+        subject.shift_click subject.inventory.hotbar_spots[8]
+      end
+      
+      it "puts it in the first available boring spot" do
+        subject.inventory.normal_spots[1].item.should == RedstoneBot::ItemType::DiamondSword * 1
+      end
+      
+      it "removes it from that spot" do
+        subject.inventory.hotbar_spots[8].should be_empty
+      end
+      
+      it "sends the right packet" do
+        packet = client.sent_packets.last
+        packet.should be_a RedstoneBot::Packet::ClickWindow
+        packet.window_id.should == 0
+        packet.slot_id.should == 44
+        packet.mouse_button.should == :left
+        packet.shift.should == true
+        packet.clicked_item.should == RedstoneBot::ItemType::DiamondSword * 1
+      end
+    end
+    
+    context "on coal in the hotbar" do
+      before do
+        subject.inventory.normal_spots[2].item = RedstoneBot::ItemType::Coal * 44
+        subject.inventory.normal_spots[3].item = RedstoneBot::ItemType::Coal * 64
+        subject.inventory.normal_spots[4].item = RedstoneBot::ItemType::Coal * 44
+        subject.inventory.normal_spots[5].item = RedstoneBot::ItemType::Dirt * 64
+        
+        subject.inventory.hotbar_spots[5].item = RedstoneBot::ItemType::Coal * 60
+
+        @initial_coal_quantity = subject.inventory.spots.quantity(RedstoneBot::ItemType::Coal)
+        
+        subject.shift_click subject.inventory.hotbar_spots[5]
+      end
+
+      it "conserves the quantity of coal" do
+        subject.inventory.spots.quantity(RedstoneBot::ItemType::Coal).should == @initial_coal_quantity
+      end
+            
+      it "removes it from that spot" do
+        subject.inventory.hotbar_spots[8].should be_empty
+      end
+      
+      it "distributes it first to stackable spots and then to empty spots" do
+        subject.inventory.normal_spots[0].item.should == RedstoneBot::ItemType::Coal * 20
+        subject.inventory.normal_spots[2].item.should == RedstoneBot::ItemType::Coal * 64
+        subject.inventory.normal_spots[4].item.should == RedstoneBot::ItemType::Coal * 64
+      end
+    end
   end
 
 end

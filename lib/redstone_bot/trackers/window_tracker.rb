@@ -63,13 +63,39 @@ module RedstoneBot
       window = @windows.last
       (window && window.synced?) ? true : false
     end
+
+    def shift_click(spot)
+      return if spot.empty?
+    
+      window, spot_id = ensure_clickable(spot)      
+      spots = window.shift_click_destinations(spot)
+      original_item = spot.item
+      packet = Packet::ClickWindow.new(window.id, spot_id, :left, new_transaction, true, spot.item)
+      
+      # TODO: handle stackable items and partial transfer stuff here
+      
+      spots.non_empty_spots.each do |dest_spot|
+        dest_spot.item, spot.item = dest_spot.item.try_stack(spot.item)
+      end      
+      
+      empty_spot = spots.empty_spots.first
+      if empty_spot
+        empty_spot.item = spot.item
+        spot.item = nil
+      end
+
+      # If this click will actually have an effect, send it.
+      if original_item != spot.item
+        @client.send_packet packet
+      end
+    end
     
     def left_click(spot)
       return if cursor_spot.empty? && spot.empty?
     
-      window_id, spot_id = ensure_clickable(spot)
-      @client.send_packet Packet::ClickWindow.new(window_id, spot_id, :left, new_transaction, false, spot.item)
-      
+      window, spot_id = ensure_clickable(spot)
+            
+      @client.send_packet Packet::ClickWindow.new(window.id, spot_id, :left, new_transaction, false, spot.item)      
       cursor_spot.item, spot.item = spot.item, cursor_spot.item
       nil
     end
@@ -101,7 +127,7 @@ module RedstoneBot
       if !spot_id
         raise "Cannot left click on #{spot}; it is not in the currently-usable window."
       end
-      [window.id, spot_id]
+      [window, spot_id]
     end
     
     def new_transaction
@@ -128,7 +154,8 @@ module RedstoneBot
     class Window
       extend TracksTypes
     
-      attr_reader :id, :spots, :pending_actions
+      attr_reader :spots, :shift_region_top, :shift_region_bottom
+      attr_reader :id, :pending_actions
       
       def initialize(id, spot_count, inventory)
         @id = id
@@ -183,15 +210,30 @@ module RedstoneBot
         spot.item = item
         @awaiting_set_spots.delete(spot)
       end
+      
+      # spots is an array of possible destinations to send the item to,
+      # with the highest priority spot first.
+      def shift_click_destinations(spot)
+        # TODO: in the InventoryWindow subclass, handle the special cases for armor and crafting.
+        case
+        when shift_region_top.include?(spot)
+          shift_region_bottom.reverse.extend(SpotArray)
+        when shift_region_bottom.include?(spot)
+          shift_region_top
+        else
+          raise "Cannot shift click spot #{spot_id(spot)} in #{self.class}."
+        end      
+      end
     end
     
     class Inventory
-      attr_reader :regular_spots, :hotbar_spots, :non_hotbar_spots, :spots
+      attr_reader :normal_spots, :general_spots, :hotbar_spots, :non_hotbar_spots, :spots
       attr_reader :armor_spots, :helmet_spot, :chestplate_spot, :leggings_spot, :boots_spot
     
       def initialize
         @hotbar_spots = 9.times.collect { Spot.new }
-        @regular_spots = 27.times.collect { Spot.new } + @hotbar_spots
+        @normal_spots = 27.times.collect { Spot.new }
+        @general_spots = @normal_spots + @hotbar_spots
 
         @helmet_spot = Spot.new
         @chestplate_spot = Spot.new
@@ -199,9 +241,9 @@ module RedstoneBot
         @boots_spot = Spot.new
         @armor_spots = [@helmet_spot, @chestplate_spot, @leggings_spot, @boots_spot]
         
-        @spots = @armor_spots + @regular_spots
+        @spots = @armor_spots + @general_spots
         
-        [@hotbar_spots, @regular_spots, @armor_spots, @spots, @non_hotbar_spots].each do |array|
+        [@hotbar_spots, @normal_spots, @general_spots, @armor_spots, @spots, @non_hotbar_spots].each do |array|
           array.extend SpotArray
         end
       end
@@ -242,6 +284,8 @@ module RedstoneBot
         super(0, nil, inventory)
         @inventory_crafting = InventoryCrafting.new
         spot_array @spots = inventory_crafting.spots + inventory.spots
+        @shift_region_top = inventory.normal_spots
+        @shift_region_bottom = inventory.hotbar_spots
       end
       
       alias :crafting :inventory_crafting
@@ -256,10 +300,13 @@ module RedstoneBot
       def initialize(id, chest_spot_count, inventory)
         super(id, inventory, chest_spot_count)
         spot_array @chest_spots = chest_spot_count.times.collect { Spot.new }        
-        @inventory_spots = inventory.regular_spots
+        @inventory_spots = inventory.general_spots
         
         # This array defines the relationship between spot ID and spots.
-        spot_array @spots = @chest_spots + @inventory_spots        
+        spot_array @spots = @chest_spots + @inventory_spots
+        
+        @shift_region_top = @chest_spots
+        @shift_region_bottom = @inventory_spots
       end
       
     end

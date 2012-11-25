@@ -12,6 +12,10 @@ module RedstoneBot
       grep(Empty)
     end
     
+    def non_empty_spots
+      grep(NonEmpty)
+    end
+    
     # Cannot call this count because that is already taken.
     # TODO: consider changing "count" to quantity in the Slot/Item class and everywhere else
     # make it consistent with the name of this function!
