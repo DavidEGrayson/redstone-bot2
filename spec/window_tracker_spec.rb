@@ -398,6 +398,14 @@ describe RedstoneBot::WindowTracker do
       it_behaves_like "no windows are open"
     end
     
+    context "and closed by the client" do
+      before do
+        subject.close_window
+      end
+      
+      it_behaves_like "no windows are open"
+    end
+    
   end
 
 end

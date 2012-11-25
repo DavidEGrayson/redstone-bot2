@@ -86,6 +86,13 @@ module RedstoneBot
       nil
     end
     
+    def close_window
+      raise "No window except inventory is open; cannot close a window." if @windows.size < 2
+      window = @windows.last
+      @client.send_packet Packet::CloseWindow.new(window.id)
+      unregister_window(window)
+    end
+    
     private
     def ensure_clickable(spot)
       window = usable_window
