@@ -287,7 +287,7 @@ describe RedstoneBot::WindowTracker do
       subject.should have(54).chest_spots
     end
     
-    context "and closed and closed by the server" do
+    context "and closed by the server" do
       before do
         server_close_window
       end

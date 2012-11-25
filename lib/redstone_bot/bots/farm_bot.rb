@@ -228,16 +228,21 @@ module RedstoneBot
     end
     
     def test
-      chest_coords = Coords[-200, 67, 801]
+      chest_coords = Coords[-248, 69, 661]
       open_chest chest_coords
       
     end
 
+    def cause_conflict
+      send_packet Packet::ClickWindow.new(0, 36, :left, 19, false, nil) 
+      #send_packet Packet::ClickWindow.new(0, 25, :left, 20, false, Slot.new(ItemType::DiamondAxe))
+    end
+    
     ###################### CHEST FUNCTIONS ##############################################
     # TODO: move functions below to ChestManipulation module, or WindowManipulation module, or WindowTracker class? 
     def open_chest(coords)
-      client.send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 8, 15, 8
-      client.send_packet Packet::Animation.new @client.eid, 1
+      send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 8, 15, 8
+      send_packet Packet::Animation.new @client.eid, 1
     end
   end
 end

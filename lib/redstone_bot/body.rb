@@ -107,7 +107,7 @@ module RedstoneBot
     
     def wait_for_next_position_update(update_period = nil)
       if update_period
-        self.next_update_period = update_period
+        self.updater.next_period = update_period
       end
       count = position_update_count
       # $stderr.puts "waiting..."

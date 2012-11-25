@@ -1111,13 +1111,16 @@ module RedstoneBot
       @slot = socket.read_slot
     end
     
-    # This packet is for the item attached to the cursor.
     def cursor?
-      window_id == -1 && slot.nil?
+      window_id == -1 && slot_id == -1
     end
     
     def to_s
-      "SetSlot(window_id=#{window_id}, slot_id=#{slot_id}, #{slot})"
+      if cursor?
+        "SetSlot(cursor, #{slot})"
+      else
+        "SetSlot(window_id=#{window_id}, slot_id=#{slot_id}, #{slot})"
+      end
     end
   end
   
