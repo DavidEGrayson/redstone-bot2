@@ -193,6 +193,7 @@ module RedstoneBot
       window, spot_id = ensure_clickable(spot)
       @client.send_packet Packet::ClickWindow.new(window.id, spot_id, :left, new_transaction, false, spot.item)
       @client.send_packet Packet::ClickWindow.outside(new_transaction)
+      spot.item = nil
     end
     
     def close_window
