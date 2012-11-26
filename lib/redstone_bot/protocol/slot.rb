@@ -90,6 +90,10 @@ module RedstoneBot
       end
     end
     
+    def ===(other)
+      self == other or other.respond_to?(:item) && self == other.item
+    end
+    
     def to_s
       s = item_type.to_s
       s += "*#{count}" if count != 1

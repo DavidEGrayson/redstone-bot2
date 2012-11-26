@@ -5,7 +5,7 @@ module RedstoneBot
   module Wielding
     def wielded_spot
       # We can't call window_tracker.inventory because the inventory might not be loaded yet.
-      @wielded_spot ||= hotbar_spots[0]
+      @wielded_spot ||= inventory.hotbar_spots[0]
     end
 
     def wielded_item
@@ -16,22 +16,27 @@ module RedstoneBot
       case x
       when Spot
         if x != wielded_spot
-          index = hotbar_spots.index(x)
-          if !index
-            raise ArgumentError, "Cannot wield given spot because it is not in the hotbar."
+          if inventory.hotbar_spots.include? x
+            @wielded_spot = x
+            client.send_packet Packet::HeldItemChange.new inventory.hotbar_spots.index(x)
+          elsif general_spots.include? x
+            raise "not implemented yet, need to swap"
           end
-          @wielded_spot = x
-          client.send_packet Packet::HeldItemChange.new index
         end
         true
 
       when Integer
-        wield hotbar_spots[x]
+        wield inventory.hotbar_spots[x]
 
-      when Slot
-        true
-      when ItemType
-        true
+      when ItemType, Slot
+        spot = inventory.hotbar_spots.find { |spot| x === spot } ||
+          inventory.normal_spots.find { |spot| x === spot }
+          
+        if spot
+          wield spot
+        else
+          false
+        end
       else
         raise ArgumentError, "Don't know how to wield a #{x.class}: #{x.inspect}"
       end

@@ -5,7 +5,6 @@ require_relative '../packet_printer'
 
 require_relative '../trackers/entity_tracker'
 require_relative '../trackers/chunk_tracker'
-require_relative '../trackers/inventory'
 require_relative '../trackers/window_tracker'
 
 require_relative '../abilities/block_manipulation'
@@ -31,7 +30,7 @@ module RedstoneBot
     include Movement
     include ChatChunk, ChatInventory, ChatMover
 
-    attr_reader :brain, :chunk_tracker, :entity_tracker, :inventory, :window_tracker
+    attr_reader :brain, :chunk_tracker, :entity_tracker, :window_tracker
 
     # Sets up the logical connections of the different components
     # in this bot.
@@ -45,7 +44,6 @@ module RedstoneBot
       setup_brain
       @entity_tracker = EntityTracker.new(@client, @body)
       @chunk_tracker = ChunkTracker.new(@client)
-      #@inventory = Inventory.new(@client)  # TODO: remove this and get FarmBot working again without it
       @window_tracker = WindowTracker.new(@client)
 
       @chat_printer = PacketPrinter.new(@client, [Packet::ChatMessage])
