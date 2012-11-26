@@ -227,10 +227,17 @@ module RedstoneBot
       inventory.empty_slot_count < 2
     end
     
-    def openy
-      chest_coords = Coords[-248, 69, 661]
+    TestChestCoords = Coords[-248, 69, 661];
+    
+    def openy(chest_coords=TestChestCoords)
       open_chest chest_coords
     end
+
+    def wheat_swap
+      chest_open(TestChestCoords) do
+        move_wheat
+      end
+    end    
 
     def move_wheat
       unless window_tracker.chest_spots
@@ -266,11 +273,6 @@ module RedstoneBot
       conflict spot, item
       
       window_tracker.left_click spot
-    end
-    
-    def test
-      send_packet packet = Packet::ClickWindow.new(0, 42, :left, window_tracker.send(:new_transaction), false, nil)
-      puts "#{client.time_string} TX: #{packet}"
     end
     
     def shift_conflict

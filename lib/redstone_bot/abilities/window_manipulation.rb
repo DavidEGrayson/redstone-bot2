@@ -16,11 +16,12 @@ module RedstoneBot
     
       chest_open_start(coords)
       wait_until { window_tracker.chest_spots }
-      begin
-        yield window_tracker.chest_spots
-      ensure
-        window_tracker.close_window
-      end
+      yield window_tracker.chest_spots
+      wait_until { window_tracker.synced? }
+      window_tracker.close_window
+      # TODO: do something to ignore the unneeded SetSlot packets that come after closing the window?
+      
+      nil
     end
   end
 end
