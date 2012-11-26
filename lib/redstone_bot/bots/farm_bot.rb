@@ -54,7 +54,7 @@ module RedstoneBot
           end
         end
         
-        if !inventory.include? ItemType::Seeds
+        if inventory.spots.quantity(ItemType::Seeds) == 0
           chat "got seeds?"
           return
         end
@@ -90,7 +90,7 @@ module RedstoneBot
     def dig_and_replant_within_reach
       wheats_dug = 0
       body.position.change_y(FarmBounds[1].min).spiral.first(100).each do |coords|
-        if !hold(ItemType::Seeds)
+        if !wield(ItemType::Seeds)
           break
         end
         
@@ -133,12 +133,12 @@ module RedstoneBot
       
       # Dump everything, except guarantee that we at least have half a stack of seeds left
       # TODO: express this more elegantly
-      inventory.slots.each_with_index do |slot, slot_id|
-        next if ItemType::Seeds === slot && inventory.count(ItemType::Seeds) < 96
-        inventory.dump_slot_id(slot_id)
+      inventory.normal_spots.each do |spot|
+        next if ItemType::Seeds === spot && inventory.spots.quantity(ItemType::Seeds) < 96
+        dump spot
       end
       
-      delay(5)
+      delay(2)
     end
        
     def collect_nearby_items
@@ -224,13 +224,13 @@ module RedstoneBot
     
     def inventory_too_full?
       # At least one slot for seeds, one slot for wheat.
-      inventory.empty_slot_count < 2
+      inventory.general_spots.empty_spots.size < 2
     end
     
     TestChestCoords = Coords[-248, 69, 661];
     
     def openy(chest_coords=TestChestCoords)
-      open_chest chest_coords
+      chest_open_start chest_coords
     end
 
     def wheat_swap
