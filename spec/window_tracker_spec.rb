@@ -234,7 +234,7 @@ describe RedstoneBot::WindowTracker do
     let(:window_id) { 2 }
     
     before do
-      subject << RedstoneBot::Packet::OpenWindow.create(window_id, 0, "container.chest", 27)
+      server_open_chest(window_id)
     end
 
     it "has an open ChestWindow" do

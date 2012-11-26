@@ -131,6 +131,11 @@ module RedstoneBot
       section_num, section_y = y.divmod 16
       @block_type[section_num][256*section_y, 256]
     end
+
+    # This was created for testing.    
+    def set_block_type(coords, block_type, metadata=0)
+      set_block_type_and_metadata coords, block_type, metadata
+    end
     
     def set_block_type_and_metadata(coords, block_type, metadata)
       section_num, section_x, section_y, section_z = convert_coords(coords)
@@ -255,11 +260,12 @@ module RedstoneBot
       @chunks.values
     end
     
-    protected
-
+    # This is made public for testing purposes, but it should NOT be called in production.
     def get_or_create_chunk(chunk_id)
       @chunks[chunk_id] ||= Chunk.new(chunk_id)
     end
+    
+    protected
     
     def unload_chunk(chunk_id)
       chunk = @chunks.delete(chunk_id)

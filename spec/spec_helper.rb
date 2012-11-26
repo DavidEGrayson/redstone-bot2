@@ -23,6 +23,10 @@ RSpec.configure do |c|
 end
 
 module WindowSpecHelper
+  def server_open_chest(window_id)
+    server_open_window(window_id, 0, "container.chest", 27)
+  end
+
   def server_open_window(*args)
     client << RedstoneBot::Packet::OpenWindow.create(*args)
   end
@@ -60,7 +64,7 @@ module WindowSpecHelper
   end
   
   def server_close_window(window_id=nil)
-    client << RedstoneBot::Packet::CloseWindow.create(subject.windows[1].id)
+    client << RedstoneBot::Packet::CloseWindow.create(subject.windows.last.id)
   end
   
   def server_transaction_decision(confirm)

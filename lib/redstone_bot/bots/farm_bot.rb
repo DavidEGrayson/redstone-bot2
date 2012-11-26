@@ -284,12 +284,6 @@ module RedstoneBot
     def swap_in_chest
       window_tracker.swap *window_tracker.chest_spots[0..1]
     end
-    
-    ###################### CHEST FUNCTIONS ##############################################
-    # TODO: move functions below to ChestManipulation module, or WindowManipulation module, or WindowTracker class? 
-    def open_chest(coords)
-      send_packet Packet::PlayerBlockPlacement.new coords, 1, @inventory.selected_slot, 8, 15, 8
-      send_packet Packet::Animation.new @client.eid, 1
-    end
+
   end
 end
