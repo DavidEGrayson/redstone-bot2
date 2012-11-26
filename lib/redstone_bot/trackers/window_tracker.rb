@@ -146,7 +146,6 @@ module RedstoneBot
       window, spot_id = ensure_clickable(spot)      
       spots = window.shift_click_destinations(spot)
       original_item = spot.item
-      packet = Packet::ClickWindow.new(window.id, spot_id, :left, new_transaction, true, spot.item)
       
       # TODO: handle stackable items and partial transfer stuff here
       
@@ -162,7 +161,7 @@ module RedstoneBot
 
       # If this click will actually have an effect, send it.
       if original_item != spot.item
-        @client.send_packet packet
+        @client.send_packet Packet::ClickWindow.new(window.id, spot_id, :left, new_transaction, true, original_item)
       end
     end
     
