@@ -1,3 +1,5 @@
+require_relative '../empty'
+
 # Holding: this module is mixed into the Box class to provide methods for
 # keeping track of the currently-held item and holding other items from the inventory.
 # It requires window_tracker and hotbar_spots.
@@ -22,6 +24,9 @@ module RedstoneBot
           client.send_packet Packet::HeldItemChange.new inventory.hotbar_spots.index(x)
           true
         elsif inventory.general_spots.include? x
+          # We will need to do some clicking to get the item into the hotbar.
+          # We try to put it into an empty spot, but if that is no an option then
+          # we put it into the currently-wielded spot.
           hotbar_spot = inventory.hotbar_spots.empty_spots.first || wielded_spot
           window_tracker.swap hotbar_spot, x
           wield hotbar_spot
@@ -32,18 +37,19 @@ module RedstoneBot
       when Integer
         wield inventory.hotbar_spots[x]
 
-      when ItemType, Slot
-        spot = inventory.hotbar_spots.find { |spot| x === spot } ||
-          inventory.normal_spots.find { |spot| x === spot }
-          
+      when nil
+        wield Empty        
+
+      else  # Slot object, ItemType object, or Empty module
+        candidates = [wielded_spot] + inventory.hotbar_spots + inventory.normal_spots
+        spot = candidates.find { |spot| x === spot }
+        
         if spot
           wield spot
         else
           false
         end
         
-      else
-        raise ArgumentError, "Don't know how to wield a #{x.class}: #{x.inspect}"
       end
     end
     

@@ -23,6 +23,8 @@ bot_name = ARGV[0]
 require "redstone_bot/bots/" + bot_name.underscore
 bot_class = RedstoneBot.const_get bot_name.intern
 
+trap("SIGINT") { exit }  # Ctrl+C cleanly kills the bot.
+
 puts "Starting #{bot_class}..."
 
 client = RedstoneBot::Client.new(USERNAME, PASSWORD, HOSTNAME, PORT)
