@@ -161,61 +161,11 @@ describe RedstoneBot::WindowTracker::ChestWindow do
 end
 
 describe RedstoneBot::WindowTracker do
-  let(:client) { TestClient.new }
-  subject { RedstoneBot::WindowTracker.new(client) }
+  include WindowSpecHelper
 
-  # Helper function to simulate an event happening from the server side.
-  def server_open_window(*args)
-    subject << RedstoneBot::Packet::OpenWindow.create(*args)
-  end
- 
-  def server_set_spot(spot, item)
-    window = subject.windows.last
-    spot_id = window.spot_id(spot)
-    subject << RedstoneBot::Packet::SetSlot.create(window.id, spot_id, item)
-  end
-
-  def server_set_cursor(item)
-    subject << RedstoneBot::Packet::SetSlot.create(-1, -1, item)
-  end
-  
-  def server_set_items(items)
-    window = subject.windows.last
-    subject << RedstoneBot::Packet::SetWindowItems.create(window.id, items)
-  end
-  
-  def server_load_window(window_id, items, cursor_item=nil)
-    subject << RedstoneBot::Packet::SetWindowItems.create(window_id, items)
-    subject << RedstoneBot::Packet::SetSlot.create(-1, -1, cursor_item)
-    items.each_with_index do |item, spot_id|
-      subject << RedstoneBot::Packet::SetSlot.create(window_id, spot_id, item) if item
-    end    
-  end
-  
-  # This is what the server does after a transaction is rejected.
-  # It sends the packets in THIS order, which is kind of inconvenient.
-  def server_reload_window(items, cursor_item=nil)
-    server_set_items items
-    server_set_cursor cursor_item
-  end
-  
-  def server_close_window(window_id=nil)
-    subject << RedstoneBot::Packet::CloseWindow.create(subject.windows[1].id)
-  end
-  
-  def server_transaction_decision(confirm)
-    window_id = subject.windows.last.id
-    transaction_id = subject.windows.last.pending_actions.first
-    subject << RedstoneBot::Packet::ConfirmTransaction.new(window_id, transaction_id, confirm)
-  end
-
-  def server_confirm_transaction
-    server_transaction_decision true
-  end
-  
-  def server_reject_transaction
-    server_transaction_decision false
-  end
+  subject { RedstoneBot::WindowTracker.new(TestClient.new) }
+  let(:client) { subject.instance_variable_get(:@client) }
+  let(:window_tracker) { subject}
       
   shared_examples_for "no windows are open" do
     it "has no chest model" do
