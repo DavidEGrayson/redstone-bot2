@@ -13,8 +13,31 @@ describe RedstoneBot::WindowManipulation do
     
     chunk = @bot.chunk_tracker.get_or_create_chunk [0,0]
     chunk.set_block_type chest_coords, RedstoneBot::ItemType::Chest
+
+    server_load_window 0, [nil]*45
+    @bot.inventory.normal_spots[0].item = RedstoneBot::ItemType::Coal * 10
+    @bot.inventory.normal_spots[20].item = RedstoneBot::ItemType::Coal * 64
+    @bot.inventory.hotbar_spots[0].item = RedstoneBot::ItemType::SnowBall * 10
     
     # Put the bot on a platform near a chest.
+  end
+  
+  describe :dump do
+    context "when passed an item type" do
+      let(:dump_spec) { RedstoneBot::ItemType::Coal }
+      
+      it "dumps all spots matching that item type" do
+        @client.should_receive(:send_packet).exactly(4).times  # 4 clicks
+        @bot.dump(dump_spec).should == nil
+      end
+    end    
+  end
+  
+  describe :dump do
+    it "dumps all non-empty spots" do
+      @client.should_receive(:send_packet).exactly(6).times  # 6 clicks
+      @bot.dump_all.should == nil
+    end  
   end
   
   describe :chest_open_start do

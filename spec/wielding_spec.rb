@@ -29,7 +29,7 @@ describe RedstoneBot::Wielding do
     bot.wielded_spot.should == hotbar_spots[0]
   end
   
-  it "defined wielded_item" do
+  it "defines wielded_item" do
     bot.wielded_item.should == RedstoneBot::ItemType::WheatItem * 31
   end
   
@@ -149,6 +149,14 @@ describe RedstoneBot::Wielding do
       it_behaves_like "it fails"
     end
     
+  end
+  
+  describe :wielded_item_drop do
+    it "just sends the right PlayerDigging packet" do
+      @bot.wielded_item_drop
+      packet = @client.sent_packets.last
+      packet.should be_a RedstoneBot::Packet::PlayerDigging
+    end
   end
   
 end

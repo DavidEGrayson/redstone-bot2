@@ -186,6 +186,15 @@ module RedstoneBot
       nil
     end
     
+    # Throws the item in the spot outside the window.
+    def dump(spot)
+      return if spot.empty?
+      
+      window, spot_id = ensure_clickable(spot)
+      @client.send_packet Packet::ClickWindow.new(window.id, spot_id, :left, new_transaction, false, spot.item)
+      @client.send_packet Packet::ClickWindow.outside(new_transaction)
+    end
+    
     def close_window
       raise "No window except inventory is open; cannot close a window." if @windows.size < 2
       window = @windows.last
@@ -349,6 +358,15 @@ module RedstoneBot
         [@hotbar_spots, @normal_spots, @general_spots, @armor_spots, @spots, @non_hotbar_spots].each do |array|
           array.extend SpotArray
         end
+      end
+      
+      def report
+        s = "== Inventory ==\n"
+        s += "Armor: " + @armor_spots.inspect + "\n"
+        s += "Normal: " + @normal_spots.inspect + "\n"
+        s += "Hotbar: " + @hotbar_spots.inspect + "\n"
+        s += "===="
+        s
       end
     end
     

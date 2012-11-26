@@ -13,6 +13,16 @@ module RedstoneBot
     def wielded_item
       wielded_spot.item
     end
+    
+    # Drops quantity one of the item the player is holding.
+    # It's like pressing q.
+    def wielded_item_drop
+      @client.send_packet Packet::PlayerDigging.drop
+      
+      # NOTE: the server will send a nice SetSlot packet after we do this, but
+      # in the interrim maybe we should prepare for that be saying the inventory
+      # is out of sync?
+    end
 
     def wield(x)
       case x

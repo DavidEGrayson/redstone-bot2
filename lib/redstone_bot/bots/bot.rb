@@ -16,8 +16,8 @@ require_relative '../abilities/wielding'
 require_relative '../chat/chat_filter'
 require_relative '../chat/chat_evaluator'
 require_relative '../chat/chat_chunk'
-require_relative '../chat/chat_inventory'
 require_relative '../chat/chat_mover'
+require_relative '../chat/chat_inventory'
 
 # This class is not too useful on its own.  It is meant to be subclassed by
 # people making bots.
@@ -28,7 +28,7 @@ module RedstoneBot
     include WindowManipulation
     include Wielding
     include Movement
-    include ChatChunk, ChatInventory, ChatMover
+    include ChatChunk, ChatMover, ChatInventory
 
     attr_reader :brain, :chunk_tracker, :entity_tracker, :window_tracker
 

@@ -4,6 +4,21 @@ module RedstoneBot
       window_tracker.inventory
     end
     
+    def dump(x)
+      case x
+      when Spot
+        window_tracker.dump x
+      else
+        window = window_tracker.usable_window
+        window.spots.grep(x).each { |spot| dump spot }
+      end
+      nil
+    end
+    
+    def dump_all
+      dump NonEmpty
+    end
+    
     def chest_open_start(coords)
       block_type = chunk_tracker.block_type(coords)
       if block_type != ItemType::Chest
