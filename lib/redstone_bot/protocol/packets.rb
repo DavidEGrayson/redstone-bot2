@@ -151,7 +151,7 @@ module RedstoneBot
     AllowedChatChars = '!\"#$%&\'`()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_abcdefghijklmnopqrstuvwxyz{|}~| '.split('')
     
     def initialize(data)
-      @data = data      
+      @data = data
       init_player_chat_info or init_death_info
     end
        
@@ -183,6 +183,10 @@ module RedstoneBot
       !!@chat
     end
     
+    def whisper?
+      @whisper
+    end
+    
     # Removes Minecraft color and formatting codes.
     def self.strip_codes(str)
       str.gsub /\u00A7[0-9a-z]/, ''
@@ -203,11 +207,18 @@ module RedstoneBot
     protected
 
     def init_player_chat_info
-      if data =~ /^<([^>]+)> (.*)/
+      @whisper = false
+      case self.class.strip_codes(data)
+      when /^<([^>]+)> (.*)/
         @username, @chat = $1, $2
         return true
+      when /^([^ ]+) whispers to you: (.*)/
+        @username, @chat = $1, $2
+        @whisper = true
+        return true
+      else
+        return false
       end
-      return false
     end
     
     def init_death_info
