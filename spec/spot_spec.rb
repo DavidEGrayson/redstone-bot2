@@ -25,7 +25,7 @@ describe RedstoneBot::Spot do
     end
     
     it "delegates item_type to the item" do
-      subject.item.should_receive(:item_type).and_return(RedstoneBot::ItemType::DiamondBlock)
+      subject.item = RedstoneBot::ItemType::DiamondBlock * 1
       subject.item_type.should == RedstoneBot::ItemType::DiamondBlock
     end
   end
