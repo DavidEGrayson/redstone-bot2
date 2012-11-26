@@ -19,7 +19,14 @@ describe RedstoneBot::WindowManipulation do
         @bot.chest_open_start RedstoneBot::Coords[8, 70, 13]
       end
     
-      it "sends the right packet" do
+      it "sends the animation packet" do
+        # almost not worth testing
+        packet = @client.sent_packets[-2]
+        packet.eid.should == @client.eid
+        packet.animation.should == 1
+      end
+    
+      it "sends the right packet to open the chest" do
         packet = @client.sent_packets[-1]
         packet.should be_a RedstoneBot::Packet::PlayerBlockPlacement
         packet.coords.should == RedstoneBot::Coords[8, 70, 13]
