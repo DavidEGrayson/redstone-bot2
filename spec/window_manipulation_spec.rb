@@ -3,12 +3,16 @@ require_relative 'spec_helper'
 describe RedstoneBot::WindowManipulation do
   include WindowSpecHelper
 
+  let(:chest_coords) { RedstoneBot::Coords[8, 70, 13] }
+  let(:client) { @client }
+  let(:bot) { @bot }
+  
   before do
     @bot = TestBot.new_at_position RedstoneBot::Coords[8, 70, 8]
     @client = @bot.client
     
     chunk = @bot.chunk_tracker.get_or_create_chunk [0,0]
-    chunk.set_block_type [8, 70, 13], RedstoneBot::ItemType::Chest
+    chunk.set_block_type chest_coords, RedstoneBot::ItemType::Chest
     
     # Put the bot on a platform near a chest.
   end
@@ -16,7 +20,7 @@ describe RedstoneBot::WindowManipulation do
   describe :chest_open_start do
     context "when passed the coordinates of a chest" do
       before do
-        @bot.chest_open_start RedstoneBot::Coords[8, 70, 13]
+        @bot.chest_open_start chest_coords
       end
     
       it "sends the animation packet" do
@@ -40,12 +44,37 @@ describe RedstoneBot::WindowManipulation do
     
   end
 
-  context "after the bot calls chest_open" do
+  context "after the bot calls chest_open and the brain runs once" do
+    before do
+      @bot.chest_open(chest_coords) do |chest_spots|
+        @block_started = true  # this is an rspec instance variable
+      end
+      @bot.brain.run
+    end
+
+    it "has not yet yielded" do
+      @block_started.should be_nil
+    end
+    
     context "and the server loads the window" do
       before do
-        server_open_window 55
+        server_open_chest 55
         server_load_window 55, [nil]*63
-      end      
+      end
+      
+      it "yields to the block" do
+        @bot.window_tracker.chest_spots.should be
+        @bot.brain.run
+        @block_started.should == true        
+      end
+      
+      context "and the block returns" do
+        it "closes the window" do
+          @bot.brain.run
+          @bot.brain.should_not be_alive
+          @bot.window_tracker.chest_spots.should be_nil
+        end
+      end
     end
   end
   

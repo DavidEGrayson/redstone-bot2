@@ -80,10 +80,12 @@ module RedstoneBot
       @listeners << proc
     end
 
-    def notify_listeners(*args)
+    def notify_listeners(packet)
       @synchronizer.synchronize do
+        record_packet packet
+      
         @listeners.each do |l|
-          l.call(*args)
+          l.call(packet)
         end
       end
     end
@@ -207,20 +209,23 @@ module RedstoneBot
     end
     
     def receive_packet
-      packet = Packet.receive(@rx_stream)      
-      record_packet packet
-      packet 
+      Packet.receive(@rx_stream)      
     end
     
     def record_packet(packet)
       @packets_received += 1
       @last_packets.shift
       @last_packets.push packet
+      packet_received.broadcast
     end
 
     def send_packet(packet)
       @tx_stream.write packet.encode
       nil
+    end
+    
+    def packet_received
+      @packet_received ||= @synchronizer.new_condition 
     end
 
     def chat(message)
