@@ -15,16 +15,20 @@ module RedstoneBot
     def wield(x)
       case x
       when Spot
-        if x != wielded_spot
-          if inventory.hotbar_spots.include? x
-            @wielded_spot = x
-            client.send_packet Packet::HeldItemChange.new inventory.hotbar_spots.index(x)
-          elsif general_spots.include? x
-            raise "not implemented yet, need to swap"
-          end
+        if x == wielded_spot
+          true
+        elsif inventory.hotbar_spots.include? x
+          @wielded_spot = x
+          client.send_packet Packet::HeldItemChange.new inventory.hotbar_spots.index(x)
+          true
+        elsif inventory.general_spots.include? x
+          hotbar_spot = inventory.hotbar_spots.empty_spots.first || wielded_spot
+          window_tracker.swap hotbar_spot, x
+          wield hotbar_spot
+        else
+          raise ArgumentError, "Cannot wield spot #{x}; move it to the inventory first."
         end
-        true
-
+        
       when Integer
         wield inventory.hotbar_spots[x]
 
@@ -37,9 +41,11 @@ module RedstoneBot
         else
           false
         end
+        
       else
         raise ArgumentError, "Don't know how to wield a #{x.class}: #{x.inspect}"
       end
     end
+    
   end
 end

@@ -100,6 +100,31 @@ describe RedstoneBot::Wielding do
       it_behaves_like "it fails"
     end
 
+    context "when passed an item type not in the hotbar" do
+      let(:wield_spec) { RedstoneBot::ItemType::IronShovel }
+      it "swaps two spots" do
+        @client.should_receive(:send_packet).exactly(3).times # left click, left click, change held item
+        @bot.wield(wield_spec).should == true
+        @bot.wielded_spot.should == hotbar_spots[2]
+        @bot.wielded_item.should == RedstoneBot::ItemType::IronShovel * 1
+        @bot.window_tracker.should_not be_synced
+      end
+    end
+    
+    context "when passed an item type not in the hotbar and the hotbar is full" do
+      let(:wield_spec) { RedstoneBot::ItemType::IronShovel }
+    
+      before do
+        hotbar_spots.items = [ RedstoneBot::ItemType::Wool * 64 ] * 9
+      end
+      
+      it "swaps two spots" do
+        @client.should_receive(:send_packet).exactly(3).times # left click, left click, left click
+        @bot.wield(wield_spec).should == true
+        @bot.window_tracker.should_not be_synced
+      end
+    end
+    
   end
   
 end
