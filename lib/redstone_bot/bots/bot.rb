@@ -12,6 +12,7 @@ require_relative '../abilities/block_manipulation'
 require_relative '../abilities/falling'
 require_relative '../abilities/movement'
 require_relative '../abilities/window_manipulation'
+require_relative '../abilities/wielding'
 
 require_relative '../chat/chat_filter'
 require_relative '../chat/chat_evaluator'
@@ -26,6 +27,7 @@ module RedstoneBot
     include Falling
     include BlockManipulation
     include WindowManipulation
+    include Wielding
     include Movement
     include ChatChunk, ChatInventory, ChatMover
 

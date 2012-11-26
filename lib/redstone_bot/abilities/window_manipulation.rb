@@ -1,5 +1,9 @@
 module RedstoneBot
   module WindowManipulation
+    def hotbar_spots
+      window_tracker.inventory_window.inventory.hotbar_spots
+    end
+  
     def chest_open_start(coords)
       block_type = chunk_tracker.block_type(coords)
       if block_type != ItemType::Chest

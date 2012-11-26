@@ -147,8 +147,6 @@ module RedstoneBot
       spots = window.shift_click_destinations(spot)
       original_item = spot.item
       
-      # TODO: handle stackable items and partial transfer stuff here
-      
       spots.non_empty_spots.each do |dest_spot|
         dest_spot.item, spot.item = dest_spot.item.try_stack(spot.item)
       end      
