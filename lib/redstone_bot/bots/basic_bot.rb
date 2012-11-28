@@ -2,7 +2,7 @@ require 'forwardable'
 
 require_relative '../synchronizer'
 require_relative '../uninspectable'
-require_relative '../body'
+require_relative '../models/body'
 
 # TODO: add some primitive falling?
 

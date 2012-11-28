@@ -1,6 +1,5 @@
-require_relative '../coords'
+require_relative 'coords'
 require_relative '../tracks_types'
-require_relative 'item_types'
 
 module RedstoneBot
 
@@ -42,18 +41,6 @@ module RedstoneBot
     end
   end
 
-  class Mob < Entity
-    extend TracksTypes
-
-    # If the type ID isn't recognized, that's OK.  Just create an instance of the parent class.    
-    types.default = self
-    
-    def to_s
-      "#{self.class.name.split('::').last}(#{eid}, #{position})"
-    end
-  end
-
-  # TODO: just have this contain an Item object
   class DroppedItem < Entity
     attitude_is :passive   # this probably does not matter
 
@@ -70,6 +57,17 @@ module RedstoneBot
     
     def to_s
       "DroppedItem(#@eid, #@item, #{position})"
+    end
+  end
+
+  class Mob < Entity
+    extend TracksTypes
+
+    # If the type ID isn't recognized, that's OK.  Just create an instance of the parent class.    
+    types.default = self
+    
+    def to_s
+      "#{self.class.name.split('::').last}(#{eid}, #{position})"
     end
   end
 

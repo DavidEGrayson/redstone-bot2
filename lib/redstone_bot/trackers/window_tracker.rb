@@ -1,41 +1,7 @@
 require_relative '../packet_printer'
 require_relative '../tracks_types'
-require_relative 'spot'
-require_relative 'spot_array'
-
-# Rejection experiments, trying to figure out exactly 
-#
-# cursor = nil
-# hotbar spot 8 = WheatItem*64
-# tmphax set hotbar spot 8 to a Diamond Axe
-# left click on hotbar spot 8:
-#   SetWindowItems
-#   SetSlot for the cursor: Wheat * 64
-#   SetSlot for the item you clicked on: nil
-#
-# cursor = nil
-# hotbar spot 1 = nil
-# tmphax set hotbar spot 1 to a Diamond Axe
-# left click on hotbar spot 1:
-#   SetWindowItems
-#   SetSlot for cursor: nil
-#
-# cursor = nil
-# hotbar spot 6 = WheatItem * 64
-# tmphax set hotbar spot 6 to nil and pretend we have something on the cursor
-# left click on hotbar spot 6:
-#   SetWindowItems
-#   SetSlot for cursor: WheatItem*64
-#   SetSlot for the clicked spot: nil
-#
-# cursor = WheatItem*64
-# hotbar spot 8 = nil
-# tmphax set hotbar spot 8 to Diamond Axe
-# left click on hotbar spot 8
-#   SetWindowItems
-#   SetSlot for cursor: nil
-#   SetSlot for clicked spot: WheatItem*64
-
+require_relative '../models/spot'
+require_relative '../models/spot_array'
 
 module RedstoneBot
   class WindowTracker

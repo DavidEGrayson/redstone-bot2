@@ -1,5 +1,5 @@
 require_relative 'spec_helper'
-require 'redstone_bot/coords'
+require 'redstone_bot/models/coords'
 
 describe RedstoneBot::Coords do
   it "holds x, y, and z values" do

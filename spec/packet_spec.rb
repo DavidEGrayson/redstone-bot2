@@ -1,5 +1,5 @@
 require_relative "spec_helper"
-require "redstone_bot/coords"
+require "redstone_bot/protocol/packets"
 
 describe RedstoneBot::Packet::BlockChange do
   it "correctly parses binary data" do

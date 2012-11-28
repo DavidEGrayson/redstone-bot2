@@ -1,5 +1,5 @@
 require_relative 'a_star'
-require_relative '../coords'
+require_relative '../models/coords'
 
 module RedstoneBot
   class Pathfinder

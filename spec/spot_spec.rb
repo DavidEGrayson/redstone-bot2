@@ -1,5 +1,5 @@
 require_relative 'spec_helper'
-require 'redstone_bot/trackers/spot'
+require 'redstone_bot/models/spot'
 require 'redstone_bot/protocol/item_types'
 
 describe RedstoneBot::Spot do
