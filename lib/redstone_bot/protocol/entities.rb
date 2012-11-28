@@ -54,21 +54,22 @@ module RedstoneBot
   end
 
   # TODO: just have this contain an Item object
-  # TODO: make sure it has #item_type method so it can be matched nicely with ItemType#===
   class DroppedItem < Entity
     attitude_is :passive   # this probably does not matter
 
-    attr_reader :count, :metadata, :item_type
+    attr_reader :item
 
-    def initialize(eid, item_type, count, metadata)
+    def initialize(eid, item)
       @eid = eid
-      @item_type = item_type
-      @count = count
-      @metadata = metadata
+      @item = item
+    end
+    
+    def item_type
+      @item.item_type
     end
     
     def to_s
-      "#{item_type}#{'x'+count.to_s if count > 1}(#{eid}, #{position}, #{metadata})"
+      "DroppedItem(#@eid, #@item, #{position})"
     end
   end
 

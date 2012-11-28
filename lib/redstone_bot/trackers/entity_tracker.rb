@@ -23,7 +23,7 @@ module RedstoneBot
           entities[p.eid] = Player.new p.eid, p.player_name
           update_entity_position_absolute p
         when Packet::SpawnDroppedItem
-          entities[p.eid] = DroppedItem.new p.eid, p.item.item_type, p.item.count, p.item.damage
+          entities[p.eid] = DroppedItem.new p.eid, p.item
           update_entity_position_absolute p
         when Packet::SpawnMob
           entities[p.eid] = Mob.create p.type, p.eid

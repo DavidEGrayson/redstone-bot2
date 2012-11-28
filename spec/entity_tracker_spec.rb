@@ -25,7 +25,7 @@ describe RedstoneBot::EntityTracker do
     shovel.eid.should == 44
     shovel.should be_a_kind_of RedstoneBot::DroppedItem
     RedstoneBot::ItemType::IronShovel.should === shovel
-    shovel.to_s.should == "IronShovelx13(44, ( 100.00, 200.00, 300.00), 3)"
+    shovel.to_s.should == "DroppedItem(44, IronShovel*13(damage=3), ( 100.00, 200.00, 300.00))"
   end
   
   it "tracks mobs" do
