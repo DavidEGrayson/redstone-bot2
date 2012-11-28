@@ -2,7 +2,7 @@
 raise "Please use Ruby 1.9.3 or later." if RUBY_VERSION < "1.9.3"
 
 require_relative "pack"
-require_relative "slot"
+require_relative "item"
 require_relative "protocol_version"
 require "zlib"
 
@@ -269,7 +269,7 @@ module RedstoneBot
     def receive_data(socket)
       @eid = socket.read_int
       @slot_id = socket.read_short
-      @slot = Slot.receive_data(socket)
+      @slot = Item.receive_data(socket)
     end
   end
   
@@ -403,7 +403,7 @@ module RedstoneBot
     
     def encode_data
       int(coords[0]) + byte(coords[1]) + int(coords[2]) + byte(direction) +
-        Slot.encode_data(held_item) + byte(cursor_x) + byte(cursor_y) + byte(cursor_z)
+        Item.encode_data(held_item) + byte(cursor_x) + byte(cursor_y) + byte(cursor_z)
     end
   end
   
@@ -501,7 +501,7 @@ module RedstoneBot
         
     def receive_data(stream)
       @eid = stream.read_int
-      @slot = stream.read_slot
+      @slot = stream.read_item
       @x = stream.read_int/32.0
       @y = stream.read_int/32.0
       @z = stream.read_int/32.0
@@ -1119,7 +1119,7 @@ module RedstoneBot
     def receive_data(socket)
       @window_id = socket.read_signed_byte
       @slot_id = socket.read_short
-      @slot = socket.read_slot
+      @slot = socket.read_item
     end
     
     def cursor?
@@ -1143,11 +1143,11 @@ module RedstoneBot
     packet_type 0x68
     attr_reader :window_id, :slots
         
-    def receive_data(socket)
-      @window_id = socket.read_byte
-      count = socket.read_short
+    def receive_data(stream)
+      @window_id = stream.read_byte
+      count = stream.read_short
       @slots = count.times.collect do
-        socket.read_slot
+        stream.read_item
       end
     end
     

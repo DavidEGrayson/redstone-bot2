@@ -1,5 +1,4 @@
 require "redstone_bot/protocol/packets"
-require "redstone_bot/protocol/slot"
 
 $e = Object.new.extend(RedstoneBot::DataEncoder)
 
@@ -46,8 +45,8 @@ module RedstoneBot
     receive_data test_stream [metadata.size, compressed_data.size].pack("S>L>") + compressed_data + binary_metadata
   end
   
-  def (Packet::SpawnDroppedItem).create(eid, slot, coords, yaw=0, pitch=0, roll=0)
-    binary_data = [eid].pack("l>") + Slot.encode_data(slot) + 
+  def (Packet::SpawnDroppedItem).create(eid, item, coords, yaw=0, pitch=0, roll=0)
+    binary_data = [eid].pack("l>") + Item.encode_data(item) + 
      [(coords[0]*32).round, (coords[1]*32).round, (coords[2]*32).round,
      yaw, pitch, roll
     ].pack("l>l>l>ccc")
@@ -72,14 +71,14 @@ module RedstoneBot
     receive_data test_stream [eids.size].pack("C") + eids.collect { |e| [e].pack("l>") }.join
   end
   
-  def (Packet::SetWindowItems).create(window_id, slots)
-    binary_data = [window_id, slots.size].pack("CS>")
-    binary_data += slots.collect { |slot| Slot.encode_data(slot) }.join
+  def (Packet::SetWindowItems).create(window_id, items)
+    binary_data = [window_id, items.size].pack("CS>")
+    binary_data += items.collect { |item| $e.encode_item(item) }.join
     receive_data test_stream binary_data
   end
   
-  def (Packet::SetSlot).create(window_id, slot_id, slot)
-    receive_data test_stream [window_id, slot_id].pack("CS>") + Slot.encode_data(slot)
+  def (Packet::SetSlot).create(window_id, spot_id, item)
+    receive_data test_stream [window_id, spot_id].pack("CS>") + $e.encode_item(item)
   end
   
   def (Packet::OpenWindow).create(window_id, type, title, slot_count)

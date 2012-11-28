@@ -222,7 +222,7 @@ module RedstoneBot
       dump_slot_id(slot_id) if slot_id
     end
     
-    def dump_all(item_type=Slot)
+    def dump_all(item_type=Item)
       slot_ids_of_type(item_type).each { |id| dump_slot_id(id) }
     end
     

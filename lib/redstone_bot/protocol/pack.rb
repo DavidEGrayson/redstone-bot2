@@ -66,15 +66,15 @@ module RedstoneBot
           when 2 then read_int
           when 3 then read_float
           when 4 then read_string
-          when 5 then read_slot
+          when 5 then read_item
           when 6 then [read_int, read_int, read_int]
           end
       end
       buf
     end
   
-    def read_slot
-      Slot.receive_data(self)
+    def read_item
+      Item.receive_data(self)
     end 
   end
   
@@ -127,6 +127,12 @@ module RedstoneBot
 
     def string(s)
        short(s.length) + s.encode('UCS-2BE').force_encoding('ASCII-8BIT')
+    end
+    
+    # Can't name this just 'item' because this is mixed into packets and it
+    # would cause confusion with a lot of packets that have an 'item' member.
+    def encode_item(item)
+      Item.encode_data item
     end
   end
 end

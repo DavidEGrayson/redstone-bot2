@@ -53,8 +53,9 @@ module RedstoneBot
     end
   end
 
-  # TODO: call this a DroppedItem and have it just contain a Slot object, but rename Slot to Item?
-  class Item < Entity
+  # TODO: just have this contain an Item object
+  # TODO: make sure it has #item_type method so it can be matched nicely with ItemType#===
+  class DroppedItem < Entity
     attitude_is :passive   # this probably does not matter
 
     attr_reader :count, :metadata, :item_type

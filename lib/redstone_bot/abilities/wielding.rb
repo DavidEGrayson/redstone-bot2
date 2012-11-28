@@ -50,7 +50,7 @@ module RedstoneBot
       when nil
         wield Empty        
 
-      else  # Slot object, ItemType object, or Empty module
+      else  # Item object, ItemType object, or Empty module
         candidates = [wielded_spot] + inventory.hotbar_spots + inventory.normal_spots
         spot = candidates.find { |spot| x === spot }
         

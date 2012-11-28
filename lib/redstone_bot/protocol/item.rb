@@ -1,9 +1,10 @@
 require_relative 'item_types'
 
 module RedstoneBot
-  # TODO: rename this class to Item
-  # This Struct is immutable (frozen) after it is created.
-  class Slot < Struct.new(:item_type, :count, :damage, :enchant_data)
+  # This class represents an item, for example in the inventory, on the ground, or
+  # being held by an entity.
+  # Item objects are immutable (frozen) after they are created.
+  class Item < Struct.new(:item_type, :count, :damage, :enchant_data)
     def initialize(item_type, count=1, damage=0, enchant_data=nil)
       self.item_type = item_type
       self.count = count

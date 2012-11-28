@@ -15,7 +15,7 @@ module RedstoneBot
   
     def *(count)
       raise ArgumentError.new("count must be an integer larger then 0") unless count > 0
-      RedstoneBot::Slot.new(self, count)
+      Item.new self, count
     end
   
     def solid?

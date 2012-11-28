@@ -78,7 +78,7 @@ describe RedstoneBot::Packet::SpawnDroppedItem do
      item = RedstoneBot::ItemType::GrassBlock
      count = 13
      metadata = 3
-     slot = RedstoneBot::Slot.new(item, count, metadata)
+     slot = RedstoneBot::Item.new(item, count, metadata)
      coords = RedstoneBot::Coords[100.25, 200, 300.03125]
      yaw = -3
      pitch = -128
@@ -124,7 +124,7 @@ end
 
 describe RedstoneBot::Packet::SetWindowItems do
   it "correctly parses binary data" do
-    slots = [ nil, RedstoneBot::Slot.new(RedstoneBot::ItemType::WheatItem, 31, 0, nil), RedstoneBot::Slot.new(RedstoneBot::ItemType::IronOre, 44, 0, "hehe") ]
+    slots = [ nil, RedstoneBot::ItemType::WheatItem * 31, RedstoneBot::Item.new(RedstoneBot::ItemType::IronOre, 44, 0, "hehe") ]
     p = described_class.create(2, slots)
     p.window_id.should == 2
     p.slots.should == slots

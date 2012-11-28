@@ -19,7 +19,7 @@ describe RedstoneBot::WindowTracker::Inventory do
   end
   
   it "has hotbar spots at the end of the general spots array" do
-    # This is required for the slot ids in the InventoryWindow and ChestWindow to be correct
+    # This is required for the spot ids in the InventoryWindow and ChestWindow to be correct
     subject.hotbar_spots.should == subject.general_spots[-9,9]
   end
 
@@ -50,7 +50,7 @@ describe RedstoneBot::WindowTracker::InventoryCrafting do
     subject.input_spots.should == [subject.upper_left, subject.upper_right, subject.lower_left, subject.lower_right]
   end
   
-  it "can fetch input slots by row,column" do
+  it "can fetch input spots by row,column" do
     subject.input_spot(0, 0).should == subject.upper_left
     subject.input_spot(0, 1).should == subject.upper_right
     subject.input_spot(1, 0).should == subject.lower_left
