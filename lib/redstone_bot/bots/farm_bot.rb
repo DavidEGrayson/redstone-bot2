@@ -11,7 +11,8 @@ module RedstoneBot
     StorageWaypoint = Coords[-210, 63, 784]  # with a better pathinder we wouldn't need this
   
     PrintPacketClasses = [
-      Packet::OpenWindow, Packet::CloseWindow, Packet::SetWindowItems, Packet::SetSlot, Packet::UpdateWindowProperty, Packet::ConfirmTransaction
+      Packet::OpenWindow, Packet::CloseWindow, Packet::SetWindowItems, Packet::SetSlot, Packet::UpdateWindowProperty, Packet::ConfirmTransaction,
+      Packet::BlockBreakAnimation, Packet::ThunderBolt
     ]
   
     def setup

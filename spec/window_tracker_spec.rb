@@ -341,7 +341,7 @@ describe RedstoneBot::WindowTracker do
       it "sent the correct ClickWindow packet" do
         packet = client.sent_packets.last
         packet.should be_a RedstoneBot::Packet::ClickWindow
-        packet.slot_id.should == 0
+        packet.spot_id.should == 0
         packet.mouse_button.should == :left
         packet.shift.should == false
         packet.clicked_item.should == RedstoneBot::ItemType::Flint*30
@@ -388,7 +388,7 @@ describe RedstoneBot::WindowTracker do
             server_set_items [RedstoneBot::ItemType::Wood * 2] * 90
           end
           
-          # We still need to wait for the cursor to be set and for the slot you clicked on to be set.
+          # We still need to wait for the cursor to be set
           it { should be_rejected }
           it { should_not be_synced }
           
@@ -396,8 +396,6 @@ describe RedstoneBot::WindowTracker do
             before do
               server_set_cursor nil
             end
-            
-            # We still need to wait for the slot you clicked on to be set
             
             it { should be_synced }
             it { should_not be_rejected }
@@ -507,7 +505,7 @@ describe RedstoneBot::WindowTracker do
         packet = client.sent_packets.last
         packet.should be_a RedstoneBot::Packet::ClickWindow
         packet.window_id.should == 0
-        packet.slot_id.should == 44
+        packet.spot_id.should == 44
         packet.mouse_button.should == :left
         packet.shift.should == true
         packet.clicked_item.should == RedstoneBot::ItemType::DiamondSword * 1

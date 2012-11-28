@@ -75,20 +75,20 @@ end
 describe RedstoneBot::Packet::SpawnDroppedItem do
   it "correctly parses binary data" do
      eid = 44
-     item = RedstoneBot::ItemType::GrassBlock
+     item_type = RedstoneBot::ItemType::GrassBlock
      count = 13
      metadata = 3
-     slot = RedstoneBot::Item.new(item, count, metadata)
+     item = RedstoneBot::Item.new(item_type, count, metadata)
      coords = RedstoneBot::Coords[100.25, 200, 300.03125]
      yaw = -3
      pitch = -128
      roll = 127
      
-     p = described_class.create(eid, slot, coords, yaw, pitch, roll)
+     p = described_class.create(eid, item, coords, yaw, pitch, roll)
      p.eid.should == eid
-     p.slot.item_type.should == item
-     p.slot.count.should == count
-     p.slot.damage.should == metadata
+     p.item.item_type.should == item_type
+     p.item.count.should == count
+     p.item.damage.should == metadata
      p.coords.should be_within(0.00001).of(coords)
      p.yaw.should == yaw
      p.pitch.should == pitch
@@ -124,10 +124,10 @@ end
 
 describe RedstoneBot::Packet::SetWindowItems do
   it "correctly parses binary data" do
-    slots = [ nil, RedstoneBot::ItemType::WheatItem * 31, RedstoneBot::Item.new(RedstoneBot::ItemType::IronOre, 44, 0, "hehe") ]
-    p = described_class.create(2, slots)
+    items = [ nil, RedstoneBot::ItemType::WheatItem * 31, RedstoneBot::Item.new(RedstoneBot::ItemType::IronOre, 44, 0, "hehe") ]
+    p = described_class.create(2, items)
     p.window_id.should == 2
-    p.slots.should == slots
+    p.items.should == items
   end
 end
 
@@ -142,8 +142,8 @@ describe RedstoneBot::Packet::SetSlot do
   it "parses binary data correctly" do
     p = described_class.create(0, 32, RedstoneBot::ItemType::DiamondAxe * 1)
     p.window_id.should == 0
-    p.slot_id.should == 32
-    p.slot.should == RedstoneBot::ItemType::DiamondAxe * 1
+    p.spot_id.should == 32
+    p.item.should == RedstoneBot::ItemType::DiamondAxe * 1
   end
 end
 

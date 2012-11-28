@@ -74,7 +74,7 @@ module RedstoneBot
       end
       
       if packet.is_a?(Packet::SetSlot) && packet.cursor?
-        cursor_spot.item = packet.slot
+        cursor_spot.item = packet.item
         
         if @last_packet.is_a?(Packet::SetWindowItems)
           swi_packet = @last_packet
@@ -100,9 +100,9 @@ module RedstoneBot
       
       case packet
       when Packet::SetWindowItems
-        window.server_set_items packet.slots
+        window.server_set_items packet.items
       when Packet::SetSlot
-        window.server_set_item packet.slot_id, packet.slot
+        window.server_set_item packet.spot_id, packet.item
       when Packet::CloseWindow
         unregister_window window
       when Packet::ConfirmTransaction

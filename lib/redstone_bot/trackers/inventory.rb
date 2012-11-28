@@ -38,18 +38,18 @@ module RedstoneBot
         case p
         when Packet::SetWindowItems
           if p.window_id == 0
-            if p.slots.size != SlotCount
+            if p.items.size != SlotCount
               raise "Error: Expected #{SlotCount} slots in inventory, received #{p.slots_data.size}."
             end
-            @slots = p.slots   # assumption: no other objects will be messing with the same array
+            @slots = p.items   # assumption: no other objects will be messing with the same array
             @loaded = true
           end
         when Packet::SetSlot
           if p.window_id == 0
-            if p.slot_id >= SlotCount
+            if p.spot_id >= SlotCount
               raise "Error in SetSlot packet: Expected slot_id to be less than #{SlotCount} but got #{p.slot_id}."
             end
-            @slots[p.slot_id] = p.slot
+            @slots[p.spot_id] = p.item
           end
         when Packet::ConfirmTransaction
           if p.window_id == 0        
