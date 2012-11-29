@@ -12,7 +12,7 @@ module RedstoneBot
   
     PrintPacketClasses = [
       Packet::OpenWindow, Packet::CloseWindow, Packet::SetWindowItems, Packet::SetSlot, Packet::UpdateWindowProperty, Packet::ConfirmTransaction,
-      Packet::BlockBreakAnimation, Packet::ThunderBolt
+      Packet::BlockBreakAnimation, Packet::Thunderbolt
     ]
   
     def setup

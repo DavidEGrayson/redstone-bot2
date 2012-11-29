@@ -275,7 +275,7 @@ module RedstoneBot
     attr_reader :coords
     
     def receive_data(socket)
-      @coords = Coords.new[socket.read_int, socket.read_int, socket.read_int].freeze
+      @coords = Coords[socket.read_int, socket.read_int, socket.read_int].freeze
     end
   end
   
@@ -982,7 +982,7 @@ module RedstoneBot
     end
   end
   
-  class Packet::Thunderbolt < Packet
+  class Packet::Thunderbolt < Packet   # a.k.a GlobalEntity on the wiki
     packet_type 0x47
     attr_accessor :eid, :coords
     

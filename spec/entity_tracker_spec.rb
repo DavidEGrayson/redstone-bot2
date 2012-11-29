@@ -56,6 +56,11 @@ describe RedstoneBot::EntityTracker do
     @entity_tracker.entities_of_type(RedstoneBot::Mob).size.should == 0
   end
   
+  pending "tracks entity equipment" do
+    type = Creeper.type # 50
+    @client << RedstoneBot::Packet::SpawnMob.create(44, type, RedstoneBot::Coords[100.25, 200, 300.03125], 0, 0, 0)
+  end
+  
   context "with some stuff loaded" do
     before do
       @client << RedstoneBot::Packet::SpawnDroppedItem.create(44, RedstoneBot::Item.new(RedstoneBot::ItemType::Wool, 1, 2), [100, 200, 300])
