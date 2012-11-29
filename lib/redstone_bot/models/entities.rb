@@ -5,11 +5,12 @@ module RedstoneBot
 
   class Entity
     attr_accessor :eid
-    attr_accessor :position  # Coords object with floats
+    attr_accessor :coords    # Coords object with floats
     attr_accessor :name      # nil for non-players
    
-    def initialize(eid)
+    def initialize(eid, coords)
       @eid = eid
+      @coords = coords
     end
    
     # :passive, :neutral, :hostile, :utility
@@ -22,22 +23,50 @@ module RedstoneBot
       @attitude = attitude
     end
     
-    # to_coords is not an alias so that subclasses can easily and correctly override 'position'
+    # to_coords is not an alias so that subclasses can easily and correctly override 'coords'
     def to_coords
-      position
+      coords
     end
+  end
+  
+  module EntityWithItems
+    def items
+      @items ||= []
+    end
+    
+    def wielded_item
+      items[0]
+    end
+    
+    def helmet
+      items[1]
+    end
+    
+    def chestplate
+      items[2]
+    end
+    
+    def leggings
+      items[3]
+    end
+    
+    def boots
+      items[4]
+    end
+    
   end
 
   class Player < Entity
+    include EntityWithItems
     attitude_is :neutral
-
-    def initialize(eid, name=nil)
-      @eid = eid
+    
+    def initialize(eid, coords, name=nil)
+      super eid, coords
       @name = name
     end
 
     def to_s
-      "Player(#{eid}, #{name.inspect}, #{position})"
+      "Player(#{eid}, #{name.inspect}, #{coords}, #{items.join ', '})"
     end
   end
 
@@ -46,8 +75,8 @@ module RedstoneBot
 
     attr_reader :item
 
-    def initialize(eid, item)
-      @eid = eid
+    def initialize(eid, coords, item)
+      super eid, coords
       @item = item
     end
     
@@ -56,18 +85,19 @@ module RedstoneBot
     end
     
     def to_s
-      "DroppedItem(#@eid, #@item, #{position})"
+      "DroppedItem(#@eid, #@item, #{coords})"
     end
   end
 
   class Mob < Entity
+    include EntityWithItems
     extend TracksTypes
 
     # If the type ID isn't recognized, that's OK.  Just create an instance of the parent class.    
     types.default = self
     
     def to_s
-      "#{self.class.name.split('::').last}(#{eid}, #{position})"
+      "#{self.class.name.split('::').last}(#{eid}, #{coords}, #{items.join ', '})"
     end
   end
 

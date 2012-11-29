@@ -1,3 +1,7 @@
+require_relative '../tracks_types'
+require_relative 'spot'
+require_relative 'spot_array'
+
 module RedstoneBot
   class Window
     extend TracksTypes

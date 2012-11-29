@@ -26,5 +26,9 @@ module TracksTypesSpec
     it "lets each class tree have a different types hash" do
       A.types.should_not == B.types
     end
+    
+    it "has a #type method on each subclass" do
+      B2.type.should == 2
+    end
   end
 end

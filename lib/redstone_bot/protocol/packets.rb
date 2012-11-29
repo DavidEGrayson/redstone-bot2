@@ -259,9 +259,7 @@ module RedstoneBot
   
   class Packet::EntityEquipment < Packet
     packet_type 0x05
-    attr_reader :eid
-    attr_reader :spot_id
-    attr_reader :item
+    attr_reader :eid, :spot_id, :item
     
     def receive_data(socket)
       @eid = socket.read_int

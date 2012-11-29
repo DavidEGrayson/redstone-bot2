@@ -173,3 +173,12 @@ describe RedstoneBot::Packet::CloseWindow do
     p.window_id.should == 44
   end
 end
+
+describe RedstoneBot::Packet::EntityEquipment do
+  it "parses binary data correctly" do
+    p = described_class.create(3, 4, RedstoneBot::ItemType::WoodenAxe * 1)
+    p.eid.should == 3
+    p.spot_id.should == 4
+    p.item.should == RedstoneBot::ItemType::WoodenAxe * 1
+  end
+end

@@ -87,7 +87,10 @@ module RedstoneBot
   end
 
   def (Packet::CloseWindow).create(window_id)
-    binary_data = [window_id].pack("C")
-    receive_data test_stream binary_data
+    receive_data test_stream [window_id].pack("C")
+  end
+  
+  def (Packet::EntityEquipment).create(eid, spot_id, item)
+    receive_data test_stream $e.int(eid) + $e.short(spot_id) + $e.encode_item(item)
   end
 end

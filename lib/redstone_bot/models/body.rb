@@ -5,6 +5,11 @@ module RedstoneBot
   end
 
   class Body
+    # TODO: move the concurrency stuff out of here and into an ability module or something included in BasicBot?
+    # Concurrency should be handled in abilities/Bot/Client/Synchronizer, not a model. ??
+    # Also, improve the concurrency so bumped? works again and the position update happens very soon after
+    # it is calculated.
+  
     attr_accessor :position, :look, :on_ground, :stance, :health
     attr_accessor :debug
     attr_accessor :position_update_condition_variable

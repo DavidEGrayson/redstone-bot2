@@ -16,6 +16,10 @@ module RedstoneBot
       @type = type
       types[type] = self
     end
+    
+    def type
+      @type
+    end
 
      # This is only called on self.
     def create(type, *args)
