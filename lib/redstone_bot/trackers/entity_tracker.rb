@@ -10,6 +10,7 @@ module RedstoneBot
     # This allows us to do things like find the closest entity.  It is optional.
     def initialize(client, body=nil)
       @entities = {}
+      @body = body
       
       client.listen &method(:receive_packet)
     end
@@ -51,7 +52,7 @@ module RedstoneBot
     # TODO: get rid of this in favor of using @body.closest ?  Then EntityTracker does not need @body
     #  or just move this to some module that is mixed into bot?
     def closest_entity(klass=Entity)
-      entities_of_type(klass).min_by { |e| @body.distance_to(e.position) }
+      entities_of_type(klass).min_by { |e| @body.distance_to(e) }
     end
     
     def player(name)

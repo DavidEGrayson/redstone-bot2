@@ -50,7 +50,7 @@ describe RedstoneBot::EntityTracker do
     creeper.should be_a_kind_of RedstoneBot::Mob
     creeper.coords.should be_a RedstoneBot::Coords
     creeper.coords.should be_within(0.00001).of(coords)
-    creeper.to_s.should == "Creeper(-45, ( 100.25, 200.00, 300.03), )"
+    creeper.to_s.should == "Creeper(-45, ( 100.25, 200.00, 300.03), 0 items)"
     
     # Destroy two mobs
     @client << RedstoneBot::Packet::DestroyEntity.create([-45, -44])

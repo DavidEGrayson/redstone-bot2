@@ -66,7 +66,7 @@ module RedstoneBot
     end
 
     def to_s
-      "Player(#{eid}, #{name.inspect}, #{coords}, #{items.join ', '})"
+      "Player(#{eid}, #{name.inspect}, #{coords}, #{(items-[nil]).size} items)"
     end
   end
 
@@ -97,7 +97,7 @@ module RedstoneBot
     types.default = self
     
     def to_s
-      "#{self.class.name.split('::').last}(#{eid}, #{coords}, #{items.join ', '})"
+      "#{self.class.name.split('::').last}(#{eid}, #{coords}, #{(items-[nil]).size} items)"
     end
   end
 
