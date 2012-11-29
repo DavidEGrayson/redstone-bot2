@@ -57,13 +57,34 @@ describe RedstoneBot::EntityTracker do
     @entity_tracker.entities_of_type(RedstoneBot::Mob).size.should == 0
   end
   
-  it "tracks entity equipment" do
-    type = RedstoneBot::Creeper.type # 50
-    @client << RedstoneBot::Packet::SpawnMob.create(44, type, RedstoneBot::Coords[100.25, 200, 300.03125], 0, 0, 0)
-    @client << RedstoneBot::Packet::EntityEquipment.create(44, 4, RedstoneBot::ItemType::LeatherBoots * 1)
-    creeper = @entity_tracker.entities_of_type(RedstoneBot::Creeper).first
-    creeper.items.should == [nil, nil, nil, nil, RedstoneBot::ItemType::LeatherBoots * 1]
-    creeper.boots.should == RedstoneBot::ItemType::LeatherBoots * 1
+  context "with a creeper loaded" do
+    let(:eid) { 44 }
+    let(:creeper) { @entity_tracker.entities_of_type(RedstoneBot::Creeper).first }
+    before do
+      @client << RedstoneBot::Packet::SpawnMob.create(eid, RedstoneBot::Creeper.type, [100.25, 200, 300.03125], 0, 0, 0)    
+    end
+
+    it "tracks entity equipment" do
+      @client << RedstoneBot::Packet::EntityEquipment.create(eid, 4, RedstoneBot::ItemType::LeatherBoots * 1)
+      creeper.items.should == [nil, nil, nil, nil, RedstoneBot::ItemType::LeatherBoots * 1]
+      creeper.boots.should == RedstoneBot::ItemType::LeatherBoots * 1
+    end
+
+    it "tracks teleports" do
+      @client << RedstoneBot::Packet::EntityTeleport.create(eid, [10, 40, 1.5], 45, 90)
+      creeper.coords.should be_within(0.00001).of(RedstoneBot::Coords[10, 40, 1.5])
+    end
+
+    it "tracks relative movements + look packet" do
+      @client << RedstoneBot::Packet::EntityLookAndRelativeMove.create(eid, [-0.25, 0.25, -0.03125], 45, 90)
+      creeper.coords.should be_within(0.00001).of(RedstoneBot::Coords[100, 200.25, 300])
+    end
+    
+    it "tracks relative movements" do
+      @client << RedstoneBot::Packet::EntityRelativeMove.create(eid, [-0.25, 0.25, -0.03125])
+      creeper.coords.should be_within(0.00001).of(RedstoneBot::Coords[100, 200.25, 300])
+    end
+
   end
   
   it "does not crash when it gets a packet for an unknown entity" do

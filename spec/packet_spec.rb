@@ -182,3 +182,31 @@ describe RedstoneBot::Packet::EntityEquipment do
     p.item.should == RedstoneBot::ItemType::WoodenAxe * 1
   end
 end
+
+describe RedstoneBot::Packet::EntityTeleport do
+  it "parses binary data correctly" do
+    p = described_class.create(10, [9, 1, -1], -90, 45)
+    p.eid.should == 10
+    p.coords.should == RedstoneBot::Coords[9, 1, -1]
+    p.yaw.should == -90
+    p.pitch.should == 45
+  end
+end
+
+describe RedstoneBot::Packet::EntityLookAndRelativeMove do
+  it "parses binary data correctly" do
+    p = described_class.create(20, [1.5, 1.25, 0.125], -89, 46)
+    p.eid.should == 20
+    p.coords_change.should be_within(0.00001).of(RedstoneBot::Coords[1.5, 1.25, 0.125])
+    p.yaw.should == -89
+    p.pitch.should == 46
+  end
+end
+
+describe RedstoneBot::Packet::EntityRelativeMove do
+  it "parses binary data correctly" do
+    p = described_class.create(21, [1.5, 1.25, -0.125])
+    p.eid.should == 21
+    p.coords_change.should be_within(0.00001).of(RedstoneBot::Coords[1.5, 1.25, -0.125])
+  end
+end

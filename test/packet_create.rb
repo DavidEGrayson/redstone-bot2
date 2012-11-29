@@ -93,4 +93,21 @@ module RedstoneBot
   def (Packet::EntityEquipment).create(eid, spot_id, item)
     receive_data test_stream $e.int(eid) + $e.short(spot_id) + $e.encode_item(item)
   end
+  
+  def (Packet::EntityTeleport).create(eid, coords, yaw=0, pitch=0)
+    receive_data test_stream $e.int(eid) +
+      $e.int(coords[0]*32) + $e.int(coords[1]*32) + $e.int(coords[2]*32) +
+      $e.signed_byte(yaw) + $e.signed_byte(pitch)
+  end
+  
+  def (Packet::EntityLookAndRelativeMove).create(eid, coords, yaw=0, pitch=0)
+    receive_data test_stream $e.int(eid) +
+      $e.signed_byte(coords[0]*32) + $e.signed_byte(coords[1]*32) + $e.signed_byte(coords[2]*32) +
+      $e.signed_byte(yaw) + $e.signed_byte(pitch)
+  end
+  
+  def (Packet::EntityRelativeMove).create(eid, coords)
+    receive_data test_stream $e.int(eid) +
+      $e.signed_byte(coords[0]*32) + $e.signed_byte(coords[1]*32) + $e.signed_byte(coords[2]*32)
+  end
 end

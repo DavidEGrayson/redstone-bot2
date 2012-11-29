@@ -32,9 +32,9 @@ module RedstoneBot
       
       case p
       when Packet::EntityTeleport
-        entity.position = p.coords
+        entity.coords = p.coords
       when Packet::EntityLookAndRelativeMove, Packet::EntityRelativeMove
-        entity.position += p.coords_change
+        entity.coords += p.coords_change
       when Packet::EntityEquipment
         entity.items[p.spot_id] = p.item
       end
@@ -48,7 +48,7 @@ module RedstoneBot
       entities.values.grep klass
     end
     
-    # TODO: get rid of this in favor of using @body.closest?  Then EntityTracker does not need @body
+    # TODO: get rid of this in favor of using @body.closest ?  Then EntityTracker does not need @body
     #  or just move this to some module that is mixed into bot?
     def closest_entity(klass=Entity)
       entities_of_type(klass).min_by { |e| @body.distance_to(e.position) }

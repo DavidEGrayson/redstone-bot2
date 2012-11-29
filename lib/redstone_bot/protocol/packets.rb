@@ -642,9 +642,7 @@ module RedstoneBot
   
   class Packet::EntityLookAndRelativeMove < Packet
     packet_type 0x21
-    attr_reader :eid
-    attr_reader :dx, :dy, :dz
-    attr_reader :yaw, :pitch
+    attr_reader :eid, :dx, :dy, :dz, :yaw, :pitch
     
     def coords_change
       Coords[@dx, @dy, @dz]
@@ -662,8 +660,7 @@ module RedstoneBot
   
   class Packet::EntityTeleport < Packet
     packet_type 0x22
-    attr_reader :eid
-    attr_reader :coords, :yaw, :pitch
+    attr_reader :eid, :coords, :yaw, :pitch
     
     def receive_data(socket)
       @eid = socket.read_int
