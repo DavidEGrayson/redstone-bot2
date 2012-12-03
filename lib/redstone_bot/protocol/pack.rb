@@ -82,9 +82,32 @@ module RedstoneBot
     end
     
     def read_nbt
-      tags = []
+      tags = {}
       while b = read(1)
-      
+        tag_id = b.ord
+        break if tag_id == 0
+        
+        name = read_utf8_string
+        raise "Non-unique tag name #{name}" if tags[name]        
+        tags[name] = read_nbt_payload(tag_id)
+      end
+      tags
+    end
+    
+    def read_nbt_payload(tag_id)
+      case tag_id
+      when 2 then read_short        
+      when 9
+        subtag_id = read_byte
+        read_int.times.collect { read_nbt_payload(subtag_id) }        
+      when 10 then read_nbt
+      else
+        raise "Unknown tag id #{tag_id}."
+      end
+    end
+    
+    def tmphax
+      while true        
         case b.ord
         when 0 then return tags
         when 1 then tags << [:byte, read_utf8_string, read_signed_byte]
