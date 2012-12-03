@@ -1,3 +1,5 @@
+require 'zlib'
+
 require_relative 'item_types'
 
 module RedstoneBot
@@ -12,6 +14,11 @@ module RedstoneBot
       self.enchant_data = enchant_data.freeze      
       
       immutable!
+    end
+    
+    def immutable!
+      enchant_data.freeze
+      freeze
     end
   
     def self.receive_data(stream)
@@ -35,24 +42,25 @@ module RedstoneBot
       self.damage = stream.read_unsigned_short
       enchant_data_len = stream.read_short
       if enchant_data_len > 0
-        self.enchant_data = stream.read(enchant_data_len)
+        s = StringIO.new stream.read(enchant_data_len)
+        nbt = Zlib::GzipReader.new(s).read   # TODO: instead of calling read, pass to an nbt reader
+        self.enchant_data = nbt
       end
       
       immutable!
       self
     end
     
-    def immutable!
-      enchant_data.freeze
-      freeze
-    end
-    
     def encode_data
-      raise inspect if item_type.nil?  # TMPHAX
-      
-      binary_data = [item_type.id, count, damage].pack("s>CS>")
+      binary_data = [item_type, count, damage].pack("s>CS>")
       binary_data += if enchant_data
-        [enchant_data.size].pack("S>") + enchant_data
+        nbt = self.enchant_data    # TODO: add a call to an nbt encoder here
+        sio = StringIO.new
+        writer = Zlib::GzipWriter.new(sio)
+        writer.write nbt
+        writer.close
+        compressed_data = sio.string.force_encoding('BINARY')
+        [compressed_data.size].pack("S>") + compressed_data
       else
         "\xFF\xFF"  # length is short(-1)
       end

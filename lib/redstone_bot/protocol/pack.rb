@@ -5,7 +5,7 @@ module RedstoneBot
     end
   
     def read_byte
-      read(1).unpack('C')[0]   # TODO: just do read(1).ord
+      read(1).ord
     end
     
     def read_signed_byte
@@ -106,7 +106,7 @@ module RedstoneBot
     end
 
     def int(i)
-       [i].pack('l>')
+      [i].pack('l>')
     end
     
     def unsigned_int(i)
@@ -114,19 +114,19 @@ module RedstoneBot
     end
 
     def long(l)
-       [l].pack('q>')
+      [l].pack('q>')
     end
 
     def float(f)
-       [f].pack('g')
+      [f].pack('g')
     end
 
     def double(d)
-       [d].pack('G')
+      [d].pack('G')
     end
 
     def string(s)
-       short(s.length) + s.encode('UCS-2BE').force_encoding('ASCII-8BIT')
+      short(s.length) + s.encode('UCS-2BE').force_encoding('ASCII-8BIT')
     end
     
     # Can't name this just 'item' because this is mixed into packets and it

@@ -42,6 +42,10 @@ module RedstoneBot
       @id
     end
     
+    def to_int
+      @id
+    end
+    
     @types = []  # array where each block type is placed
     @types_by_string = {}
     def self.from_id(id)
