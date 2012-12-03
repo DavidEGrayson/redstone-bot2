@@ -42,9 +42,9 @@ module RedstoneBot
       self.damage = stream.read_unsigned_short
       enchant_data_len = stream.read_short
       if enchant_data_len > 0
-        s = StringIO.new stream.read(enchant_data_len)
-        nbt = Zlib::GzipReader.new(s).read   # TODO: instead of calling read, pass to an nbt reader
-        self.enchant_data = nbt
+        compressed_data = stream.read(enchant_data_len)
+        nbt_stream = Zlib::GzipReader.new(StringIO.new compressed_data).extend DataReader
+        self.enchant_data = nbt_stream.read_nbt
       end
       
       immutable!
