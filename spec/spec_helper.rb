@@ -12,6 +12,10 @@ def test_stream(string)
   stream.extend RedstoneBot::DataReader
 end
 
+def encoder
+  Object.new.extend RedstoneBot::DataEncoder
+end
+
 def socket_pair
   Socket.pair(:UNIX, :STREAM)   # works in Linux
 rescue Errno::EAFNOSUPPORT
