@@ -1,6 +1,6 @@
 require 'zlib'
 
-require_relative 'item_types'
+require_relative '../protocol/item_types'
 
 module RedstoneBot
   # This class represents an item, for example in the inventory, on the ground, or

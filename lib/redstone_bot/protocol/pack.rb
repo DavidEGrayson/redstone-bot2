@@ -1,5 +1,6 @@
 require_relative 'nbt'
 require_relative 'item_encoding'
+require_relative '../models/item'
 
 module RedstoneBot
   module DataReader

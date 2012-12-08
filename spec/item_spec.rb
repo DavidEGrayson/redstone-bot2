@@ -1,4 +1,4 @@
-require 'redstone_bot/protocol/item'
+require 'redstone_bot/models/item'
 
 # TODO: remove this after we figure out the gzip problem
 describe "basic problem with Ruby's GZipWriter" do

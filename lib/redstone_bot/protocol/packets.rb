@@ -2,7 +2,6 @@
 raise "Please use Ruby 1.9.3 or later." if RUBY_VERSION < "1.9.3"
 
 require_relative "pack"
-require_relative "item"
 require_relative "protocol_version"
 require "zlib"
 
