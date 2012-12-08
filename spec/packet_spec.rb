@@ -126,7 +126,7 @@ describe RedstoneBot::Packet::SetWindowItems do
   it "correctly parses binary data" do
     items = [ nil,
       RedstoneBot::ItemType::WheatItem * 31,
-      RedstoneBot::Item.new(RedstoneBot::ItemType::IronOre, 44, 0, "hehe"),
+      RedstoneBot::Item.new(RedstoneBot::ItemType::IronOre, 44, 0, { "x" => 0 }),
       RedstoneBot::ItemType::ClayBall * 1
     ]
     p = described_class.create(2, items)

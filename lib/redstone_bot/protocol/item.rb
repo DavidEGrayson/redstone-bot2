@@ -54,12 +54,17 @@ module RedstoneBot
     def encode_data
       binary_data = [item_type, count, damage].pack("s>CS>")
       binary_data += if enchant_data
-        nbt = self.enchant_data    # TODO: add a call to an nbt encoder here
+        nbt = NbtEncoderForEnchantData.nbt(enchant_data)
         sio = StringIO.new
         writer = Zlib::GzipWriter.new(sio)
         writer.write nbt
         writer.close
         compressed_data = sio.string.force_encoding('BINARY')
+        
+        # Set some metadata so that our comrpessed data will be the same as the server's.
+        compressed_data[4..7] = "\x00\x00\x00\x00"  # set the mtime to 0
+        compressed_data[9] = "\x00"  # set os_code to 0
+        
         [compressed_data.size].pack("S>") + compressed_data
       else
         "\xFF\xFF"  # length is short(-1)

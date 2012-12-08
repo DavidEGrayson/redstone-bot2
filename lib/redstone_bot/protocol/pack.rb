@@ -1,5 +1,7 @@
 module RedstoneBot
   module DataReader
+    extend self
+  
     def read_bool
       read_byte != 0
     end
@@ -96,7 +98,8 @@ module RedstoneBot
     
     def read_nbt_payload(tag_id)
       case tag_id
-      when 2 then read_short        
+      when 1 then read_byte
+      when 2 then read_short
       when 9
         subtag_id = read_byte
         read_int.times.collect { read_nbt_payload(subtag_id) }        
@@ -106,7 +109,7 @@ module RedstoneBot
       end
     end
     
-    def tmphax
+    def tmphax  # TODO: remove
       while true        
         case b.ord
         when 0 then return tags
@@ -130,6 +133,8 @@ module RedstoneBot
   end
   
   module DataEncoder
+    extend self
+  
     def signed_byte(b)
       [b].pack('c')
     end
@@ -210,7 +215,8 @@ module RedstoneBot
       case value
       when Integer
         case value
-        when -128..127 then [1]
+        when -128..127 then [1, 2]
+        when -32768..32767 then [2]
         end
       when Array then [9]  # TODO: consider using byte_array (7) or int_array (11)
       when Hash then [10]
@@ -220,6 +226,7 @@ module RedstoneBot
     def nbt_payload(tag_id, value)
       case tag_id
       when 1 then byte(value)
+      when 2 then short(value)
       when 9 then
         possible_subtag_ids = value.collect(&method(:nbt_possible_tag_ids)).inject(:&)
         subtag_id = possible_subtag_ids.first or raise ArgumentError, "Incompatible list elements."
@@ -229,5 +236,15 @@ module RedstoneBot
       end
     end
     
+  end
+  
+  module NbtEncoderForEnchantData
+    include DataEncoder
+    
+    def nbt_possible_tag_ids(value)
+      super(value) - [1]
+    end
+
+    extend self
   end
 end
