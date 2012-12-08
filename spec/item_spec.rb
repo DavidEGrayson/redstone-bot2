@@ -36,7 +36,7 @@ describe RedstoneBot::Item do
   
   it "encodes and reads some dummy data correctly" do
     item0 = described_class.new(RedstoneBot::ItemType::Bow, 1, 9, { "x" => 400 })
-    item = described_class.receive_data test_stream $e.encode_item(item0)    
+    item = test_stream($e.encode_item(item0)).read_item
     item.should == item0
   end
 
@@ -52,7 +52,7 @@ describe RedstoneBot::Item do
     end
 
     before do
-      @item = described_class.receive_data test_stream binary_data    
+      @item = test_stream(binary_data).read_item
     end
     
     specify { @item.item_type.should == RedstoneBot::ItemType::IronAxe }

@@ -16,7 +16,7 @@ end
 shared_examples_for "decodes" do |name, nbt, data|
   it "correctly decodes #{name}" do
     test_stream(nbt).read_nbt.should == data
-  end  
+  end
 end
 
 describe "nbt" do

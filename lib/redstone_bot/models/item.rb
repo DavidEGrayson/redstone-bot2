@@ -21,16 +21,8 @@ module RedstoneBot
       freeze
     end
   
-    def self.receive_data(stream)  # TODO: remove
-      allocate.receive_data(stream)      
-    end
-    
     def self.encode_data(item)  # TODO: remove
       NbtEncoderForEnchantData.encode_item(item)
-    end
-    
-    def receive_data(stream)  # TODO: remove
-      stream.read_item
     end
         
     # Returns a new item with the specified quantity removed.

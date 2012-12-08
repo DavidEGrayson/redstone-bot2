@@ -1,3 +1,6 @@
+require_relative 'item_types'
+require_relative '../models/item'
+
 module RedstoneBot
   module ItemReader
     def read_item

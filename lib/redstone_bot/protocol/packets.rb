@@ -260,10 +260,10 @@ module RedstoneBot
     packet_type 0x05
     attr_reader :eid, :spot_id, :item
     
-    def receive_data(socket)
-      @eid = socket.read_int
-      @spot_id = socket.read_short
-      @item = Item.receive_data(socket)
+    def receive_data(stream)
+      @eid = stream.read_int
+      @spot_id = stream.read_short
+      @item = stream.read_item
     end
   end
   
@@ -271,8 +271,8 @@ module RedstoneBot
     packet_type 0x06
     attr_reader :coords
     
-    def receive_data(socket)
-      @coords = Coords[socket.read_int, socket.read_int, socket.read_int].freeze
+    def receive_data(stream)
+      @coords = Coords[stream.read_int, stream.read_int, stream.read_int].freeze
     end
   end
   
@@ -282,10 +282,10 @@ module RedstoneBot
     attr_reader :food
     attr_reader :food_saturation
     
-    def receive_data(socket)
-      @health = socket.read_short
-      @food = socket.read_short
-      @food_saturation = socket.read_float
+    def receive_data(stream)
+      @health = stream.read_short
+      @food = stream.read_short
+      @food_saturation = stream.read_float
     end
   end
   
@@ -297,12 +297,12 @@ module RedstoneBot
     attr_reader :world_height
     attr_reader :level_type
     
-    def receive_data(socket)
-      @dimension = socket.read_int
-      @difficulty = socket.read_byte
-      @game_mode = socket.read_byte
-      @world_height = socket.read_short
-      @level_type = socket.read_string
+    def receive_data(stream)
+      @dimension = stream.read_int
+      @difficulty = stream.read_byte
+      @game_mode = stream.read_byte
+      @world_height = stream.read_short
+      @level_type = stream.read_string
     end
     
   end
@@ -333,14 +333,14 @@ module RedstoneBot
       @on_ground = on_ground
     end
     
-    def receive_data(socket)
-      @x = socket.read_double
-      @stance = socket.read_double
-      @y = socket.read_double
-      @z = socket.read_double
-      @yaw = socket.read_float
-      @pitch = socket.read_float
-      @on_ground = socket.read_bool
+    def receive_data(stream)
+      @x = stream.read_double
+      @stance = stream.read_double
+      @y = stream.read_double
+      @z = stream.read_double
+      @yaw = stream.read_float
+      @pitch = stream.read_float
+      @on_ground = stream.read_bool
     end
     
     def encode_data
