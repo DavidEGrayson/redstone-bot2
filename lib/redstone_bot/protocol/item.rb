@@ -21,57 +21,18 @@ module RedstoneBot
       freeze
     end
   
-    def self.receive_data(stream)
+    def self.receive_data(stream)  # TODO: remove
       allocate.receive_data(stream)      
     end
     
-    def self.encode_data(slot)
-      if slot
-        slot.encode_data
-      else
-        "\xFF\xFF" # item_type is short(-1)
-      end
+    def self.encode_data(item)  # TODO: remove
+      NbtEncoderForEnchantData.encode_item(item)
     end
     
-    def receive_data(stream)
-      item_id = stream.read_short
-      return nil if item_id == -1
-      self.item_type = ItemType.from_id(item_id)
-      raise "Unknown item type #{item_id}." if !item_type      
-      self.count = stream.read_byte
-      self.damage = stream.read_unsigned_short
-      enchant_data_len = stream.read_short
-      if enchant_data_len > 0
-        compressed_data = stream.read(enchant_data_len)
-        nbt_stream = Zlib::GzipReader.new(StringIO.new compressed_data).extend DataReader
-        self.enchant_data = nbt_stream.read_nbt
-      end
-      
-      immutable!
-      self
+    def receive_data(stream)  # TODO: remove
+      stream.read_item
     end
-    
-    def encode_data
-      binary_data = [item_type, count, damage].pack("s>CS>")
-      binary_data += if enchant_data
-        nbt = NbtEncoderForEnchantData.nbt(enchant_data)
-        sio = StringIO.new
-        writer = Zlib::GzipWriter.new(sio)
-        writer.write nbt
-        writer.close
-        compressed_data = sio.string.force_encoding('BINARY')
         
-        # Set some metadata so that our comrpessed data will be the same as the server's.
-        compressed_data[4..7] = "\x00\x00\x00\x00"  # set the mtime to 0
-        compressed_data[9] = "\x00"  # set os_code to 0
-        
-        [compressed_data.size].pack("S>") + compressed_data
-      else
-        "\xFF\xFF"  # length is short(-1)
-      end
-      binary_data
-    end
-    
     # Returns a new item with the specified quantity removed.
     def -(num)
       self + (-num)

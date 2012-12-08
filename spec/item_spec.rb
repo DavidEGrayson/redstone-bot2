@@ -36,7 +36,7 @@ describe RedstoneBot::Item do
   
   it "encodes and reads some dummy data correctly" do
     item0 = described_class.new(RedstoneBot::ItemType::Bow, 1, 9, { "x" => 400 })
-    item = described_class.receive_data test_stream item0.encode_data    
+    item = described_class.receive_data test_stream $e.encode_item(item0)    
     item.should == item0
   end
 
@@ -60,7 +60,7 @@ describe RedstoneBot::Item do
     specify { @item.enchant_data.should == { "tag" => { "ench" => [{"id" => 34, "lvl"=>1}]} } }    
     
     it "re-encodes the same way" do
-      @item.encode_data.should == binary_data 
+      $e.encode_item(@item).should == binary_data 
     end
   end
 end

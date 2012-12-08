@@ -1,6 +1,6 @@
 require "redstone_bot/protocol/packets"
 
-$e = Object.new.extend(RedstoneBot::DataEncoder)
+$e = RedstoneBot::DataEncoder
 
 module RedstoneBot
   def (Packet::BlockChange).create(coords, block_type_id, block_metadata)
