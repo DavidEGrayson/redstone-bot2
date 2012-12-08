@@ -12,12 +12,16 @@ module RedstoneBot
       damage = read_unsigned_short
       enchant_data_len = read_short
       if enchant_data_len > 0
-        compressed_data = read(enchant_data_len)
-        nbt_stream = Zlib::GzipReader.new(StringIO.new compressed_data).extend DataReader
+        gzipped_data = read(enchant_data_len)
+        nbt_stream = gunzip_stream(gzipped_data)
         enchant_data = nbt_stream.read_nbt
       end
       
       Item.new(item_type, count, damage, enchant_data)
+    end
+    
+    def gunzip_stream(str)
+      Zlib::GzipReader.new(StringIO.new str).extend DataReader
     end
   end
   
@@ -29,26 +33,31 @@ module RedstoneBot
     
       binary_data = unsigned_short(item.item_type) + byte(item.count) + unsigned_short(item.damage)
       
-      if item.enchant_data
+      binary_data += if item.enchant_data
         nbt = NbtEncoderForEnchantData.nbt(item.enchant_data)
-        sio = StringIO.new
-        writer = Zlib::GzipWriter.new(sio)
-        writer.write nbt
-        writer.close
-        compressed_data = sio.string.force_encoding('BINARY')
-        
-        # Set some metadata so that our comrpessed data will be the same as the data sent
-        # by the server.  The Notchian server doesn't seem to mind if mtime and os_code
-        # are different, but it makes it easier to test the gzipping.
-        compressed_data[4..7] = "\x00\x00\x00\x00"  # set the mtime to 0
-        compressed_data[9] = "\x00"  # set os_code to 0
-        
-        binary_data += unsigned_short(compressed_data.size) + compressed_data
+        compressed_data = gzip(nbt)
+        unsigned_short(compressed_data.size) + compressed_data
       else
-        binary_data += "\xFF\xFF"  # length is short(-1)
+        "\xFF\xFF"  # length is short(-1)
       end
       
       binary_data
+    end
+    
+    def gzip(str)
+      sio = StringIO.new
+      writer = Zlib::GzipWriter.new(sio)
+      writer.write str
+      writer.close
+      compressed_data = sio.string.force_encoding('BINARY')
+      
+      # Set some metadata so that our comrpessed data will be the same as the data sent
+      # by the server.  The Notchian server doesn't seem to mind if mtime and os_code
+      # are different, but it makes it easier to test the gzipping.
+      compressed_data[4..7] = "\x00\x00\x00\x00"  # set the mtime to 0
+      compressed_data[9] = "\x00"  # set os_code to 0
+      
+      compressed_data
     end
     
   end
