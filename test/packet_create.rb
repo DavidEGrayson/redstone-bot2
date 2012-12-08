@@ -46,7 +46,7 @@ module RedstoneBot
   end
   
   def (Packet::SpawnDroppedItem).create(eid, item, coords, yaw=0, pitch=0, roll=0)
-    binary_data = [eid].pack("l>") + Item.encode_data(item) + 
+    binary_data = [eid].pack("l>") + $e.encode_item(item) + 
      [(coords[0]*32).round, (coords[1]*32).round, (coords[2]*32).round,
      yaw, pitch, roll
     ].pack("l>l>l>ccc")

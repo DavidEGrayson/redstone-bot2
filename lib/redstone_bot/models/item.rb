@@ -21,10 +21,6 @@ module RedstoneBot
       freeze
     end
   
-    def self.encode_data(item)  # TODO: remove
-      NbtEncoderForEnchantData.encode_item(item)
-    end
-        
     # Returns a new item with the specified quantity removed.
     def -(num)
       self + (-num)
