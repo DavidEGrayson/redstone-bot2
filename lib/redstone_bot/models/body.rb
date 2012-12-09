@@ -72,7 +72,7 @@ module RedstoneBot
     end
     
     def announce_received_position(packet)
-      puts "#{@client.time_string} RX! #{packet}"
+      $stderr.puts "#{@client.time_string} #{packet}"
     end
     
     def on_position_update(&proc)

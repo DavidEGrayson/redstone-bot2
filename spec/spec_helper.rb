@@ -4,6 +4,7 @@ $LOAD_PATH.unshift File.join File.dirname(__FILE__), '..', 'test'
 require 'test_client'
 require 'packet_create'
 require 'test_bot'
+require 'redstone_bot/trackers/window_tracker'
 
 require 'stringio'
 
@@ -24,6 +25,12 @@ end
 
 RSpec.configure do |c|
   c.alias_it_should_behave_like_to :it_has_behavior, 'has behavior:'
+end
+
+# Silence warnings.
+class RedstoneBot::WindowTracker
+  def warn_about_rejection(action_number)
+  end
 end
 
 module WindowSpecHelper

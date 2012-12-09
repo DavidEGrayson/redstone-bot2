@@ -349,7 +349,7 @@ module RedstoneBot
     end
     
     def to_s
-      "pos: %7.2f %7.2f %7.2f dy=%4.2f g=%d yw=%6.2f pt=%6.2f" % ([x, y, z, stance - y, on_ground ? 1 : 0, yaw, pitch])
+      "Pos(%7.2f %7.2f %7.2f dy=%4.2f g=%d yw=%6.2f pt=%6.2f)" % ([x, y, z, stance - y, on_ground ? 1 : 0, yaw, pitch])
     end
   end
   
@@ -395,7 +395,7 @@ module RedstoneBot
     
     def encode_data
       int(coords[0]) + byte(coords[1]) + int(coords[2]) + byte(direction) +
-        Item.encode_data(held_item) + byte(cursor_x) + byte(cursor_y) + byte(cursor_z)
+        encode_item(held_item) + byte(cursor_x) + byte(cursor_y) + byte(cursor_z)
     end
   end
   
@@ -890,14 +890,17 @@ module RedstoneBot
     packet_type 0x37
     attr_reader :eid, :coords
     
+    # Progress goes from 0 to 10 while digging and then -1 when the animation stops.
+    attr_reader :progress
+    
     def receive_data(stream)
-      @eid = stream.read_int   # TODO: is this really an EID?
+      @eid = stream.read_int
       @coords = Coords[stream.read_int, stream.read_int, stream.read_int].freeze
-      @unknown_byte = stream.read_byte    # TODO: what is this byte?
+      @progress = stream.read_signed_byte
     end
     
     def to_s
-      "BlockBreakAnimation(eid=#@eid, #@coords, unknown_byte=#@unknown_byte)"
+      "BlockBreakAnimation(eid=#@eid, #@coords, progress=#@progress)"
     end
   end
   
@@ -1055,7 +1058,7 @@ module RedstoneBot
     end
     
     def encode_data
-      byte(window_id) + short(spot_id) + encode_mouse_button + unsigned_short(action_number) + bool(shift) + Item.encode_data(clicked_item)
+      byte(window_id) + short(spot_id) + encode_mouse_button + unsigned_short(action_number) + bool(shift) + encode_item(clicked_item)
     end    
   end
   

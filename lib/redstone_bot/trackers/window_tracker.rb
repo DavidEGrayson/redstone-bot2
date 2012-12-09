@@ -49,8 +49,7 @@ module RedstoneBot
             packet.is_a?(Packet::SetSlot) && packet.redundant_after?(swi_packet)
           end
         else
-          $stderr.puts "Warning: received SetCursor packet but it was not right after a SetWindowItems packet.  @last_packet=#@last_packet"
-          #@client.report_last_packets
+          $stderr.puts "#{@client.time_string}: warning: received SetCursor packet but it was not right after a SetWindowItems packet.  @last_packet=#@last_packet"
         end
         
         # The window needs to know when the cursor is changed; it helps keep track of the rejection state.
@@ -76,6 +75,7 @@ module RedstoneBot
         if packet.accepted
           window.pending_actions.delete packet.action_number        
         else
+          warn_about_rejection(packet.action_number)
           window.rejected!
           window.pending_actions.clear
           
@@ -210,6 +210,9 @@ module RedstoneBot
       # just in case old copies of the window are lying around somewhere.
     end
 
+    def warn_about_rejection(action_number)
+      $stderr.puts "#{@client.time_string}: window transaction ##{action_number} rejected!  Could be due to lag."
+    end
   end
 
 end
