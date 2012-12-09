@@ -3,6 +3,9 @@ require_relative 'test_condition'
 # This module reimplements everything that RedstoneBot::Synchronizer does, but
 # in a way that makes it easier to test.
 module TestSynchronizer
+  def setup_synchronizer
+  end
+
   def mutex
     raise "Direct access to the mutex should not happen during tests."
   end

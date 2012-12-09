@@ -14,7 +14,7 @@ def test_stream(string)
 end
 
 def encoder
-  Object.new.extend RedstoneBot::DataEncoder
+  RedstoneBot::DataEncoder
 end
 
 def socket_pair
@@ -27,10 +27,17 @@ RSpec.configure do |c|
   c.alias_it_should_behave_like_to :it_has_behavior, 'has behavior:'
 end
 
-# Silence warnings.
+## Silence warnings. ##
+
 class RedstoneBot::WindowTracker
   undef warn_about_rejection  # throws a nice exception
   def warn_about_rejection(action_number)
+  end
+end
+
+class RedstoneBot::Body
+  undef announce_received_position  # throws a nice exception
+  def announce_received_position(packet)
   end
 end
 

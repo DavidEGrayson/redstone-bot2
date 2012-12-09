@@ -14,14 +14,6 @@ class TestBot < RedstoneBot::Bot
   def initialize
     super(TestClient.new)
   end
-
-  def setup_mutex
-    # No mutex for testing.
-  end
-  
-  def setup_body
-    @body = TestBody.new(client, self)
-  end
   
   def initialize_body(coords)
     client << RedstoneBot::Packet::PlayerPositionAndLook.new(coords[0], coords[1], coords[2], coords[1]+1.62, 0, 0, false)  

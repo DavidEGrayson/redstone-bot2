@@ -21,8 +21,9 @@ module RedstoneBot
     end
         
     def setup
-      setup_mutex
-      setup_body
+      setup_synchronizer
+      
+      @body = Body.new(@client, self)
       
       @client.listen do |p|
         if p.is_a?(Packet::Disconnect)
@@ -33,14 +34,6 @@ module RedstoneBot
 
     end
     
-    def setup_mutex
-      @mutex = Mutex.new
-    end
-    
-    def setup_body
-      @body = Body.new(@client, self)
-    end
-
     def start_bot
       @client.start
     end

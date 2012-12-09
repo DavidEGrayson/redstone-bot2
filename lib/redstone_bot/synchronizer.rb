@@ -6,6 +6,10 @@ module RedstoneBot
   module Synchronizer
     attr_reader :mutex
   
+    def setup_synchronizer
+      @mutex = Mutex.new
+    end
+  
     def synchronize(&block)
       @mutex.synchronize(&block)
     end
