@@ -1,4 +1,3 @@
-require_relative 'test_regular_updater'
 require_relative 'test_condition'
 
 # This module reimplements everything that RedstoneBot::Synchronizer does, but
@@ -13,10 +12,7 @@ module TestSynchronizer
   end
   
   def delay(time)
-  end
-  
-  def regular_updater(default_period, &block)
-    TestRegularUpdater.new(self, default_period, &block)
+    Fiber.yield
   end
   
   def regularly(time, &block)

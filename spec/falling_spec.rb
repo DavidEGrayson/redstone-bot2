@@ -4,13 +4,13 @@ describe RedstoneBot::Falling do
   end
 
   it "falls" do
-    bot.body.updater.default_period.should == 0.05
-    # Assumption: default fall speed is 10 m/s
+    # Assumption: default fall speed is 10 m/s, period is 0.05 ms
     
-    bot.body.updater.update   # should call fall_update
+    bot.body.default_updater.run   # should delay
+    bot.body.default_updater.run   # should call fall_update and then delay
     bot.body.position.should be_within(0.001).of RedstoneBot::Coords[0, 69.5, 0]
 
-    bot.body.updater.update
+    bot.body.default_updater.run
     bot.body.position.should be_within(0.001).of RedstoneBot::Coords[0, 69.0, 0]
   end
 end

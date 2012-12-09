@@ -12,7 +12,7 @@ module RedstoneBot
     # it is calculated.
   
     attr_accessor :position, :look, :on_ground, :stance, :health
-    attr_accessor :default_period
+    attr_accessor :default_period, :default_updater
     
     def on_ground?
       @on_ground
@@ -24,6 +24,10 @@ module RedstoneBot
     
     def bumped?
       @bumped
+    end
+    
+    def busy?
+      @busy
     end
   
     def initialize(client, synchronizer)
@@ -80,7 +84,7 @@ module RedstoneBot
       end
     end
     
-    def move(update_period=nil)
+    def move_loop(update_period=nil)
       # This must be called from inside a brain.
       # TODO: call require_brain here so this called outside of the brain?
       

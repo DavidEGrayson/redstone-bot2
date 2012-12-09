@@ -78,7 +78,7 @@ module RedstoneBot
       speed = opts[:speed] || 10
       axes = [Coords::X, Coords::Y, Coords::Z].cycle
       
-      move(opts[:update_period]) do |period|
+      move_loop(opts[:update_period]) do |period|
         d = target - body.position
         if d.norm < tolerance
           return # reached it
@@ -109,7 +109,7 @@ module RedstoneBot
     
       speed = opts[:speed] || 10
     
-      move(opts[:update_period]) do |period|
+      move_loop(opts[:update_period]) do |period|
         if body.position.y >= y
           return
         end
