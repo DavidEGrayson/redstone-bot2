@@ -1,5 +1,6 @@
 require_relative 'item_types'
 require_relative '../models/item'
+require_relative 'enchantments'
 
 module RedstoneBot
   module ItemReader
@@ -14,10 +15,16 @@ module RedstoneBot
       if enchant_data_len > 0
         gzipped_data = read(enchant_data_len)
         nbt_stream = gunzip_stream(gzipped_data)
-        enchant_data = nbt_stream.read_nbt
+        nbt_hash = nbt_stream.read_nbt
+        
+        enchantments = nbt_hash["tag"]["ench"].each_with_object({}) do |c, h|
+          enchantment = Enchantments[c["id"]]
+          level = c["lvl"]
+          h[enchantment] = level
+        end
       end
       
-      Item.new(item_type, count, damage, enchant_data)
+      Item.new(item_type, count, damage, enchantments)
     end
     
     def gunzip_stream(str)
@@ -33,9 +40,14 @@ module RedstoneBot
     
       binary_data = unsigned_short(item.item_type) + byte(item.count) + unsigned_short(item.damage)
       
-      binary_data += if item.enchant_data
-        nbt = NbtEncoderForEnchantData.nbt(item.enchant_data)
-        compressed_data = gzip(nbt)
+      binary_data += if item.enchantments
+        ench = item.enchantments.collect do |enchantment, level|
+          { "id" => Enchantments.key(enchantment), "lvl" => level }
+        end
+        nbt_hash = { "tag" => { "ench" => ench } }
+      
+        nbt_str = NbtEncoderForEnchantData.nbt(nbt_hash)
+        compressed_data = gzip(nbt_str)
         unsigned_short(compressed_data.size) + compressed_data
       else
         "\xFF\xFF"  # length is short(-1)
@@ -61,4 +73,5 @@ module RedstoneBot
     end
     
   end
+
 end

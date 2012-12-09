@@ -31,7 +31,7 @@ module RedstoneBot
         end
       end
       
-      def tmphax  # TODO: remove
+      def tmphax_nbt_stuff  # TODO: remove
         while true        
           case b.ord
           when 0 then return tags

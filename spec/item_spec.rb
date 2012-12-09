@@ -35,7 +35,7 @@ describe RedstoneBot::Item do
   end
   
   it "encodes and reads some dummy data correctly" do
-    item0 = described_class.new(RedstoneBot::ItemType::Bow, 1, 9, { "x" => 400 })
+    item0 = described_class.new(RedstoneBot::ItemType::Bow, 1, 9, { :infinity => 15000, :fire_aspect => -4 })
     item = test_stream($e.encode_item(item0)).read_item
     item.should == item0
   end
@@ -57,7 +57,7 @@ describe RedstoneBot::Item do
     
     specify { @item.item_type.should == RedstoneBot::ItemType::IronAxe }
     specify { @item.damage.should == 12 }
-    specify { @item.enchant_data.should == { "tag" => { "ench" => [{"id" => 34, "lvl"=>1}]} } }    
+    specify { @item.enchantments.should == { unbreaking: 1 } }    
     
     it "re-encodes the same way" do
       $e.encode_item(@item).should == binary_data 

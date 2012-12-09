@@ -148,13 +148,16 @@ module RedstoneBot
     
   end
   
+  # To make sure that the enchant data is encoded correctly as nbt, we have to
+  # make this little hack.  NBT encoded using NbtEncoderForEnchantData.nbt will
+  # not be allowed to use the Byte type and will instead use Short.
   module NbtEncoderForEnchantData
     include DataEncoder
     extend self
     
     def nbt_possible_tag_ids(value)
       super(value) - [1]
-    end
-    
+    end    
   end
+  
 end
