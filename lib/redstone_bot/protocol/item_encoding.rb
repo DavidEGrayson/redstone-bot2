@@ -1,6 +1,5 @@
-require_relative 'item_types'
+require 'zlib'
 require_relative '../models/item'
-require_relative 'enchantments'
 
 module RedstoneBot
   module ItemReader
