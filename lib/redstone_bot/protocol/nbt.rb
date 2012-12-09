@@ -31,27 +31,6 @@ module RedstoneBot
         end
       end
       
-      def tmphax_nbt_stuff  # TODO: remove
-        while true        
-          case b.ord
-          when 0 then return tags
-          when 1 then tags << [:byte, read_utf8_string, read_signed_byte]
-          when 2 then tags << [:short, read_utf8_string, read_short]
-          when 3 then tags << [:int, read_utf8_string, read_int]
-          when 4 then tags << [:long, read_utf8_string, read_long]
-          when 5 then tags << [:float, read_utf8_string, read_float]    # TODO: is this correct endianness?
-          when 6 then tags << [:double, read_utf8_string, read_double]  # TODO: is this correct endianness?
-          when 7 then tags << [:bytes, read_utf8_string, read_unsigned_int.times.collect { read_signed_byte }]
-          when 8 then tags << [:string, read_utf8_string, read_utf8_string]
-          when 9
-            raise "NBT list not implemented"
-            tags << [:list, read_utf8_string, read_byte, read_unsigned_int.times.collect { }]
-          when 10 then tags << [:compound, read_utf8_string, read_nbt]
-          when 11 then tags << [:ints, read_utf8_string, read_unsigned_int.times.collect { read_int }]          
-          end
-        end
-        tags
-      end
     end
  
     module Encoder
