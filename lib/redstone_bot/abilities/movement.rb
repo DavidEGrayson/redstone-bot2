@@ -51,7 +51,7 @@ module RedstoneBot
     def path_to(target, opts={})
       return unless require_brain { path_to target, opts }
 
-      target = target.to_int_coords
+      target = target.to_coords.to_int_coords
       pathfinder = opts[:pathfinder] || Pathfinder.new(chunk_tracker)
       
       return :solid if chunk_tracker.block_type(target).solid?
@@ -77,28 +77,24 @@ module RedstoneBot
       tolerance = opts[:tolerance] || 0.2
       speed = opts[:speed] || 10
       axes = [Coords::X, Coords::Y, Coords::Z].cycle
-      waited = false
       
-      while true
+      move(opts[:update_period]) do |period|
         d = target - body.position
         if d.norm < tolerance
-          wait_for_next_position_update(opts[:update_period]) unless waited
           return # reached it
         end
-      
-        wait_for_next_position_update(opts[:update_period])
-        waited = true
+
         body.look_at target
+                
+        if body.bumped?
+          d = d.project_onto_unit_vector(axes.next)
+        end
         
-        max_distance = speed*body.updater.last_period
+        max_distance = speed * period
         if d.norm > max_distance
           d = d.normalize*max_distance
         end
-      
-        if body.bumped?
-          d = d.project_onto_unit_vector(axes.next)*3
-        end
-      
+        
         body.position += d
       end
       
@@ -113,17 +109,17 @@ module RedstoneBot
     
       speed = opts[:speed] || 10
     
-      while true
+      move(opts[:update_period]) do |period|
         if body.position.y >= y
           return
         end
         
-        wait_for_next_position_update(opts[:update_period])
-        body.position += Coords::Y*(speed*body.updater.last_period)
         if body.bumped?
-          chat "I bumped my head!"   # TODO: make this work!  requires funamental changes probably
+          chat "I bumped my head!"
           return :bumped
         end
+        
+        body.position += Coords::Y * (speed * period)
       end
     end
 	

@@ -16,10 +16,14 @@ module RedstoneBot
         nbt_stream = gunzip_stream(gzipped_data)
         nbt_hash = nbt_stream.read_nbt
         
-        enchantments = nbt_hash["tag"]["ench"].each_with_object({}) do |c, h|
-          enchantment = Enchantments[c["id"]]
-          level = c["lvl"]
-          h[enchantment] = level
+        if !(nbt_hash["tag"] && nbt_hash["tag"]["ench"])
+          $stderr.puts "warning: Got strange enchantment data #{nbt_hash.inspect} with #{item_type},#{damage}"
+        else
+          enchantments = nbt_hash["tag"]["ench"].each_with_object({}) do |c, h|
+            enchantment = Enchantments[c["id"]]
+            level = c["lvl"]
+            h[enchantment] = level
+          end
         end
       end
       

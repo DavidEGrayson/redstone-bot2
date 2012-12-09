@@ -14,7 +14,7 @@ module RedstoneBot
       
       ground = find_nearby_ground || -1
       
-      max_distance = speed * body.updater.last_period
+      max_distance = speed * body.default_period
       
       dy = ground - body.position.y
       if dy.abs > max_distance

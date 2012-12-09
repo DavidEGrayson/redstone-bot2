@@ -11,7 +11,7 @@ module RedstoneBot
     StorageWaypoint = Coords[-210, 63, 784]  # with a better pathinder we wouldn't need this
   
     PrintPacketClasses = [
-      Packet::Thunderbolt
+      Packet::Thunderbolt, #Packet::UpdateTileEntity
     ]
   
     def setup
@@ -39,7 +39,6 @@ module RedstoneBot
       end
     end
     
-    # Runs in a position update fiber
     def farm
       return unless require_brain { farm }
       

@@ -52,7 +52,7 @@ module RedstoneBot
     end
         
     extend Forwardable
-    def_delegators :@body, :position, :look_at, :distance_to, :closest, :wait_for_next_position_update
+    def_delegators :@body, :position, :look_at, :distance_to, :closest, :move
     def_delegators :@client, :chat, :time_string, :send_packet
   end
 end

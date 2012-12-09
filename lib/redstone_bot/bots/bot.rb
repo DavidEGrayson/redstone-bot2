@@ -37,11 +37,11 @@ module RedstoneBot
     def setup
       super
 
-      @body.on_position_update do
+      @body.default_position_update do
         default_position_update
       end
 
-      setup_brain
+      @brain = new_brain
       @entity_tracker = EntityTracker.new(@client, @body)
       @chunk_tracker = ChunkTracker.new(@client)
       @window_tracker = WindowTracker.new(@client)
@@ -63,15 +63,9 @@ module RedstoneBot
       @chat_filter.listen &method(:chat_mover)
     end
 
-    def setup_brain
-      @brain = Brain.new(self)
-    end
-
     def default_position_update
-      if !body.busy?
-        fall_update
-        look_at entity_tracker.closest_entity
-      end
+      fall_update
+      look_at entity_tracker.closest_entity
     end
 
     def standing_on

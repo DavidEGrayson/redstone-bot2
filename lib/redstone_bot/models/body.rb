@@ -1,4 +1,5 @@
 require_relative 'coords'
+require_relative '../brain'
 
 module RedstoneBot
   class Look < Struct.new(:yaw, :pitch)
@@ -11,10 +12,7 @@ module RedstoneBot
     # it is calculated.
   
     attr_accessor :position, :look, :on_ground, :stance, :health
-    attr_accessor :debug
-    attr_accessor :position_update_condition_variable
-    attr_accessor :position_update_count
-    attr_accessor :updater
+    attr_accessor :default_period
     
     def on_ground?
       @on_ground
@@ -27,18 +25,12 @@ module RedstoneBot
     def bumped?
       @bumped
     end
-    
-    def busy?
-      @position_update_condition_variable.waiters_count > 0
-    end
   
     def initialize(client, synchronizer)
       @synchronizer = synchronizer
-      @position_updaters = []
-      @position_update_condition_variable = @synchronizer.new_condition
       @client = client
-      @update_period = 0.05
-      @position_update_count = 0
+      @default_period = 0.05
+      
       client.listen do |p|
         case p
           when Packet::PlayerPositionAndLook
@@ -54,10 +46,15 @@ module RedstoneBot
             # Confirm the new position with the server.
             send_update
             
-            if @updater
+            if @started
+              # We already got this packet before, so it must be a bump; the server didn't like
+              # out position and is correcting it.
               @bumped = true
             else
-              @updater = @synchronizer.regular_updater 0.05, &method(:position_update)
+              # This is our first PlayerPositionAndLook packet, so start the falling process.
+              @default_updater = @synchronizer.new_brain
+              @default_updater.start &method(:default_update)
+              @started = true
             end
             
           when Packet::UpdateHealth
@@ -71,21 +68,62 @@ module RedstoneBot
       
     end
     
+    def default_update
+      while true
+        if !@busy
+          delay_after_last_update @default_period
+          @default_position_update.call if @default_position_update
+          send_update
+        else
+          @synchronizer.delay @default_period
+        end
+      end
+    end
+    
+    def move(update_period=nil)
+      # This must be called from inside a brain.
+      # TODO: call require_brain here so this called outside of the brain?
+      
+      update_period ||= @default_period
+      
+      if @busy
+        $stderr.puts "#{@client.time_string}: warning: body is already busy and #move was called."
+      end
+      
+      begin
+        @busy = true
+        while true
+          @bumped = false
+          delay_after_last_update update_period        
+          yield update_period
+          send_update
+        end
+      ensure
+        @busy = false
+        
+        # This is necessary because otherwise if someone called loop { move { break } }
+        # there would be no position updates sent for a long time.
+        send_update
+      end
+    end
+
+    def delay_after_last_update(period)
+      diff = period - time_since_last_update
+      if diff > 0
+        @synchronizer.delay diff
+      end
+    end
+
+    def time_since_last_update
+      Time.now - @last_update_time
+    end
+    
     def announce_received_position(packet)
       $stderr.puts "#{@client.time_string} #{packet}"
     end
     
-    def on_position_update(&proc)
-      @position_updaters << proc
-    end
-    
-    def position_update
-      @position_updaters.each &:call
-      self.stance = position.y + 1.62   # TODO: handle this better!
-      @bumped = false
-      send_update
-      @position_update_count += 1
-      @position_update_condition_variable.broadcast
+    def default_position_update(&proc)
+      @default_position_update = proc
     end
     
     def look_at(target)
@@ -110,31 +148,19 @@ module RedstoneBot
       things.min_by { |t| distance_to t }
     end
     
-    def wait_for_next_position_update(update_period = nil)
-      if update_period
-        self.updater.next_period = update_period
-      end
-      count = position_update_count
-      # $stderr.puts "waiting..."
-      position_update_condition_variable.wait
-      # $stderr.puts "awakened..."
-      diff = position_update_count - count
-      if diff != 1
-        $stderr.puts "Warning: Failed to context switch to thread #{Thread.current} in time after waiting for position update (diff=#{diff})."
-      end
-    end
-    
     def to_coords
       position
     end
     
     protected  
     def send_update
+      self.stance = position.y + 1.62   # TODO: handle this better!
       packet = Packet::PlayerPositionAndLook.new(
               position.x, position.y, position.z,
               stance, look.yaw, look.pitch, on_ground)
       @client.send_packet packet
-      puts "#{@client.time_string} tx#{packet.to_s}" if debug
+      @last_update_time = Time.now
+      # puts "#{@client.time_string} TX #{packet}"
     end
   end
 end

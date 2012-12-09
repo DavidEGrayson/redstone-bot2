@@ -23,10 +23,6 @@ class TestBot < RedstoneBot::Bot
     @body = TestBody.new(client, self)
   end
   
-  def setup_brain
-    @brain = TestBrain.new(self)
-  end
-  
   def initialize_body(coords)
     client << RedstoneBot::Packet::PlayerPositionAndLook.new(coords[0], coords[1], coords[2], coords[1]+1.62, 0, 0, false)  
   end

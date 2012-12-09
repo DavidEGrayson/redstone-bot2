@@ -69,5 +69,9 @@ module RedstoneBot
     def new_condition
       Condition.new(self)
     end
+    
+    def new_brain
+      Brain.new(self)
+    end
   end
 end

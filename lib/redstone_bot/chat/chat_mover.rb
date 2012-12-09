@@ -28,7 +28,7 @@ module RedstoneBot
       when "m"
         player = entity_tracker.player(p.username)
         if player
-          x, z = player.position.x, player.position.z
+          x, z = player.coords.x, player.coords.z
           chat "coming to #{x}, #{z}!"
           miracle_jump x, z
         else
@@ -44,8 +44,7 @@ module RedstoneBot
         if player
           chat "coming!"
           follow(speed: 20) do 
-            leader = entity_tracker.player(p.username)
-            leader and leader.position
+            entity_tracker.player(p.username)
           end
         else
           chat "dunno where U r"
@@ -53,15 +52,23 @@ module RedstoneBot
       when "fetch"
         item = entity_tracker.closest_entity(Item)
         if item
-          path_to item.position
+          path_to item
         else 
           chat "don't see dat"
+        end
+      when "M"
+        player = entity_tracker.player(p.username)
+        if player
+          chat "coming!"
+          move_to player
+        else
+          chat "dunno where U r"
         end
       when "h"
         player = entity_tracker.player(p.username)
         if player
           chat "coming!"
-          path_to player.position
+          path_to player
         else
           chat "dunno where U r"
         end

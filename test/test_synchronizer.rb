@@ -42,6 +42,10 @@ module TestSynchronizer
   def new_condition
     TestCondition.new(self)
   end
+  
+  def new_brain
+    TestBrain.new(self)
+  end
 end
 
 class TestStandaloneSynchronizer

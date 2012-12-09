@@ -29,6 +29,7 @@ end
 
 # Silence warnings.
 class RedstoneBot::WindowTracker
+  undef warn_about_rejection  # throws a nice exception
   def warn_about_rejection(action_number)
   end
 end
