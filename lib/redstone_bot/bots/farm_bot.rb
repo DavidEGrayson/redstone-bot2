@@ -72,7 +72,7 @@ module RedstoneBot
         if wheats_dug > 0
           time(2..10) do
             collect_nearby_items
-            wait_for_next_position_update  # avoid accidentally blocking
+            delay 0.05  # avoid blocking if there are no items
           end
         elsif coords = closest_fully_grown_wheat
           timeout(60) do
@@ -80,7 +80,7 @@ module RedstoneBot
           end
         end
         
-        wait_for_next_position_update
+        delay 0.05
       end
       
       chat "done farming"
@@ -88,7 +88,7 @@ module RedstoneBot
     
     def dig_and_replant_within_reach
       wheats_dug = 0
-      body.position.change_y(FarmBounds[1].min).spiral.first(100).each do |coords|
+      body.coords.change_y(FarmBounds[1].min).spiral.first(100).each do |coords|
         if !wield(ItemType::Seeds)
           break
         end
@@ -148,7 +148,7 @@ module RedstoneBot
         
         if item && distance_to(item) < 30
           puts "#{time_string} moving to #{item}"
-          move_to item.position.change_y(FarmBounds[1].min)
+          move_to item.coords.change_y(FarmBounds[1].min)
         else
           return
         end
@@ -157,7 +157,7 @@ module RedstoneBot
     
     def desirable_items
       entity_tracker.select do |entity|
-        (ItemType::WheatItem === entity or ItemType::Seeds === entity) and FarmBounds[1].include?(entity.position.y.floor)
+        (ItemType::WheatItem === entity or ItemType::Seeds === entity) and FarmBounds[1].include?(entity.coords.y.floor)
       end
     end
     

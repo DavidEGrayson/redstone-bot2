@@ -58,6 +58,12 @@ module RedstoneBot
     def player(name)
       entities.values.find { |entity| entity.name == name and entity.is_a?(Player) }
     end
+    
+    def entities_with_enchanted_items 
+      select do |entity|
+        entity.respond_to?(:items) && (entity.items-[nil]).any? { |i| i.enchantments }
+      end
+    end 
 
     def report
       s = "==== ENTITITES ====\n"

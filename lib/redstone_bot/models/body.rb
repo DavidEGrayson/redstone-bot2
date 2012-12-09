@@ -152,6 +152,10 @@ module RedstoneBot
       things.min_by { |t| distance_to t }
     end
     
+    def coords
+      position
+    end
+    
     def to_coords
       position
     end

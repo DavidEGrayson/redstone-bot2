@@ -16,10 +16,21 @@ module RedstoneBot
         nbt_stream = gunzip_stream(gzipped_data)
         nbt_hash = nbt_stream.read_nbt
         
-        if !(nbt_hash["tag"] && nbt_hash["tag"]["ench"])
-          $stderr.puts "warning: Got strange enchantment data #{nbt_hash.inspect} with #{item_type},#{damage}"
+        if nbt_hash["tag"] && nbt_hash["tag"]["ench"]
+          # This is the normal case.
+          ench_list = nbt_hash["tag"]["ench"]
+        elsif nbt_hash[""] && nbt_hash[""]["ench"]
+          # The Notchian server sends {""=>{"ench"=>[{"id"=>48, "lvl"=>1}]}} sometimes.
+          # I think it's a skeleton with an enchanted bow.
+          # If we try to re-encode this and send it to the server we'll probably get in trouble
+          # because we are not remembering that the name of the root compound is "".
+          ench_list = nbt_hash[""]["ench"]
         else
-          enchantments = nbt_hash["tag"]["ench"].each_with_object({}) do |c, h|
+          $stderr.puts "warning: Got strange enchantment data #{nbt_hash.inspect} with #{item_type},#{damage}"
+        end
+        
+        if ench_list
+          enchantments = ench_list.each_with_object({}) do |c, h|
             enchantment = Enchantments[c["id"]]
             level = c["lvl"]
             h[enchantment] = level
