@@ -60,7 +60,7 @@ module RedstoneBot
 
       details = []
       details << "damage=#{damage}" if damage != 0
-      details << "#{enchant_data.inspect}" if enchantments
+      details += enchantments.collect { |e,l| "#{e}=#{l}" } if enchantments
       s += "(" + details.join(" ") + ")" if !details.empty?
 
       s

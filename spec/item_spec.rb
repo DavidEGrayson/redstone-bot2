@@ -58,6 +58,7 @@ describe RedstoneBot::Item do
     specify { @item.item_type.should == RedstoneBot::ItemType::IronAxe }
     specify { @item.damage.should == 12 }
     specify { @item.enchantments.should == { unbreaking: 1 } }    
+    specify { @item.to_s.should == "IronAxe(damage=12 unbreaking=1)" }
     
     it "re-encodes the same way" do
       $e.encode_item(@item).should == binary_data 
