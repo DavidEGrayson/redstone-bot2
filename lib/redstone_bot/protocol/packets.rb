@@ -1173,12 +1173,19 @@ module RedstoneBot
   
   class Packet::UpdateTileEntity < Packet
     packet_type 0x84
-    attr_reader :coords, :action, :nbt_data
+    attr_reader :coords, :action, :data
     
-    def receive_data(socket)
-      @coords = Coords[socket.read_int, socket.read_short, socket.read_int].freeze
-      @action = socket.read_byte
-      @nbt_data = socket.read_byte_array
+    def receive_data(stream)
+      @coords = Coords[stream.read_int, stream.read_short, stream.read_int].freeze
+      @action = stream.read_byte
+      gzipped_data = stream.read_byte_array
+      nbt_stream = stream.gunzip_stream(gzipped_data)
+      nbt_hash = nbt_stream.read_nbt
+      @data = nbt_hash
+    end
+    
+    def to_s
+      "UpdateTileEntity(#@coords, action=#@action, #{@data.inspect})"
     end
   end
   

@@ -23,8 +23,10 @@ describe "nbt" do
 
   it_behaves_like "equates", "empty compound", "\x0A\x00\x03tag\x00", { "tag" => {} }
   
-  it_behaves_like "equates", "byte", "\x01\x00\x01b\x10", { "b" => 16 }
-  it_behaves_like "equates", "short", "\x02\x00\x01s\xFE\xD4", { "s" => -300 }
+  it_behaves_like "equates", "byte",   "\x01\x00\x01b\x10", { "b" => 0x10 }
+  it_behaves_like "equates", "short",  "\x02\x00\x01s\xFE\xD4", { "s" => -300 }
+  it_behaves_like "equates", "int",    "\x03\x00\x01i\x55\x44\x33\x22", { "i" => 0x55443322 }
+  it_behaves_like "equates", "string", "\x08\x00\x01r\x00\x0501234", { "r" => "01234" }
   
   # Some real enchant data from the server.
   data = "\x0A\x00\x03\x74\x61\x67\x09\x00\x04\x65\x6E\x63\x68\x0A\x00" +

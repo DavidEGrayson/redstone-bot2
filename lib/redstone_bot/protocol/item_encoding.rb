@@ -25,6 +25,7 @@ module RedstoneBot
           # If we try to re-encode this and send it to the server we'll probably get in trouble
           # because we are not remembering that the name of the root compound is "".
           ench_list = nbt_hash[""]["ench"]
+          $stderr.puts "warning: #{nbt_hash}"
         else
           $stderr.puts "warning: Got strange enchantment data #{nbt_hash.inspect} with #{item_type},#{damage}"
         end
