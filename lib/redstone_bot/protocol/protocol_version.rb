@@ -1,3 +1,3 @@
 module RedstoneBot
-  ProtocolVersion = 49
+  ProtocolVersion = 51
 end

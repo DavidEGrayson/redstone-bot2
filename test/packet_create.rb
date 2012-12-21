@@ -42,14 +42,15 @@ module RedstoneBot
     end.join
     compressed_data = Zlib::Deflate.deflate(data)
     
-    receive_data test_stream [metadata.size, compressed_data.size].pack("S>L>") + compressed_data + binary_metadata
+    receive_data test_stream [metadata.size, compressed_data.size, 1].pack("S>L>C") + compressed_data + binary_metadata
   end
   
-  def (Packet::SpawnDroppedItem).create(eid, item, coords, yaw=0, pitch=0, roll=0)
-    binary_data = [eid].pack("l>") + $e.encode_item(item) + 
-     [(coords[0]*32).round, (coords[1]*32).round, (coords[2]*32).round,
-     yaw, pitch, roll
-    ].pack("l>l>l>ccc")
+  def (Packet::SpawnObject).create(eid, type, coords, yaw=0, pitch=0)
+    # For now let's just set the multi-purpose "int_field" to 0 so we don't have to include a speed.
+    binary_data = $e.int(eid) + $e.byte(type) +
+      $e.int((coords[0]*32).floor) + $e.int((coords[1]*32).floor) + $e.int((coords[2]*32).floor) + 
+      $e.signed_byte(yaw) + $e.signed_byte(pitch) + $e.int(0)
+      
     receive_data test_stream binary_data
   end
   

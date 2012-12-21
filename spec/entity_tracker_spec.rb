@@ -17,7 +17,7 @@ describe RedstoneBot::EntityTracker do
     pitch = -128
     roll = 127
   
-    @client << RedstoneBot::Packet::SpawnDroppedItem.create(eid, RedstoneBot::Item.new(item, count, damage), coords, yaw, pitch, roll)
+    @client << RedstoneBot::Packet::SpawnObject.create(eid, RedstoneBot::Item.new(item, count, damage), coords, yaw, pitch, roll)
     
     shovels = @entity_tracker.entities_of_type(RedstoneBot::ItemType::IronShovel)
     shovels.size.should == 1

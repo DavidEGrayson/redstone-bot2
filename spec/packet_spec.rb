@@ -72,30 +72,6 @@ describe RedstoneBot::Packet::MapChunkBulk do
   end
 end
 
-describe RedstoneBot::Packet::SpawnDroppedItem do
-  it "correctly parses binary data" do
-     eid = 44
-     item_type = RedstoneBot::ItemType::GrassBlock
-     count = 13
-     metadata = 3
-     item = RedstoneBot::Item.new(item_type, count, metadata)
-     coords = RedstoneBot::Coords[100.25, 200, 300.03125]
-     yaw = -3
-     pitch = -128
-     roll = 127
-     
-     p = described_class.create(eid, item, coords, yaw, pitch, roll)
-     p.eid.should == eid
-     p.item.item_type.should == item_type
-     p.item.count.should == count
-     p.item.damage.should == metadata
-     p.coords.should be_within(0.00001).of(coords)
-     p.yaw.should == yaw
-     p.pitch.should == pitch
-     p.roll.should == roll
-  end
-end
-
 describe RedstoneBot::Packet::SpawnMob do
   it "correctly parses binary data" do
     eid = 45
