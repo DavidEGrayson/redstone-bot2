@@ -12,7 +12,6 @@ module RedstoneBot
   
     PrintPacketClasses = [
       Packet::Thunderbolt,
-      Packet::SpawnObject, Packet::EntityMetadata
     ]
   
     def setup
@@ -67,8 +66,6 @@ module RedstoneBot
           end
         end
         
-        # TODO: go dump your stuff unless you have room for seeds AND wheatitem
-                
         wheats_dug = dig_and_replant_within_reach
         if wheats_dug > 0
           time(2..10) do
@@ -96,7 +93,7 @@ module RedstoneBot
         
         ground = coords - Coords::Y
                 
-        next unless distance_to(ground) < 5   # TODO: more carefully choose a value for this
+        next unless distance_to(ground) < 5
         
         if block_type(coords) == ItemType::WheatBlock && block_metadata(coords) == ItemType::WheatBlock.fully_grown
           puts "#{time_string} digging #{coords}"

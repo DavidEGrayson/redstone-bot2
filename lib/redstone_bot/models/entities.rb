@@ -90,6 +90,13 @@ module RedstoneBot
     end
     
     def set_metadata(hash)
+      hash = hash.dup
+      
+      # Typically we receive 0 => 0 and 1 => 300 when an object is spawned.  I am not sure
+      # what this metadata means, so just ignore it.
+      hash.delete(0)
+      hash.delete(1)
+    
       item = hash[10]
       if hash != {10 => item} || !item.is_a?(Item)
         raise ArgumentError.new("Unexpected metadata for a #{self.class}: #{hash.inspect}.")

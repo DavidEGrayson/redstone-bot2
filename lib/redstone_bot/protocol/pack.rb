@@ -81,7 +81,7 @@ module RedstoneBot
           when 6 then [read_int, read_int, read_int]
           end
       end
-      buf
+      buf.freeze
     end
 
   end

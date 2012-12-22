@@ -31,14 +31,13 @@ module RedstoneBot
       while true
         target = yield
         break if target.nil?
+        target = target.to_coords
         if (body.position - target).abs <= 1
-          # maybe fall_update here instead
-          wait_for_next_position_update 
+          delay 0.05
         else
           case path_to target, opts
           when :solid, nil
-            # maybe fall_update here instead
-            wait_for_next_position_update        
+            delay 0.05
           when :no_path
             chat "cant get to U"
             body.delay 10
