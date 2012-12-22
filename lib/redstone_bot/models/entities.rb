@@ -23,6 +23,10 @@ module RedstoneBot
       @attitude = attitude
     end
     
+    # This is overwritten in subclasses to store useful data.
+    def set_metadata(hash)    
+    end
+    
     # to_coords is not an alias so that subclasses can easily and correctly override 'coords'
     def to_coords
       coords
@@ -69,19 +73,38 @@ module RedstoneBot
       "Player(#{eid}, #{name.inspect}, #{coords}, #{(items-[nil]).size} items)"
     end
   end
+  
+  class ObjectEntity < Entity
+    extend TracksTypes
+    types.default = self
+  end
 
-  class DroppedItem < Entity
+  class DroppedItem < ObjectEntity
     attitude_is :passive   # this probably does not matter
+    type_is 2
+    
+    attr_reader :item   # this is nil for a while when the object is first created
 
-    attr_reader :item
-
-    def initialize(eid, coords, item)
-      super eid, coords
-      @item = item
+    def item_type
+      @item.item_type if @item
     end
     
-    def item_type
-      @item.item_type
+    def set_metadata(hash)
+      hash = hash.dup
+      
+      # Typically we receive 0 => 0 and 1 => 300 when an object is spawned.  I am not sure
+      # what this metadata means, so just ignore it.
+      hash.delete(0)
+      hash.delete(1)
+    
+      item = hash[10]
+      if hash != {10 => item} || !item.is_a?(Item)
+        raise ArgumentError.new("Unexpected metadata for a #{self.class}: #{hash.inspect}.")
+      end
+      
+      # Oops, look at that, a little bit of the protocol leaked into the models directory :(
+      
+      @item = item
     end
     
     def to_s

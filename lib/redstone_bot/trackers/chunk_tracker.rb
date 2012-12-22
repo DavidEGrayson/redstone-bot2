@@ -213,7 +213,7 @@ module RedstoneBot
             notify_change_listeners chunk_id, p
           end
         end
-      end
+      end if client
     end
     
     # coords is a RedstoneBot::Coords object or an array of numbers

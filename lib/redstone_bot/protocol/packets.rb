@@ -414,6 +414,11 @@ module RedstoneBot
     def encode_data
       unsigned_short(@spot_id)
     end
+    
+    def receive_data(stream)
+      @spot_id = stream.read_unsigned_short
+      puts "TODO: handle receiving HeldItemChange packets!  (#@spot_id)"
+    end
   end
   
   class Packet::UseBed < Packet
@@ -475,26 +480,6 @@ module RedstoneBot
     end
   end
   
-  class Packet::SpawnDroppedItem < Packet
-    packet_type 0x15
-    attr_reader :eid
-    attr_reader :item
-    attr_reader :coords, :yaw, :pitch, :roll
-    
-    def receive_data(stream)
-      @eid = stream.read_int
-      @item = stream.read_item
-      @coords = Coords[stream.read_int/32.0, stream.read_int/32.0, stream.read_int/32.0].freeze
-      @yaw = stream.read_signed_byte
-      @pitch = stream.read_signed_byte
-      @roll = stream.read_signed_byte
-    end
-    
-    def to_s
-      "SpawnDroppedItem(#{eid}, #{item_type}, #{count}, #{metadata.inspect}, #{position}, yw=#{yaw}, pt=#{pitch}, rl=#{roll})"
-    end
-  end
-  
   class Packet::CollectItem < Packet
     packet_type 0x16
     attr_reader :collected_eid
@@ -505,25 +490,39 @@ module RedstoneBot
       @collector_eid = stream.read_int 
     end
   end
-  
+   
   class Packet::SpawnObject < Packet  # includes vehicles
     packet_type 0x17
     attr_reader :eid
-    attr_reader :type
+    attr_reader :type     # http://www.wiki.vg/Entities#Objects
     attr_reader :coords
-    attr_reader :thrower_eid
+    attr_reader :yaw, :pitch
+    attr_reader :int_field
     attr_reader :speed_x, :speed_y, :speed_z
   
-    def receive_data(socket)
-      @eid = socket.read_int
-      @type = socket.read_byte
-      @coords = Coords[socket.read_int/32.0, socket.read_int/32.0, socket.read_int/32.0].freeze
-      @thrower_eid = socket.read_int
-      if @thrower_eid != 0
-        @speed_x = socket.read_short
-        @speed_y = socket.read_short
-        @speed_z = socket.read_short
+    def receive_data(stream)
+      @eid = stream.read_int
+      @type = stream.read_byte
+      @coords = Coords[stream.read_int/32.0, stream.read_int/32.0, stream.read_int/32.0].freeze
+      @yaw = stream.read_signed_byte
+      @pitch = stream.read_signed_byte
+      
+      # The int field has different info depending on @type.  Details are here: http://www.wiki.vg/Object_Data      
+      @int_field = stream.read_int
+      
+      if @int_field != 0
+        @speed_x = stream.read_short
+        @speed_y = stream.read_short
+        @speed_z = stream.read_short
       end
+    end
+    
+    def to_s
+      details = [eid, "type=#{type}", coords, "yaw=#{yaw}", "pitch=#{pitch}", int_field]
+      if int_field != 0
+        details << "speed=(#@speed_x, #@speed_y, #@speed_z)"
+      end
+      "SpawnObject(#{details.join(", ")})"
     end
   end
   
@@ -710,6 +709,10 @@ module RedstoneBot
     def receive_data(stream)
       @eid = stream.read_int
       @metadata = stream.read_metadata
+    end
+    
+    def to_s
+      "EntityMetadata(#@eid, #{@metadata.inspect})"
     end
   end
   
@@ -912,6 +915,7 @@ module RedstoneBot
     def receive_data(stream)
       chunk_column_count = stream.read_unsigned_short
       data_size = stream.read_unsigned_int
+      stream.read_bool   # unknown use
       @data = Zlib::Inflate.inflate stream.read(data_size)
       @metadata = chunk_column_count.times.collect do
         chunk_id = [stream.read_int*16, stream.read_int*16]
@@ -1171,6 +1175,10 @@ module RedstoneBot
     end
   end
   
+  # This packet tells us all about mob spawners.  Example data:
+  # {""=>{"id" =>"MobSpawner", "MinSpawnDelay"=>200, "RequiredPlayerRange"=>16,
+  #       "Delay"=>20, "MaxNearbyEntities"=>6, "MaxSpawnDelay"=>800, "SpawnRange"=>4,
+  #       "SpawnCount"=>4, "z"=>533, "EntityId"=>"Spider", "y"=>25, "x"=>-186} }
   class Packet::UpdateTileEntity < Packet
     packet_type 0x84
     attr_reader :coords, :action, :data

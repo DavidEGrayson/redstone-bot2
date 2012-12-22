@@ -21,8 +21,9 @@ module RedstoneBot
       case p
       when Packet::SpawnNamedEntity
         entities[p.eid] = Player.new p.eid, p.coords, p.player_name
-      when Packet::SpawnDroppedItem
-        entities[p.eid] = DroppedItem.new p.eid, p.coords, p.item
+      when Packet::SpawnObject
+        # Note: We are throwing away the yaw, pitch and the general object data fields from the SpawnObject packet
+        entities[p.eid] = ObjectEntity.create p.type, p.eid, p.coords
       when Packet::SpawnMob
         entities[p.eid] = Mob.create p.type, p.eid, p.coords
       when Packet::DestroyEntity
@@ -38,6 +39,8 @@ module RedstoneBot
         entity.coords += p.coords_change
       when Packet::EntityEquipment
         entity.items[p.spot_id] = p.item
+      when Packet::EntityMetadata
+        entity.set_metadata p.metadata
       end
     end
     
