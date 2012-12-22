@@ -23,54 +23,54 @@ module RedstoneBot
       @packet_type = type
     end
   end
-  
+
   class Packet
     include DataEncoder
-  
+
     # Associates packet id byte to packet class.
     @packet_types = {}
-    
+
     def self.packet_types
       @packet_types
     end
-    
+
     # This is called in subclass definitions.
     def self.packet_type(type)
       @packet_type = type
       Packet.packet_types[type] = self
     end
-    
+
     def self.type
       @packet_type
     end
-    
-    def self.receive(socket)
-      type = socket.read_byte
+
+    def self.receive(stream)
+      type = stream.read_byte
       packet_class = packet_types[type]
       raise UnknownPacketError.new(type) if packet_class.nil?
-      return packet_class.receive_data(socket)
+      return packet_class.receive_data(stream)
     end
-    
-    # Only called on a sublass, once the packet type has been received    
-    def self.receive_data(socket)
+
+    # Only called on a sublass, once the packet type has been received
+    def self.receive_data(stream)
       p = allocate
-      p.receive_data(socket)
+      p.receive_data(stream)
       p
     end
-    
-    def receive_data(socket)
+
+    def receive_data(stream)
       raise "receive_data instance method or class method not implemented in #{self.class.name}"
     end
-    
+
     # Only called on a subclass
     def encode
       type_byte + encode_data
     end
-      
+
     def encode_data
       raise "encode_data instance method not implemented in #{self.class.name}"
     end
-    
+
     def type_byte
       byte(self.class.type)
     end
@@ -79,20 +79,20 @@ module RedstoneBot
   class Packet::KeepAlive < Packet
     packet_type 0x00
     attr_accessor :id
-    
+
     def initialize(id=0)
       @id = id
     end
-    
-    def receive_data(socket)
-      @id = socket.read_int
+
+    def receive_data(stream)
+      @id = stream.read_int
     end
-    
+
     def encode_data
       int(id)
     end
   end
-  
+
   class Packet::LoginRequest < Packet
     packet_type 0x01
     attr_reader :eid
@@ -102,67 +102,67 @@ module RedstoneBot
     attr_reader :dimension     # -1 => :nether, 0 => :overworld, 1 => :the_end
     attr_reader :difficulty
     attr_reader :max_players
-    
+
     def initialize(username)
       @username = username
     end
-    
+
     def encode_data
       ""
     end
-    
-    def receive_data(socket)
-      @eid = socket.read_int
-      @level_type = socket.read_string
-      @server_mode = socket.read_byte
-      @dimension = socket.read_signed_byte
-      @difficulty = socket.read_byte
-      socket.read_byte  # was previously world height
-      @max_players = socket.read_byte
+
+    def receive_data(stream)
+      @eid = stream.read_int
+      @level_type = stream.read_string
+      @server_mode = stream.read_byte
+      @dimension = stream.read_signed_byte
+      @difficulty = stream.read_byte
+      stream.read_byte  # was previously world height
+      @max_players = stream.read_byte
     end
   end
-  
+
   class Packet::Handshake < Packet
     packet_type 0x02
     attr_reader :username
     attr_reader :hostname
     attr_reader :port
-    
+
     def initialize(username, hostname, port)
       @username, @hostname, @port = username, hostname, port
     end
-    
+
     def encode_data
       byte(ProtocolVersion) + string(username) + string(hostname) + unsigned_int(port)
     end
-    
+
   end
-  
+
   class Packet::ChatMessage < Packet
     packet_type 0x03
     attr_reader :data, :death_type, :killer_name, :username, :chat
-    
+
     # Source: http://www.wiki.vg/Chat except I left out the funny characters
     # because I'd have to think a little bit more about encodings to make it work
     AllowedChatChars = '!\"#$%&\'`()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_abcdefghijklmnopqrstuvwxyz{|}~| '.split('')
-    
+
     def initialize(data)
       @data = data
       init_player_chat_info or init_death_info
     end
-       
-    def receive_data(socket)
-      initialize(socket.read_string)
+
+    def receive_data(stream)
+      initialize(stream.read_string)
     end
-    
+
     def ==(other)
       other.respond_to?(:data) && @data == other.data
     end
-    
+
     def safe_data
       data.chars.select { |c| AllowedChatChars.include?(c) }[0,100].join
     end
-       
+
     def encode_data
       string(safe_data)
     end
@@ -174,15 +174,15 @@ module RedstoneBot
     def death?
       !!@death_type
     end
-    
+
     def player_chat?
       !!@chat
     end
-    
+
     def whisper?
       @whisper
     end
-    
+
     # Removes Minecraft color and formatting codes.
     def self.strip_codes(str)
       str.gsub /\u00A7[0-9a-z]/, ''
@@ -193,13 +193,13 @@ module RedstoneBot
       p.player_chat(username, chat)
       p
     end
-    
+
     def player_chat(username, chat)
       @data = "<#{username}> #{chat}"
       @username = username
       @chat = chat
     end
-   
+
     protected
 
     def init_player_chat_info
@@ -216,7 +216,7 @@ module RedstoneBot
         return false
       end
     end
-    
+
     def init_death_info
       @death_type = case data
         when /^(.+) drowned$/ then :drowned
@@ -238,57 +238,57 @@ module RedstoneBot
         when /^(.+) didn't have a chance$/ then :no_chance
         when /^([^\s]*)$/ then :unknown
         end
-      
+
       if @death_type
         @username = $1
         @killer_name = $2   # mob or player name
       end
-    end  
+    end
   end
-    
+
   class Packet::TimeUpdate < Packet
     packet_type 0x04
     attr_reader :time, :day_time
-    
+
     def receive_data(stream)
       @time = stream.read_long
       @day_time = stream.read_long
     end
   end
-  
+
   class Packet::EntityEquipment < Packet
     packet_type 0x05
     attr_reader :eid, :spot_id, :item
-    
+
     def receive_data(stream)
       @eid = stream.read_int
       @spot_id = stream.read_short
       @item = stream.read_item
     end
   end
-  
+
   class Packet::SpawnPosition < Packet
     packet_type 0x06
     attr_reader :coords
-    
+
     def receive_data(stream)
       @coords = Coords[stream.read_int, stream.read_int, stream.read_int].freeze
     end
   end
-  
+
   class Packet::UpdateHealth < Packet
     packet_type 0x08
     attr_reader :health
     attr_reader :food
     attr_reader :food_saturation
-    
+
     def receive_data(stream)
       @health = stream.read_short
       @food = stream.read_short
       @food_saturation = stream.read_float
     end
   end
-  
+
   class Packet::Respawn < Packet
     packet_type 0x09
     attr_reader :dimension
@@ -296,7 +296,7 @@ module RedstoneBot
     attr_reader :game_mode
     attr_reader :world_height
     attr_reader :level_type
-    
+
     def receive_data(stream)
       @dimension = stream.read_int
       @difficulty = stream.read_byte
@@ -304,35 +304,35 @@ module RedstoneBot
       @world_height = stream.read_short
       @level_type = stream.read_string
     end
-    
+
   end
-  
+
   class Packet::Player < Packet
     packet_type 0x0A
     attr_reader :on_ground
   end
-  
+
   class Packet::PlayerPosition < Packet
     packet_type 0x0B
     attr_reader :coords, :stance, :on_ground
   end
-  
+
   class Packet::PlayerLook < Packet
     packet_type 0x0C
     attr_reader :yaw, :pitch, :on_ground
   end
-  
+
   class Packet::PlayerPositionAndLook < Packet
     packet_type 0x0D
     attr_reader :x, :stance, :y, :z, :yaw, :pitch, :on_ground   # TODO: use #position that returns a frozen Coords object
-    
+
     def initialize(x, y, z, stance, yaw, pitch, on_ground)
       @x, @y, @z = x, y, z
       @stance = stance
       @yaw, @pitch = yaw, pitch
       @on_ground = on_ground
     end
-    
+
     def receive_data(stream)
       @x = stream.read_double
       @stance = stream.read_double
@@ -342,67 +342,67 @@ module RedstoneBot
       @pitch = stream.read_float
       @on_ground = stream.read_bool
     end
-    
+
     def encode_data
       double(x) + double(y) + double(stance) + double(z) +
       float(yaw) + float(pitch) + bool(on_ground)
     end
-    
+
     def to_s
       "Pos(%7.2f %7.2f %7.2f dy=%4.2f g=%d yw=%3.0f pt=%3.0f)" % ([x, y, z, stance - y, on_ground ? 1 : 0, yaw, pitch])
     end
   end
-  
+
   class Packet::PlayerDigging < Packet
     packet_type 0x0E
     attr_reader :status, :x, :y, :z, :face
-    
+
     # defaults for dropping items where only the status matters
     def initialize(status, intcoords=[0,0,0], face=0)
       @status = status
       @x, @y, @z = intcoords.to_a
       @face = face
     end
-    
+
     def encode_data
       byte(status) + int(x) + byte(y) + int(z) + byte(face)
     end
-    
+
     def self.done(intcoords, face=0)
       new 2, intcoords, face
     end
-    
+
     def self.start(intcoords, face=0)
       new 0, intcoords, face
     end
-    
+
     def self.drop
       new 4
     end
   end
-  
+
   class Packet::PlayerBlockPlacement < Packet
     packet_type 0x0F
-    
+
     attr_reader :coords, :direction, :held_item, :cursor_x, :cursor_y, :cursor_z
-    
+
     def initialize(coords, direction, held_item, cursor_x=8, cursor_y=8, cursor_z=8)
       @coords = coords
       @direction = direction
       @held_item = held_item
       @cursor_x, @cursor_y, @cursor_z = cursor_x, cursor_y, cursor_z
     end
-    
+
     def encode_data
       int(coords[0]) + byte(coords[1]) + int(coords[2]) + byte(direction) +
         encode_item(held_item) + byte(cursor_x) + byte(cursor_y) + byte(cursor_z)
     end
   end
-  
+
   class Packet::HeldItemChange < Packet
     packet_type 0x10
     attr_reader :spot_id
-    
+
     def initialize(spot_id)
       @spot_id = spot_id
     end
@@ -414,47 +414,47 @@ module RedstoneBot
     def encode_data
       unsigned_short(@spot_id)
     end
-    
+
     def receive_data(stream)
       @spot_id = stream.read_unsigned_short
     end
   end
-  
+
   class Packet::UseBed < Packet
     packet_type 0x11
     attr_reader :eid, :coords
-    
-    def receive_data(socket)
-      @eid = socket.read_int
-      @unknown_byte = socket.read_byte
-      @coords = Coords[socket.read_int, socket.read_byte, socket.read_int].freeze
+
+    def receive_data(stream)
+      @eid = stream.read_int
+      @unknown_byte = stream.read_byte
+      @coords = Coords[stream.read_int, stream.read_byte, stream.read_int].freeze
     end
-    
+
     def to_s
       "UseBed(eid=#@eid, unknown_byte=#@unknown_byte, #@coords)"
     end
   end
-  
+
   class Packet::Animation < Packet
     packet_type 0x12
     attr_reader :eid
     attr_reader :animation
-  
+
     def initialize(eid, animation)
       @eid = eid
       @animation = animation
     end
-    
+
     def encode_data
       int(eid) + byte(animation)
     end
-  
-    def receive_data(socket)
-      @eid = socket.read_int
-      @animation = socket.read_byte
+
+    def receive_data(stream)
+      @eid = stream.read_int
+      @animation = stream.read_byte
     end
   end
-  
+
   class Packet::SpawnNamedEntity < Packet
     packet_type 0x14
     attr_reader :eid
@@ -462,34 +462,34 @@ module RedstoneBot
     attr_reader :coords, :yaw, :pitch
     attr_reader :wielded_item_type
     attr_reader :metadata
-    
-    def receive_data(socket)
-      @eid = socket.read_int
-      @player_name = socket.read_string
-      @coords = Coords[socket.read_int/32.0, socket.read_int/32.0, socket.read_int/32.0].freeze
-      @yaw = socket.read_signed_byte
-      @pitch = socket.read_signed_byte
-      
-      item_type_id = socket.read_short
+
+    def receive_data(stream)
+      @eid = stream.read_int
+      @player_name = stream.read_string
+      @coords = Coords[stream.read_int/32.0, stream.read_int/32.0, stream.read_int/32.0].freeze
+      @yaw = stream.read_signed_byte
+      @pitch = stream.read_signed_byte
+
+      item_type_id = stream.read_short
       if item_type_id != 0
         @wielded_item_type = ItemType.from_id item_type_id
       end
-      
-      @metadata = socket.read_metadata
+
+      @metadata = stream.read_metadata
     end
   end
-  
+
   class Packet::CollectItem < Packet
     packet_type 0x16
     attr_reader :collected_eid
     attr_reader :collector_eid
-    
+
     def receive_data(stream)
       @collected_eid = stream.read_int
-      @collector_eid = stream.read_int 
+      @collector_eid = stream.read_int
     end
   end
-   
+
   class Packet::SpawnObject < Packet  # includes vehicles
     packet_type 0x17
     attr_reader :eid
@@ -498,24 +498,24 @@ module RedstoneBot
     attr_reader :yaw, :pitch
     attr_reader :int_field
     attr_reader :speed_x, :speed_y, :speed_z
-  
+
     def receive_data(stream)
       @eid = stream.read_int
       @type = stream.read_byte
       @coords = Coords[stream.read_int/32.0, stream.read_int/32.0, stream.read_int/32.0].freeze
       @yaw = stream.read_signed_byte
       @pitch = stream.read_signed_byte
-      
-      # The int field has different info depending on @type.  Details are here: http://www.wiki.vg/Object_Data      
+
+      # The int field has different info depending on @type.  Details are here: http://www.wiki.vg/Object_Data
       @int_field = stream.read_int
-      
+
       if @int_field != 0
         @speed_x = stream.read_short
         @speed_y = stream.read_short
         @speed_z = stream.read_short
       end
     end
-    
+
     def to_s
       details = [eid, "type=#{type}", coords, "yaw=#{yaw}", "pitch=#{pitch}", int_field]
       if int_field != 0
@@ -524,7 +524,7 @@ module RedstoneBot
       "SpawnObject(#{details.join(", ")})"
     end
   end
-  
+
   class Packet::SpawnMob < Packet
     packet_type 0x18
     attr_reader :eid
@@ -533,192 +533,192 @@ module RedstoneBot
     attr_reader :yaw, :pitch, :head_yaw
     attr_reader :vx, :vy, :vz
     attr_reader :metadata
-    
-    def receive_data(socket)
-      @eid = socket.read_int
-      @type = socket.read_byte
-      @coords = Coords[socket.read_int/32.0, socket.read_int/32.0, socket.read_int/32.0].freeze
-      @yaw = socket.read_signed_byte
-      @pitch = socket.read_signed_byte
-      @head_yaw = socket.read_signed_byte
-      @vz = socket.read_short   # TODO: is the velocity REALLY in Z,X,Y order?
-      @vx = socket.read_short
-      @vy = socket.read_short
-      @metadata = socket.read_metadata
+
+    def receive_data(stream)
+      @eid = stream.read_int
+      @type = stream.read_byte
+      @coords = Coords[stream.read_int/32.0, stream.read_int/32.0, stream.read_int/32.0].freeze
+      @yaw = stream.read_signed_byte
+      @pitch = stream.read_signed_byte
+      @head_yaw = stream.read_signed_byte
+      @vz = stream.read_short   # TODO: is the velocity REALLY in Z,X,Y order?
+      @vx = stream.read_short
+      @vy = stream.read_short
+      @metadata = stream.read_metadata
     end
   end
-  
+
   class Packet::SpawnPainting < Packet
     packet_type 0x19
     attr_reader :eid
     attr_reader :title
     attr_reader :coords
     attr_reader :direction
-    
-    def receive_data(socket)
-      @eid = socket.read_int
-      @title = socket.read_string
-      @coords = Coords[socket.read_int, socket.read_int, socket.read_int]
-      @direction = socket.read_int
+
+    def receive_data(stream)
+      @eid = stream.read_int
+      @title = stream.read_string
+      @coords = Coords[stream.read_int, stream.read_int, stream.read_int]
+      @direction = stream.read_int
     end
   end
-  
+
   class Packet::ExperienceOrb < Packet
     packet_type 0x1A
     attr_reader :eid, :coords, :count
-    
-    def receive_data(socket)
-      @eid = socket.read_int
-      @coords = Coords[socket.read_int/32.0, socket.read_int/32.0, socket.read_int/32.0].freeze
-      @count = socket.read_short
+
+    def receive_data(stream)
+      @eid = stream.read_int
+      @coords = Coords[stream.read_int/32.0, stream.read_int/32.0, stream.read_int/32.0].freeze
+      @count = stream.read_short
     end
   end
-  
+
   class Packet::EntityVelocity < Packet
     packet_type 0x1C
     attr_reader :eid
     attr_reader :vx, :vy, :vz
-    
+
     def velocity
       Coords[@vx, @vy, @vz]
     end
-    
-    def receive_data(socket)
-      @eid = socket.read_int
-      @vx = socket.read_short
-      @vy = socket.read_short
-      @vz = socket.read_short
+
+    def receive_data(stream)
+      @eid = stream.read_int
+      @vx = stream.read_short
+      @vy = stream.read_short
+      @vz = stream.read_short
     end
-    
+
     def to_s
-      "EntityVelocity(#{eid}, #{velocity})"      
+      "EntityVelocity(#{eid}, #{velocity})"
     end
   end
-  
+
   class Packet::DestroyEntity < Packet
     packet_type 0x1D
     attr_reader :eids
-    
-    def receive_data(socket)
-      count = socket.read_byte
-      @eids = count.times.collect { socket.read_int }
+
+    def receive_data(stream)
+      count = stream.read_byte
+      @eids = count.times.collect { stream.read_int }
     end
   end
-  
+
   class Packet::EntityRelativeMove < Packet
     packet_type 0x1F
     attr_reader :eid, :dx, :dy, :dz
-    
+
     def coords_change
       Coords[@dx, @dy, @dz]
     end
-    
-    def receive_data(socket)
-      @eid = socket.read_int
-      @dx = socket.read_signed_byte/32.0
-      @dy = socket.read_signed_byte/32.0
-      @dz = socket.read_signed_byte/32.0
+
+    def receive_data(stream)
+      @eid = stream.read_int
+      @dx = stream.read_signed_byte/32.0
+      @dy = stream.read_signed_byte/32.0
+      @dz = stream.read_signed_byte/32.0
     end
-    
+
     def to_s
       "EntityRelativeMove(#{eid}, #{coords_change})"
     end
   end
-  
+
   class Packet::EntityLook < Packet
     packet_type 0x20
     attr_reader :eid
     attr_reader :yaw, :pitch
-    
-    def receive_data(socket)
-      @eid = socket.read_int
-      @yaw = socket.read_signed_byte
-      @pitch = socket.read_signed_byte
+
+    def receive_data(stream)
+      @eid = stream.read_int
+      @yaw = stream.read_signed_byte
+      @pitch = stream.read_signed_byte
     end
   end
-  
+
   class Packet::EntityLookAndRelativeMove < Packet
     packet_type 0x21
     attr_reader :eid, :dx, :dy, :dz, :yaw, :pitch
-    
+
     def coords_change
       Coords[@dx, @dy, @dz]
     end
-    
-    def receive_data(socket)
-      @eid = socket.read_int
-      @dx = socket.read_signed_byte/32.0
-      @dy = socket.read_signed_byte/32.0
-      @dz = socket.read_signed_byte/32.0
-      @yaw = socket.read_signed_byte
-      @pitch = socket.read_signed_byte
+
+    def receive_data(stream)
+      @eid = stream.read_int
+      @dx = stream.read_signed_byte/32.0
+      @dy = stream.read_signed_byte/32.0
+      @dz = stream.read_signed_byte/32.0
+      @yaw = stream.read_signed_byte
+      @pitch = stream.read_signed_byte
     end
   end
-  
+
   class Packet::EntityTeleport < Packet
     packet_type 0x22
     attr_reader :eid, :coords, :yaw, :pitch
-    
-    def receive_data(socket)
-      @eid = socket.read_int
-      @coords = Coords[socket.read_int/32.0, socket.read_int/32.0, socket.read_int/32.0].freeze
-      @yaw = socket.read_signed_byte
-      @pitch = socket.read_signed_byte
+
+    def receive_data(stream)
+      @eid = stream.read_int
+      @coords = Coords[stream.read_int/32.0, stream.read_int/32.0, stream.read_int/32.0].freeze
+      @yaw = stream.read_signed_byte
+      @pitch = stream.read_signed_byte
     end
-    
+
     def to_s
       "EntityTeleport(#{eid}, #{coords}, yw=#{yaw}, pt=#{pitch})"
     end
   end
-  
+
   class Packet::EntityHeadLook < Packet
     packet_type 0x23
     attr_reader :eid, :head_yaw
-    
-    def receive_data(socket)
-      @eid = socket.read_int
-      @head_yaw = socket.read_signed_byte
+
+    def receive_data(stream)
+      @eid = stream.read_int
+      @head_yaw = stream.read_signed_byte
     end
   end
-  
+
   class Packet::EntityStatus < Packet
     packet_type 0x26
     attr_reader :eid, :status
-    
-    def receive_data(socket)
-      @eid = socket.read_int
-      @status = socket.read_byte
+
+    def receive_data(stream)
+      @eid = stream.read_int
+      @status = stream.read_byte
     end
   end
-  
+
   class Packet::AttachEntity < Packet
     packet_type 0x27
     attr_reader :eid, :vehicle_eid
-    
-    def receive_data(socket)
-      @eid = socket.read_int
-      @vehicle_eid = socket.read_int
+
+    def receive_data(stream)
+      @eid = stream.read_int
+      @vehicle_eid = stream.read_int
     end
   end
-  
+
   class Packet::EntityMetadata < Packet
     packet_type 0x28
     attr_reader :eid, :metadata
-    
+
     def receive_data(stream)
       @eid = stream.read_int
       @metadata = stream.read_metadata
     end
-    
+
     def to_s
       "EntityMetadata(#@eid, #{@metadata.inspect})"
     end
   end
-  
+
   class Packet::EntityEffect < Packet
     packet_type 0x29
     attr_reader :eid, :effect_id, :amplifier, :duration
-    
+
     def receive_data(stream)
       @eid = stream.read_int
       @effect_id = stream.read_byte
@@ -726,39 +726,39 @@ module RedstoneBot
       @duration = stream.read_unsigned_short
     end
   end
-  
+
   class Packet::SetExperience < Packet
     packet_type 0x2B
     attr_reader :experience_bar, :level, :total_experience
-    
-    def receive_data(socket)
-      @experience_bar = socket.read_float
-      @level = socket.read_short
-      @total_experience = socket.read_short
+
+    def receive_data(stream)
+      @experience_bar = stream.read_float
+      @level = stream.read_short
+      @total_experience = stream.read_short
     end
   end
-  
+
   class Packet::ChunkData < Packet
     packet_type 0x33
     attr_reader :ground_up_continuous
     attr_reader :primary_bit_map, :add_bit_map
     attr_reader :data
-    
+
     def chunk_id
       [@x, @z]
     end
-    
-    def receive_data(socket)
-      @x = socket.read_int*16
-      @z = socket.read_int*16
-      @ground_up_continuous = socket.read_bool
-      @primary_bit_map = socket.read_unsigned_short
-      @add_bit_map = socket.read_unsigned_short
-      compressed_size = socket.read_int
-      compressed_data = socket.read(compressed_size)
+
+    def receive_data(stream)
+      @x = stream.read_int*16
+      @z = stream.read_int*16
+      @ground_up_continuous = stream.read_bool
+      @primary_bit_map = stream.read_unsigned_short
+      @add_bit_map = stream.read_unsigned_short
+      compressed_size = stream.read_int
+      compressed_data = stream.read(compressed_size)
       @data = Zlib::Inflate.inflate compressed_data
     end
-    
+
     # Avoid showing all the data when we inspect this packet.
     def inspect
       tmp = @data
@@ -776,23 +776,23 @@ module RedstoneBot
       ground_up_continuous && primary_bit_map == 0 && add_bit_map == 0
     end
   end
-  
+
   class Packet::MultiBlockChange < Packet
     packet_type 0x34
     attr_reader :count
     attr_reader :data
-    
+
     def chunk_id
       [@x, @z]
     end
-    
-    def receive_data(socket)
-      @x = socket.read_int*16
-      @z = socket.read_int*16
-      @count = socket.read_unsigned_short
-      @data = socket.read(socket.read_unsigned_int)
+
+    def receive_data(stream)
+      @x = stream.read_int*16
+      @z = stream.read_int*16
+      @count = stream.read_unsigned_short
+      @data = stream.read(stream.read_unsigned_int)
     end
-    
+
     def each
       (0...@data.length).step(4) do |i|
         data = @data[i,4]
@@ -805,75 +805,75 @@ module RedstoneBot
         yield [x, y, z], block_type_id, metadata
       end
     end
-    
+
   end
-  
+
   class Packet::BlockChange < Packet
     packet_type 0x35
     attr_reader :x, :y, :z
     attr_reader :block_type, :block_metadata
-    
-    alias :block_type_id :block_type 
-       
+
+    alias :block_type_id :block_type
+
     def chunk_id
       [x/16*16, z/16*16]
     end
-    
-    def receive_data(socket)
-      @x = socket.read_int
-      @y = socket.read_byte
-      @z = socket.read_int
-      @block_type = socket.read_unsigned_short
-      @block_metadata = socket.read_byte
+
+    def receive_data(stream)
+      @x = stream.read_int
+      @y = stream.read_byte
+      @z = stream.read_int
+      @block_type = stream.read_unsigned_short
+      @block_metadata = stream.read_byte
     end
-    
+
   end
-  
+
   class Packet::BlockAction < Packet
     packet_type 0x36
     attr_reader :x, :y, :z
     attr_reader :data_bytes, :block_id
-    
+
     def chunk_id
       [@x/16*16, @z/16*16]
     end
-    
+
     def coords
       Coords[@x, @y, @z]
     end
-    
-    def receive_data(socket)
-      @x = socket.read_int
-      @y = socket.read_short
-      @z = socket.read_int
-      @data_bytes = [socket.read_byte, socket.read_byte]
-      @block_id = socket.read_unsigned_short
+
+    def receive_data(stream)
+      @x = stream.read_int
+      @y = stream.read_short
+      @z = stream.read_int
+      @data_bytes = [stream.read_byte, stream.read_byte]
+      @block_id = stream.read_unsigned_short
     end
-    
+
     def item_type
       ItemType.from_id @block_id
     end
-    
+
     # Only valid for chests
     def open?
       @data_bytes[1] != 0
     end
-    
+
     # Only valid for pistons.  Says if the piston is pushing or pulling.
     def pull?
       @data_bytes[1] != 0
     end
-    
+
     # Only valid for noteblocks/
     def instrument
       [:harp, :double_bass, :snare_drum, :clicks, :bass][@data_bytes[0]] || :unknown
     end
-    
+
     # Only valid for noteblocks.
     def pitch
       @data_bytes[1]
     end
-    
+
     def to_s
       case item_type
       when ItemType::Piston
@@ -887,30 +887,30 @@ module RedstoneBot
       end
     end
   end
-  
+
   class Packet::BlockBreakAnimation < Packet
     packet_type 0x37
     attr_reader :eid, :coords
-    
+
     # Progress goes from 0 to 10 while digging and then -1 when the animation stops.
     attr_reader :progress
-    
+
     def receive_data(stream)
       @eid = stream.read_int
       @coords = Coords[stream.read_int, stream.read_int, stream.read_int].freeze
       @progress = stream.read_signed_byte
     end
-    
+
     def to_s
       "BlockBreakAnimation(eid=#@eid, #@coords, progress=#@progress)"
     end
   end
-  
+
   class Packet::MapChunkBulk < Packet
     packet_type 0x38
-    
+
     attr_reader :data, :metadata
-    
+
     def receive_data(stream)
       chunk_column_count = stream.read_unsigned_short
       data_size = stream.read_unsigned_int
@@ -924,33 +924,33 @@ module RedstoneBot
         [chunk_id, primary_bit_map, add_bit_map]
       end
     end
-    
+
     def to_s
       "MapChunkBulk<@metadata=#{@metadata.inspect} @data.size=#{@data.size}>"
     end
   end
-  
+
   class Packet::Explosion < Packet
     packet_type 0x3C
     attr_reader :coords, :radius_maybe, :records
-    
-    def receive_data(socket)
-      @coords = Coords[socket.read_double, socket.read_double, socket.read_double].freeze
-      @radius_maybe = socket.read_float
-      count = socket.read_int
+
+    def receive_data(stream)
+      @coords = Coords[stream.read_double, stream.read_double, stream.read_double].freeze
+      @radius_maybe = stream.read_float
+      count = stream.read_int
       @records = count.times.collect do
-        [socket.read_signed_byte, socket.read_signed_byte, socket.read_signed_byte]
+        [stream.read_signed_byte, stream.read_signed_byte, stream.read_signed_byte]
       end
-      socket.read_float  #unknown
-      socket.read_float  #unknown
-      socket.read_float  #unknown
+      stream.read_float  #unknown
+      stream.read_float  #unknown
+      stream.read_float  #unknown
     end
   end
-  
+
   class Packet::SoundOrParticleEffect < Packet
     packet_type 0x3D
     attr_reader :effect_id, :coords, :data, :no_volume_decrease
-    
+
     def receive_data(stream)
       @effect_id = stream.read_int
       @coords = Coords[stream.read_int, stream.read_byte, stream.read_int].freeze
@@ -958,89 +958,89 @@ module RedstoneBot
       @no_volume_decrease = stream.read_bool
     end
   end
-  
+
   class Packet::NamedSoundEffect < Packet
     packet_type 0x3E
-    
+
     attr_reader :name, :coords, :volume, :pitch
-    
-    def receive_data(socket)
-      @name = socket.read_string
-      @coords = Coords[socket.read_int/8.0, socket.read_int/8.0, socket.read_int/8.0].freeze
-      @volume = socket.read_float
-      @pitch = socket.read_byte
+
+    def receive_data(stream)
+      @name = stream.read_string
+      @coords = Coords[stream.read_int/8.0, stream.read_int/8.0, stream.read_int/8.0].freeze
+      @volume = stream.read_float
+      @pitch = stream.read_byte
     end
   end
-  
+
   class Packet::ChangeGameState < Packet
     packet_type 0x46
     attr_reader :reason, :game_mode
-    
-    def receive_data(socket)
-      @reason = socket.read_byte
-      @game_mode = socket.read_byte
+
+    def receive_data(stream)
+      @reason = stream.read_byte
+      @game_mode = stream.read_byte
     end
   end
-  
+
   class Packet::Thunderbolt < Packet   # a.k.a GlobalEntity on the wiki
     packet_type 0x47
     attr_accessor :eid, :coords
-    
-    def receive_data(socket)
-      @eid = socket.read_int
-      @unknown_byte = socket.read_byte
-      @coords = Coords[socket.read_int/32.0, socket.read_int/32.0, socket.read_int/32.0].freeze
+
+    def receive_data(stream)
+      @eid = stream.read_int
+      @unknown_byte = stream.read_byte
+      @coords = Coords[stream.read_int/32.0, stream.read_int/32.0, stream.read_int/32.0].freeze
     end
-    
+
     def to_s
       "ThunberBolt(eid=#@eid, unknown_byte=#@unknown_byte, #@coords)"
     end
   end
-  
+
   class Packet::OpenWindow < Packet
     packet_type 0x64
-    
+
     attr_accessor :window_id, :type, :title, :spot_count
-    
+
     def receive_data(stream)
       @window_id = stream.read_byte
       @type = stream.read_byte
       @title = stream.read_string
       @spot_count = stream.read_byte
     end
-    
+
     def to_s
       "OpenWindow(#{window_id}, type=#{type}, title=#{title}, spot_count=#{spot_count})"
     end
   end
-  
+
   class Packet::CloseWindow < Packet
     packet_type 0x65
-    
+
     attr_accessor :window_id
-    
+
     def initialize(window_id)
       @window_id = window_id
     end
-    
+
     def receive_data(stream)
       @window_id = stream.read_byte
     end
-    
+
     def encode_data
       byte(@window_id)
     end
-    
+
     def to_s
       "CloseWindow(#{window_id})"
     end
   end
-  
+
   class Packet::ClickWindow < Packet
     packet_type 0x66
 
     attr_reader :window_id, :spot_id, :mouse_button, :action_number, :shift, :clicked_item
-    
+
     def initialize(window_id, spot_id, mouse_button, action_number, shift, clicked_item)
       @window_id = window_id
       @spot_id = spot_id
@@ -1049,40 +1049,40 @@ module RedstoneBot
       @shift = shift
       @clicked_item = clicked_item
     end
-    
+
     def self.outside(transaction_id)
       new 0, -999, :left, transaction_id, false, nil
     end
-    
+
     def encode_mouse_button
       index = [:left, :right, :_, :middle].index(mouse_button)
       raise "Invalid mouse button #{mouse_button.inspect}" if !index
       byte index
     end
-    
+
     def encode_data
       byte(window_id) + short(spot_id) + encode_mouse_button + unsigned_short(action_number) + bool(shift) + encode_item(clicked_item)
-    end    
+    end
   end
-  
+
   class Packet::SetSlot < Packet
     packet_type 0x67
     attr_reader :window_id, :spot_id, :item
-    
-    def receive_data(socket)
-      @window_id = socket.read_signed_byte
-      @spot_id = socket.read_short
-      @item = socket.read_item
+
+    def receive_data(stream)
+      @window_id = stream.read_signed_byte
+      @spot_id = stream.read_short
+      @item = stream.read_item
     end
-    
+
     def cursor?
       window_id == -1 && spot_id == -1
     end
-    
+
     def redundant_after?(packet)
       packet.is_a?(Packet::SetWindowItems) && window_id == packet.window_id && item == packet.items[spot_id]
     end
-    
+
     def to_s
       if cursor?
         "SetSlot(cursor, #{item})"
@@ -1091,11 +1091,11 @@ module RedstoneBot
       end
     end
   end
-  
+
   class Packet::SetWindowItems < Packet
     packet_type 0x68
     attr_reader :window_id, :items
-        
+
     def receive_data(stream)
       @window_id = stream.read_byte
       count = stream.read_short
@@ -1103,47 +1103,47 @@ module RedstoneBot
         stream.read_item
       end
     end
-    
+
     def to_s
       "SetWindowItems(#{window_id}, #{items.join ','})"
     end
   end
-  
+
   class Packet::UpdateWindowProperty < Packet
     packet_type 0x69
     attr_reader :window_id, :property, :value
-    
-    def receive_data(socket)
-      @window_id = socket.read_byte
-      @property = socket.read_unsigned_short
-      @value = socket.read_unsigned_short
+
+    def receive_data(stream)
+      @window_id = stream.read_byte
+      @property = stream.read_unsigned_short
+      @value = stream.read_unsigned_short
     end
-    
+
     def to_s
       "UpdateWindowProperty(#{window_id}, #{property}, #{value})"
     end
   end
-  
+
   class Packet::ConfirmTransaction < Packet
     packet_type 0x6A
     attr_reader :window_id, :action_number, :accepted
-    
+
     def initialize(window_id, action_number, accepted)
       @window_id = window_id
       @action_number = action_number
       @accepted = accepted
     end
-    
-    def receive_data(socket)
-      @window_id = socket.read_byte
-      @action_number = socket.read_unsigned_short
-      @accepted = socket.read_bool
+
+    def receive_data(stream)
+      @window_id = stream.read_byte
+      @action_number = stream.read_unsigned_short
+      @accepted = stream.read_bool
     end
-    
+
     def encode_data
       byte(window_id) + unsigned_short(action_number) + bool(accepted)
     end
-    
+
     def to_s
       if accepted
         "ConfirmTransaction(#{window_id}, #{action_number})"
@@ -1152,28 +1152,28 @@ module RedstoneBot
       end
     end
   end
-  
+
   class Packet::UpdateSign < Packet
     packet_type 0x82
     attr_reader :coords, :text
-    
-    def receive_data(socket)
-      @coords = Coords[socket.read_int, socket.read_short, socket.read_int].freeze
-      @text = 4.times.collect { socket.read_string }.join("\n")
+
+    def receive_data(stream)
+      @coords = Coords[stream.read_int, stream.read_short, stream.read_int].freeze
+      @text = 4.times.collect { stream.read_string }.join("\n")
     end
   end
-  
+
   class Packet::ItemData < Packet
     packet_type 0x83
     attr_reader :item_type, :item_id, :text
-    
-    def receive_data(socket)
-      @item_type = ItemType.from_id(socket.read_short)
-      @item_id = socket.read_short
-      @text = socket.read_byte_array
+
+    def receive_data(stream)
+      @item_type = ItemType.from_id(stream.read_short)
+      @item_id = stream.read_short
+      @text = stream.read_byte_array
     end
   end
-  
+
   # This packet tells us all about mob spawners.  Example data:
   # {""=>{"id" =>"MobSpawner", "MinSpawnDelay"=>200, "RequiredPlayerRange"=>16,
   #       "Delay"=>20, "MaxNearbyEntities"=>6, "MaxSpawnDelay"=>800, "SpawnRange"=>4,
@@ -1181,7 +1181,7 @@ module RedstoneBot
   class Packet::UpdateTileEntity < Packet
     packet_type 0x84
     attr_reader :coords, :action, :data
-    
+
     def receive_data(stream)
       @coords = Coords[stream.read_int, stream.read_short, stream.read_int].freeze
       @action = stream.read_byte
@@ -1190,50 +1190,50 @@ module RedstoneBot
       nbt_hash = nbt_stream.read_nbt
       @data = nbt_hash
     end
-    
+
     def to_s
       "UpdateTileEntity(#@coords, action=#@action, #{@data.inspect})"
     end
   end
-  
+
   class Packet::IncrementStatistic < Packet
     packet_type 0xC8
     attr_reader :statistic_id, :amount
-    
-    def receive_data(socket)
-      @statistic_id = socket.read_int
-      @amount = socket.read_signed_byte
+
+    def receive_data(stream)
+      @statistic_id = stream.read_int
+      @amount = stream.read_signed_byte
     end
   end
-  
+
   class Packet::PlayerListItem < Packet
     packet_type 0xC9
     attr_reader :player_name, :online, :ping
-    
-    def receive_data(socket)
-      @player_name = socket.read_string
-      @online = socket.read_bool
-      @ping = socket.read_short
+
+    def receive_data(stream)
+      @player_name = stream.read_string
+      @online = stream.read_bool
+      @ping = stream.read_short
     end
   end
-  
+
   class Packet::PlayerAbilities < Packet
     packet_type 0xCA
-    
+
     attr_reader :flags
     attr_reader :flying_speed
     attr_reader :walking_speed
-    
-    def receive_data(socket)
-      @flags = socket.read_byte
-      @flying_speed = socket.read_byte
-      @walking_speed = socket.read_byte
+
+    def receive_data(stream)
+      @flags = stream.read_byte
+      @flying_speed = stream.read_byte
+      @walking_speed = stream.read_byte
     end
-    
+
     def damage_disabled?
       (flags & 1) != 0
     end
-    
+
     def flying?
       (flags & 2) != 0
     end
@@ -1244,14 +1244,14 @@ module RedstoneBot
 
     def creative_mode?
       (flags & 8) != 0
-    end    
+    end
   end
-  
+
   class Packet::ClientSettings < Packet  # AKA Locale and View Distance
     packet_type 0xCC
-    
+
     attr_reader :locale, :view_distance, :chat_mode, :colors_enabled, :difficulty, :show_cape
-    
+
     def initialize(locale, view_distance, chat_mode, colors_enabled, difficulty, show_cape)
       @locale = locale
       @view_distance = view_distance
@@ -1260,7 +1260,7 @@ module RedstoneBot
       @difficulty = difficulty
       @show_cape = show_cape
     end
-    
+
     def encode_data
       string(locale) +
         byte([:far, :normal, :short, :tiny].index view_distance) +
@@ -1270,83 +1270,83 @@ module RedstoneBot
     end
 
   end
-  
+
   class Packet::ClientStatuses < Packet
     packet_type 0xCD
-    
+
     # Bit field. 0: Initial spawn, 1: Respawn after death
     attr_reader :payload
-    
+
     def initialize(payload)
       @payload = payload
     end
-    
+
     def self.initial_spawn
       new(0)
     end
-    
+
     def self.respawn
       new(1)
     end
-    
+
     def encode_data
       byte(payload)
     end
   end
-  
+
   class Packet::PluginMessage < Packet
     packet_type 0xFA
     attr_reader :channel, :data
-    
-    def receive_data(socket)
-      @channel = socket.read_string
-      length = socket.read_short
-      @data = socket.read(length)
+
+    def receive_data(stream)
+      @channel = stream.read_string
+      length = stream.read_short
+      @data = stream.read(length)
     end
   end
-  
+
   class Packet::EncryptionKeyResponse < Packet
     packet_type 0xFC
-    
+
     attr_reader :shared_secret, :verify_token_response
-    
+
     def initialize(shared_secret, verify_token_response)
       @shared_secret = shared_secret
       @verify_token_response = verify_token_response
     end
-    
+
     def encode_data
       byte_array(shared_secret) + byte_array(verify_token_response)
     end
-    
-    def receive_data(socket)
-      @shared_secret = socket.read_byte_array
-      @verify_token_response = socket.read_byte_array
+
+    def receive_data(stream)
+      @shared_secret = stream.read_byte_array
+      @verify_token_response = stream.read_byte_array
     end
   end
-  
+
   class Packet::EncryptionKeyRequest < Packet
     packet_type 0xFD
 
-    attr_reader :connection_hash, :public_key, :verify_token    
+    attr_reader :connection_hash, :public_key, :verify_token
     alias :server_id :connection_hash
-    
-    def receive_data(socket)
-      @connection_hash = socket.read_string
-      
-      @public_key = socket.read_byte_array
-      @verify_token = socket.read_byte_array
-    end
-  end
-  
-  class Packet::Disconnect < Packet
-    packet_type 0xFF
-    attr_reader :reason
-    
-    def receive_data(socket)
-      @reason = socket.read_string
+
+    def receive_data(stream)
+      @connection_hash = stream.read_string
+
+      @public_key = stream.read_byte_array
+      @verify_token = stream.read_byte_array
     end
   end
 
-  
+  class Packet::Disconnect < Packet
+    packet_type 0xFF
+    attr_reader :reason
+
+    def receive_data(stream)
+      @reason = stream.read_string
+    end
+  end
+
+
 end

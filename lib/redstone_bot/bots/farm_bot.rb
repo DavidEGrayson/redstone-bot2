@@ -76,6 +76,9 @@ module RedstoneBot
           timeout(60) do
             move_to coords + Coords[0.5, 0.0, 0.5]
           end
+        else
+          # The farm is exhausted!  Save some CPU time by delaying for longer.
+          delay 0.75
         end
         
         delay 0.05
