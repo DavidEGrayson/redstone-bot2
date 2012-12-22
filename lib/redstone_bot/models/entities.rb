@@ -94,6 +94,9 @@ module RedstoneBot
       if hash != {10 => item} || !item.is_a?(Item)
         raise ArgumentError.new("Unexpected metadata for a #{self.class}: #{hash.inspect}.")
       end
+      
+      # Oops, look at that, a little bit of the protocol leaked into the models directory :(
+      
       @item = item
     end
     
