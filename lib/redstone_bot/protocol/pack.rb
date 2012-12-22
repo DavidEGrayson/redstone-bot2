@@ -145,7 +145,7 @@ module RedstoneBot
       s = s.encode("UTF-8")  # usually a no-op
       short(s.bytesize) + s.force_encoding('BINARY')
     end
-    
+        
   end
   
   # To make sure that the enchant data is encoded correctly as nbt, we have to

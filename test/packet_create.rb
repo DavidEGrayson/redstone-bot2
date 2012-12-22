@@ -54,6 +54,19 @@ module RedstoneBot
     receive_data test_stream binary_data
   end
   
+  def (Packet::EntityMetadata).create(eid, metadata)
+    case metadata
+    when Hash
+      item = metadata[10]
+      raise NotImplementedException unless metadata == {10 => item}
+    when RedstoneBot::Item
+      item = metadata
+    end
+  
+    binary_data = $e.int(eid) + (10 | (5<<5)).chr + $e.encode_item(item) + "\x7F"
+    receive_data test_stream binary_data
+  end
+  
   def (Packet::SpawnMob).create(eid, type, coords, yaw, pitch, head_yaw, velocity=Coords[0,0,0], metadata="\x7F")
     binary_data = [eid, type.to_i, (coords[0]*32).round, (coords[1]*32).round, (coords[2]*32).round,
       yaw.to_i, pitch.to_i, head_yaw.to_i,

@@ -11,7 +11,8 @@ module RedstoneBot
     StorageWaypoint = Coords[-210, 63, 784]  # with a better pathinder we wouldn't need this
   
     PrintPacketClasses = [
-      Packet::Thunderbolt
+      Packet::Thunderbolt,
+      Packet::SpawnObject, Packet::EntityMetadata
     ]
   
     def setup

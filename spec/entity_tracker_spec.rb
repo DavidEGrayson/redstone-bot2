@@ -9,15 +9,17 @@ describe RedstoneBot::EntityTracker do
   
   it "tracks dropped items" do
     eid = 44
-    item = RedstoneBot::ItemType::IronShovel
+    item_type = RedstoneBot::ItemType::IronShovel
     count = 13
     damage = 3
+    item = RedstoneBot::Item.new(item_type, count, damage)
     coords = [100, 200, 300]
     yaw = -3
     pitch = -128
     roll = 127
   
-    @client << RedstoneBot::Packet::SpawnObject.create(eid, RedstoneBot::Item.new(item, count, damage), coords, yaw, pitch, roll)
+    @client << RedstoneBot::Packet::SpawnObject.create(eid, 2, coords, yaw, pitch)
+    @client << RedstoneBot::Packet::EntityMetadata.create(eid, item)
     
     shovels = @entity_tracker.entities_of_type(RedstoneBot::ItemType::IronShovel)
     shovels.size.should == 1
@@ -93,8 +95,12 @@ describe RedstoneBot::EntityTracker do
   
   context "with some stuff loaded" do
     before do
-      @client << RedstoneBot::Packet::SpawnDroppedItem.create(44, RedstoneBot::Item.new(RedstoneBot::ItemType::Wool, 1, 2), [100, 200, 300])
-      @client << RedstoneBot::Packet::SpawnDroppedItem.create(45, RedstoneBot::Item.new(RedstoneBot::ItemType::Seeds), [100, 201, 301])
+      @client << RedstoneBot::Packet::SpawnObject.create(44, 2, [100, 200, 300])
+      @client << RedstoneBot::Packet::EntityMetadata.create(44, RedstoneBot::Item.new(RedstoneBot::ItemType::Wool, 1, 2))
+
+      @client << RedstoneBot::Packet::SpawnObject.create(45, 2, [100, 201, 301])
+      @client << RedstoneBot::Packet::EntityMetadata.create(45, RedstoneBot::ItemType::Seeds*1)
+    
       @client << RedstoneBot::Packet::SpawnNamedEntity.create(46, "Bob", [100, 205, 305])
     end
     

@@ -414,6 +414,11 @@ module RedstoneBot
     def encode_data
       unsigned_short(@spot_id)
     end
+    
+    def receive_data(stream)
+      @spot_id = stream.read_unsigned_short
+      puts "TODO: handle receiving HeldItemChange packets!  (#@spot_id)"
+    end
   end
   
   class Packet::UseBed < Packet
@@ -510,6 +515,14 @@ module RedstoneBot
         @speed_y = stream.read_short
         @speed_z = stream.read_short
       end
+    end
+    
+    def to_s
+      details = [eid, "type=#{type}", coords, "yaw=#{yaw}", "pitch=#{pitch}", int_field]
+      if int_field != 0
+        details << "speed=(#@speed_x, #@speed_y, #@speed_z)"
+      end
+      "SpawnObject(#{details.join(", ")})"
     end
   end
   
@@ -696,6 +709,10 @@ module RedstoneBot
     def receive_data(stream)
       @eid = stream.read_int
       @metadata = stream.read_metadata
+    end
+    
+    def to_s
+      "EntityMetadata(#@eid, #{@metadata.inspect})"
     end
   end
   

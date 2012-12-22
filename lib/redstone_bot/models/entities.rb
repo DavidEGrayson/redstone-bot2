@@ -69,19 +69,27 @@ module RedstoneBot
       "Player(#{eid}, #{name.inspect}, #{coords}, #{(items-[nil]).size} items)"
     end
   end
+  
+  class ObjectEntity < Entity
+    extend TracksTypes
+  end
 
-  class DroppedItem < Entity
+  class DroppedItem < ObjectEntity
     attitude_is :passive   # this probably does not matter
+    type_is 2
+    
+    attr_reader :item   # this is nil for a while when the object is first created
 
-    attr_reader :item
-
-    def initialize(eid, coords, item)
-      super eid, coords
-      @item = item
+    def item_type
+      @item.item_type if @item
     end
     
-    def item_type
-      @item.item_type
+    def set_metadata(hash)
+      item = hash[10]
+      if hash != {10 => item} || !item.is_a?(Item)
+        raise ArgumentError.new("Unexpected metadata for a #{self.class}: #{hash.inspect}.")
+      end
+      @item = item
     end
     
     def to_s

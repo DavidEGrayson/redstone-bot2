@@ -1,3 +1,5 @@
+# TODO: major changes are required here because HeldItemChange is now a two-way packet
+
 require_relative '../empty'
 
 # Holding: this module is mixed into the Box class to provide methods for
@@ -52,7 +54,7 @@ module RedstoneBot
 
       else  # Item object, ItemType object, or Empty module
         candidates = [wielded_spot] + inventory.hotbar_spots + inventory.normal_spots
-        spot = candidates.find { |spot| x === spot }
+        spot = candidates.find { |spot| x === spot }  # TODO: use grep here, right?
         
         if spot
           wield spot
