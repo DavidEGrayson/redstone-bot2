@@ -23,6 +23,10 @@ module RedstoneBot
       @attitude = attitude
     end
     
+    # This is overwritten in subclasses to store useful data.
+    def set_metadata(hash)    
+    end
+    
     # to_coords is not an alias so that subclasses can easily and correctly override 'coords'
     def to_coords
       coords
@@ -72,6 +76,7 @@ module RedstoneBot
   
   class ObjectEntity < Entity
     extend TracksTypes
+    types.default = self
   end
 
   class DroppedItem < ObjectEntity
