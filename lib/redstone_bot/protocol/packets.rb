@@ -417,7 +417,6 @@ module RedstoneBot
     
     def receive_data(stream)
       @spot_id = stream.read_unsigned_short
-      puts "TODO: handle receiving HeldItemChange packets!  (#@spot_id)"
     end
   end
   

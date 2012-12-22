@@ -7,13 +7,12 @@ require_relative '../empty'
 # It requires window_tracker and hotbar_spots.
 module RedstoneBot
   module Wielding
-    def wielded_spot
-      # We can't call window_tracker.inventory because the inventory might not be loaded yet.
-      @wielded_spot ||= inventory.hotbar_spots[0]
-    end
-
+    extend Forwardable
+    
+    def_delegators :@window_tracker, :wielded_spot
+    
     def wielded_item
-      wielded_spot.item
+      wielded_spot.item if wielded_spot
     end
     
     # Drops quantity one of the item the player is holding.
@@ -27,13 +26,18 @@ module RedstoneBot
     end
 
     def wield(x)
+      if wielded_spot.nil?
+        # We haven't received the HeldItemChange packet from the server yet.
+        # Don't try to wield anything; it will be too confusing.
+        return false
+      end
+    
       case x
       when Spot
         if x == wielded_spot
           true
         elsif inventory.hotbar_spots.include? x
-          @wielded_spot = x
-          client.send_packet Packet::HeldItemChange.new inventory.hotbar_spots.index(x)
+          window_tracker.change_wielded_spot x
           true
         elsif inventory.general_spots.include? x
           # We will need to do some clicking to get the item into the hotbar.

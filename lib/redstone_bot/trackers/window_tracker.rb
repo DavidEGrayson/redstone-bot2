@@ -6,7 +6,7 @@ require_relative '../models/windows'
 
 module RedstoneBot
   class WindowTracker
-    attr_reader :inventory_window, :windows, :cursor_spot
+    attr_reader :inventory_window, :windows, :cursor_spot, :wielded_spot
     
     def initialize(client)
       @windows = []
@@ -32,6 +32,10 @@ module RedstoneBot
     end
     
     def receive_packet_filtered(packet)
+      if packet.is_a?(Packet::HeldItemChange)
+        @wielded_spot = inventory_window.inventory.hotbar_spots[packet.spot_id] or raise ArgumentError
+      end
+
       return unless packet.respond_to?(:window_id)
       window_id = packet.window_id
       
@@ -39,8 +43,9 @@ module RedstoneBot
         register_window Window.create(packet.type, packet.window_id, packet.spot_count, inventory_window.inventory)
         return
       end
-      
+            
       if packet.is_a?(Packet::SetSlot) && packet.cursor?
+        # We are setting the cursor, which requires some special code.      
         cursor_spot.item = packet.item
         
         if @last_packet.is_a?(Packet::SetWindowItems)
@@ -183,6 +188,11 @@ module RedstoneBot
         end
       end
     end
+
+    def change_wielded_spot(spot_in_hotbar)
+      @wielded_spot = spot_in_hotbar
+      @client.send_packet Packet::HeldItemChange.new inventory.hotbar_spots.index @wielded_spot
+    end
     
     private
     def ensure_clickable(spot)
@@ -213,6 +223,7 @@ module RedstoneBot
     def warn_about_rejection(action_number)
       $stderr.puts "#{@client.time_string}: window transaction ##{action_number} rejected!  Could be due to lag."
     end
+    
   end
 
 end

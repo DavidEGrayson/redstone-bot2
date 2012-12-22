@@ -25,15 +25,47 @@ describe RedstoneBot::Wielding do
     @bot.inventory.should be
   end
   
-  it "initially the first spot in the hotbar is wielded" do
-    bot.wielded_spot.should == hotbar_spots[0]
+  it "initially no spot is wielded" do
+    bot.wielded_spot.should == nil
   end
   
-  it "defines wielded_item" do
-    bot.wielded_item.should == RedstoneBot::ItemType::WheatItem * 31
+  it "initially wielded_item is nil" do
+    bot.wielded_item.should == nil
   end
   
-  describe :wield do
+  it "cannot wield anything" do
+    # we shouldn't try to wield anything until we get the HeldItemChange packet from the server; too confusing
+    bot.wield(hotbar_spots[3]).should == false
+  end
+
+  context "after receiving a HeldItemChange packet (1)" do
+    before do
+      @client << RedstoneBot::Packet::HeldItemChange.new(1)
+    end
+  
+    it "wielded_spot is set correctly" do
+      bot.wielded_spot.should == hotbar_spots[1]
+    end
+ 
+    it "wielded_item is set correctly" do
+      bot.wielded_item.should == RedstoneBot::ItemType::Bread * 44
+    end
+    
+    describe :wielded_item_drop do
+      it "just sends the right PlayerDigging packet" do
+        @bot.wielded_item_drop
+        packet = @client.sent_packets.last
+        packet.should be_a RedstoneBot::Packet::PlayerDigging
+      end
+    end
+
+  end
+  
+  context :wield do
+    before do
+      @client << RedstoneBot::Packet::HeldItemChange.new(0)
+    end
+    
     shared_examples_for "it succeeds trivially" do
       it "doesn't send any packets and returns true" do
         @client.should_not_receive :send_packet
@@ -149,14 +181,6 @@ describe RedstoneBot::Wielding do
       it_behaves_like "it fails"
     end
     
-  end
-  
-  describe :wielded_item_drop do
-    it "just sends the right PlayerDigging packet" do
-      @bot.wielded_item_drop
-      packet = @client.sent_packets.last
-      packet.should be_a RedstoneBot::Packet::PlayerDigging
-    end
-  end
+  end  
   
 end
