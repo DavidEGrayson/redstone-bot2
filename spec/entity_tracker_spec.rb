@@ -63,7 +63,7 @@ describe RedstoneBot::EntityTracker do
     let(:eid) { 44 }
     let(:creeper) { @entity_tracker.entities_of_type(RedstoneBot::Creeper).first }
     before do
-      @client << RedstoneBot::Packet::SpawnMob.create(eid, RedstoneBot::Creeper.type, [100.25, 200, 300.03125], 0, 0, 0)    
+      @client << RedstoneBot::Packet::SpawnMob.create(eid, RedstoneBot::Creeper.tid, [100.25, 200, 300.03125], 0, 0, 0)    
     end
 
     it "tracks entity equipment" do

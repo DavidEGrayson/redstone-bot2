@@ -1,10 +1,10 @@
-require_relative '../tracks_types'
+require_relative '../has_tids'
 require_relative 'spot'
 require_relative 'spot_array'
 
 module RedstoneBot
   class Window
-    extend TracksTypes
+    extend HasTids
   
     attr_reader :spots, :shift_region_top, :shift_region_bottom
     attr_reader :id, :pending_actions
@@ -160,7 +160,7 @@ module RedstoneBot
   end
   
   class InventoryWindow < Window
-    type_is nil
+    tid_is nil
     provide :inventory, :inventory_crafting
 
     attr_reader :inventory, :inventory_crafting
@@ -178,7 +178,7 @@ module RedstoneBot
   end
   
   class ChestWindow < Window
-    type_is 0
+    tid_is 0
     provide :chest_spots
   
     attr_reader :chest_spots, :inventory_spots

@@ -1,24 +1,24 @@
 require_relative 'spec_helper'
-require 'redstone_bot/tracks_types'
+require 'redstone_bot/has_tids'
 
-module TracksTypesSpec
+module HasTidsSpec
   class A
-    extend RedstoneBot::TracksTypes    
+    extend RedstoneBot::HasTids  
   end
   
   class A1 < A
-    type_is 1
+    tid_is 1
   end
   
   class B
-    extend RedstoneBot::TracksTypes    
+    extend RedstoneBot::HasTids
   end
   
   class B2 < B
-    type_is 2
+    tid_is 2
   end
   
-  describe RedstoneBot::TracksTypes do
+  describe RedstoneBot::HasTids do
     it "keeps a hash that associates type to subclass" do
       A.types[1].should == A1
     end
@@ -27,8 +27,8 @@ module TracksTypesSpec
       A.types.should_not == B.types
     end
     
-    it "has a #type method on each subclass" do
-      B2.type.should == 2
+    it "has a #tid method on each subclass" do
+      B2.tid.should == 2
     end
   end
 end

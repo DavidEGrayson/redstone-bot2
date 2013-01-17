@@ -1,5 +1,5 @@
 require_relative 'coords'
-require_relative '../tracks_types'
+require_relative '../has_tids'
 
 module RedstoneBot
 
@@ -75,13 +75,13 @@ module RedstoneBot
   end
   
   class ObjectEntity < Entity
-    extend TracksTypes
+    extend HasTids
     types.default = self
   end
 
   class DroppedItem < ObjectEntity
     attitude_is :passive   # this probably does not matter
-    type_is 2
+    tid_is 2
     
     attr_reader :item   # this is nil for a while when the object is first created
 
@@ -114,7 +114,7 @@ module RedstoneBot
 
   class Mob < Entity
     include EntityWithItems
-    extend TracksTypes
+    extend HasTids
 
     # If the type ID isn't recognized, that's OK.  Just create an instance of the parent class.    
     types.default = self
@@ -125,127 +125,127 @@ module RedstoneBot
   end
 
   class Creeper < Mob
-    type_is 50
+    tid_is 50
     attitude_is :hostile
   end
 
   class Skeleton < Mob
-    type_is 51
+    tid_is 51
     attitude_is :hostile
   end
 
   class Spider < Mob
-    type_is 52
+    tid_is 52
     attitude_is :hostile
   end
 
   class GiantZombie < Mob
-    type_is 53
+    tid_is 53
     attitude_is :hostile
   end
 
   class Zombie < Mob
-    type_is 54
+    tid_is 54
     attitude_is :hostile
   end
 
   class Slime < Mob
-    type_is 55
+    tid_is 55
     attitude_is :hostile
   end
 
   class Ghast < Mob
-    type_is 56
+    tid_is 56
     attitude_is :hostile
   end
 
   class ZombiePigman < Mob
-    type_is 57
+    tid_is 57
     attitude_is :neutral
   end
 
   class Enderman < Mob
-    type_is 58
+    tid_is 58
     attitude_is :neutral
   end
 
   class CaveSpider < Mob
-    type_is 59
+    tid_is 59
     attitude_is :hostile
   end
 
   class Silverfish < Mob
-    type_is 60
+    tid_is 60
     attitude_is :passive
   end
 
   class Blaze < Mob
-    type_is 61
+    tid_is 61
     attitude_is :hostile
   end
 
   class MagmaCube < Mob
-    type_is 62
+    tid_is 62
     attitude_is :hostile
   end
 
   class EnderDragon < Mob
-    type_is 63
+    tid_is 63
     attitude_is :hostile
   end
 
   class Pig < Mob
-    type_is 90
+    tid_is 90
     attitude_is :passive
   end
 
   class Sheep < Mob
-    type_is 91
+    tid_is 91
     attitude_is :passive
   end
 
   class Cow < Mob
-    type_is 92
+    tid_is 92
     attitude_is :passive
   end
 
   class Chicken < Mob
-    type_is 93
+    tid_is 93
     attitude_is :passive
   end
 
   class Squid < Mob
-    type_is 94
+    tid_is 94
     attitude_is :passive
   end
 
   class Wolf < Mob
-    type_is 95
+    tid_is 95
     attitude_is :neutral
   end
 
   class Mooshroom < Mob
-    type_is 96
+    tid_is 96
     attitude_is :passive
   end
 
   class Snowman < Mob
-    type_is 97
+    tid_is 97
     attitude_is :utility
   end
 
   class Ocelot < Mob
-    type_is 98
+    tid_is 98
     attitude_is :passive
   end
 
   class IronGolem < Mob
-    type_is 99
+    tid_is 99
     attitude_is :utility
   end
     
   class Villager < Mob
-    type_is 120
+    tid_is 120
     attitude_is :passive
   end
 

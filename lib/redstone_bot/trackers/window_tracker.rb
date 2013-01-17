@@ -1,5 +1,4 @@
 require_relative '../packet_printer'
-require_relative '../tracks_types'
 require_relative '../models/spot'
 require_relative '../models/spot_array'
 require_relative '../models/windows'
