@@ -43,7 +43,7 @@
 42	IronBlock	64	solid
 43	DoubleSlabs	64	solid
 44	Slabs	64	solid
-45	Bricks	64	solid
+45	BrickBlock	64	solid
 46	TNT	64	solid
 47	Bookshelf	64	solid
 48	MossStone	64	solid
@@ -96,7 +96,7 @@
 95	LockedChest	64	solid
 96	Trapdoor	64	solid
 97	MonsterEgg	64	solid
-98	StoneBricks	64	solid
+98	StoneBrickBlock	64	solid
 99	HugeBrownMushroom	64	solid
 100	HugeRedMushroom	64	solid
 101	IronBars	64	solid
@@ -110,7 +110,7 @@
 109	StoneBrickStairs	64	solid
 110	Mycelium	64	solid
 111	LilyPad	64	solid
-112	NetherBrick	64	solid
+112	NetherBrickBlock	64	solid
 113	NetherBrickFence	64	solid
 114	NetherBrickStairs	64	solid
 115	NetherWartBlock	64	
@@ -215,7 +215,7 @@
 333	Boat	1	
 334	Leather	64	
 335	Milk	1	
-336	ClayBrick	64	
+336	BrickItem	64
 337	ClayBall	64	
 338	SugarCaneItem	64	
 339	Paper	64	
@@ -284,7 +284,7 @@
 402	FirworkStar	64
 403	EnchantedBook	1
 404	RedstoneComparator	64
-405	NetherBrick	64
+405	NetherBrickItem	64
 406	NetherQuartz	64
 407	MinecartWithTNT	1
 2256	Disc13	1	
