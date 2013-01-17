@@ -4,8 +4,11 @@ module RedstoneBot
   # tid stands for "type id".
   module HasTids
     def self.extended(klass)
-      types = {}
-      klass.singleton_class.send(:define_method, :types) { types }
+      klass.class_variable_set :@@types, {}
+    end
+
+    def types
+      class_variable_get :@@types
     end
     
     # This is called in the subclass definitions.
