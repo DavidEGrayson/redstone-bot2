@@ -1,9 +1,10 @@
 # need ordered hashes!
-raise "Please use Ruby 1.9.3 or later." if RUBY_VERSION < "1.9.3"
+raise 'Please use Ruby 1.9.3 or later.' if RUBY_VERSION < '1.9.3'
 
-require_relative "pack"
-require_relative "protocol_version"
-require "zlib"
+require_relative 'pack'
+require_relative 'protocol_version'
+require_relative '../has_tids'
+require 'zlib'
 
 # TODO: implement the rest of the packets from http://www.wiki.vg/Protocol
 
@@ -17,41 +18,25 @@ end
 
 module RedstoneBot
   class UnknownPacketError < StandardError
-    attr_reader :packet_type
+    attr_reader :tid_is
 
     def initialize(type)
-      @packet_type = type
+      @tid_is = type
     end
   end
 
   class Packet
+    extend HasTids
     include DataEncoder
 
-    # Associates packet id byte to packet class.
-    @packet_types = {}
-
-    def self.packet_types
-      @packet_types
-    end
-
-    # This is called in subclass definitions.
-    def self.packet_type(type)
-      @packet_type = type
-      Packet.packet_types[type] = self
-    end
-
-    def self.type
-      @packet_type
-    end
-
     def self.receive(stream)
-      type = stream.read_byte
-      packet_class = packet_types[type]
-      raise UnknownPacketError.new(type) if packet_class.nil?
-      return packet_class.receive_data(stream)
+      tid = stream.read_byte
+      packet_class = types[tid] or raise UnknownPacketError, type
+      packet_class.receive_data(stream)
     end
 
-    # Only called on a sublass, once the packet type has been received
+    # The following methods are only called on subclasses or Packet:
+    
     def self.receive_data(stream)
       p = allocate
       p.receive_data(stream)
@@ -62,22 +47,21 @@ module RedstoneBot
       raise "receive_data instance method or class method not implemented in #{self.class.name}"
     end
 
-    # Only called on a subclass
     def encode
-      type_byte + encode_data
+      tid_byte + encode_data
     end
 
     def encode_data
       raise "encode_data instance method not implemented in #{self.class.name}"
     end
 
-    def type_byte
-      byte(self.class.type)
+    def tid_byte
+      byte(self.class.tid)
     end
   end
 
   class Packet::KeepAlive < Packet
-    packet_type 0x00
+    tid_is 0x00
     attr_accessor :id
 
     def initialize(id=0)
@@ -94,7 +78,7 @@ module RedstoneBot
   end
 
   class Packet::LoginRequest < Packet
-    packet_type 0x01
+    tid_is 0x01
     attr_reader :eid
     attr_reader :username
     attr_reader :level_type  # "default" => :default, "SUPERFLAT" => :superflat
@@ -123,7 +107,7 @@ module RedstoneBot
   end
 
   class Packet::Handshake < Packet
-    packet_type 0x02
+    tid_is 0x02
     attr_reader :username
     attr_reader :hostname
     attr_reader :port
@@ -139,7 +123,7 @@ module RedstoneBot
   end
 
   class Packet::ChatMessage < Packet
-    packet_type 0x03
+    tid_is 0x03
     attr_reader :data, :death_type, :killer_name, :username, :chat
 
     # Source: http://www.wiki.vg/Chat except I left out the funny characters
@@ -247,7 +231,7 @@ module RedstoneBot
   end
 
   class Packet::TimeUpdate < Packet
-    packet_type 0x04
+    tid_is 0x04
     attr_reader :time, :day_time
 
     def receive_data(stream)
@@ -257,7 +241,7 @@ module RedstoneBot
   end
 
   class Packet::EntityEquipment < Packet
-    packet_type 0x05
+    tid_is 0x05
     attr_reader :eid, :spot_id, :item
 
     def receive_data(stream)
@@ -268,7 +252,7 @@ module RedstoneBot
   end
 
   class Packet::SpawnPosition < Packet
-    packet_type 0x06
+    tid_is 0x06
     attr_reader :coords
 
     def receive_data(stream)
@@ -277,7 +261,7 @@ module RedstoneBot
   end
 
   class Packet::UpdateHealth < Packet
-    packet_type 0x08
+    tid_is 0x08
     attr_reader :health
     attr_reader :food
     attr_reader :food_saturation
@@ -290,7 +274,7 @@ module RedstoneBot
   end
 
   class Packet::Respawn < Packet
-    packet_type 0x09
+    tid_is 0x09
     attr_reader :dimension
     attr_reader :difficulty
     attr_reader :game_mode
@@ -308,22 +292,22 @@ module RedstoneBot
   end
 
   class Packet::Player < Packet
-    packet_type 0x0A
+    tid_is 0x0A
     attr_reader :on_ground
   end
 
   class Packet::PlayerPosition < Packet
-    packet_type 0x0B
+    tid_is 0x0B
     attr_reader :coords, :stance, :on_ground
   end
 
   class Packet::PlayerLook < Packet
-    packet_type 0x0C
+    tid_is 0x0C
     attr_reader :yaw, :pitch, :on_ground
   end
 
   class Packet::PlayerPositionAndLook < Packet
-    packet_type 0x0D
+    tid_is 0x0D
     attr_reader :x, :stance, :y, :z, :yaw, :pitch, :on_ground   # TODO: use #position that returns a frozen Coords object
 
     def initialize(x, y, z, stance, yaw, pitch, on_ground)
@@ -354,7 +338,7 @@ module RedstoneBot
   end
 
   class Packet::PlayerDigging < Packet
-    packet_type 0x0E
+    tid_is 0x0E
     attr_reader :status, :x, :y, :z, :face
 
     # defaults for dropping items where only the status matters
@@ -382,7 +366,7 @@ module RedstoneBot
   end
 
   class Packet::PlayerBlockPlacement < Packet
-    packet_type 0x0F
+    tid_is 0x0F
 
     attr_reader :coords, :direction, :held_item, :cursor_x, :cursor_y, :cursor_z
 
@@ -400,7 +384,7 @@ module RedstoneBot
   end
 
   class Packet::HeldItemChange < Packet
-    packet_type 0x10
+    tid_is 0x10
     attr_reader :spot_id
 
     def initialize(spot_id)
@@ -421,7 +405,7 @@ module RedstoneBot
   end
 
   class Packet::UseBed < Packet
-    packet_type 0x11
+    tid_is 0x11
     attr_reader :eid, :coords
 
     def receive_data(stream)
@@ -436,7 +420,7 @@ module RedstoneBot
   end
 
   class Packet::Animation < Packet
-    packet_type 0x12
+    tid_is 0x12
     attr_reader :eid
     attr_reader :animation
 
@@ -456,7 +440,7 @@ module RedstoneBot
   end
 
   class Packet::SpawnNamedEntity < Packet
-    packet_type 0x14
+    tid_is 0x14
     attr_reader :eid
     attr_reader :player_name
     attr_reader :coords, :yaw, :pitch
@@ -480,7 +464,7 @@ module RedstoneBot
   end
 
   class Packet::CollectItem < Packet
-    packet_type 0x16
+    tid_is 0x16
     attr_reader :collected_eid
     attr_reader :collector_eid
 
@@ -491,7 +475,7 @@ module RedstoneBot
   end
 
   class Packet::SpawnObject < Packet  # includes vehicles
-    packet_type 0x17
+    tid_is 0x17
     attr_reader :eid
     attr_reader :type     # http://www.wiki.vg/Entities#Objects
     attr_reader :coords
@@ -526,7 +510,7 @@ module RedstoneBot
   end
 
   class Packet::SpawnMob < Packet
-    packet_type 0x18
+    tid_is 0x18
     attr_reader :eid
     attr_reader :type
     attr_reader :coords
@@ -549,7 +533,7 @@ module RedstoneBot
   end
 
   class Packet::SpawnPainting < Packet
-    packet_type 0x19
+    tid_is 0x19
     attr_reader :eid
     attr_reader :title
     attr_reader :coords
@@ -564,7 +548,7 @@ module RedstoneBot
   end
 
   class Packet::ExperienceOrb < Packet
-    packet_type 0x1A
+    tid_is 0x1A
     attr_reader :eid, :coords, :count
 
     def receive_data(stream)
@@ -575,7 +559,7 @@ module RedstoneBot
   end
 
   class Packet::EntityVelocity < Packet
-    packet_type 0x1C
+    tid_is 0x1C
     attr_reader :eid
     attr_reader :vx, :vy, :vz
 
@@ -596,7 +580,7 @@ module RedstoneBot
   end
 
   class Packet::DestroyEntity < Packet
-    packet_type 0x1D
+    tid_is 0x1D
     attr_reader :eids
 
     def receive_data(stream)
@@ -606,7 +590,7 @@ module RedstoneBot
   end
 
   class Packet::EntityRelativeMove < Packet
-    packet_type 0x1F
+    tid_is 0x1F
     attr_reader :eid, :dx, :dy, :dz
 
     def coords_change
@@ -626,7 +610,7 @@ module RedstoneBot
   end
 
   class Packet::EntityLook < Packet
-    packet_type 0x20
+    tid_is 0x20
     attr_reader :eid
     attr_reader :yaw, :pitch
 
@@ -638,7 +622,7 @@ module RedstoneBot
   end
 
   class Packet::EntityLookAndRelativeMove < Packet
-    packet_type 0x21
+    tid_is 0x21
     attr_reader :eid, :dx, :dy, :dz, :yaw, :pitch
 
     def coords_change
@@ -656,7 +640,7 @@ module RedstoneBot
   end
 
   class Packet::EntityTeleport < Packet
-    packet_type 0x22
+    tid_is 0x22
     attr_reader :eid, :coords, :yaw, :pitch
 
     def receive_data(stream)
@@ -672,7 +656,7 @@ module RedstoneBot
   end
 
   class Packet::EntityHeadLook < Packet
-    packet_type 0x23
+    tid_is 0x23
     attr_reader :eid, :head_yaw
 
     def receive_data(stream)
@@ -682,7 +666,7 @@ module RedstoneBot
   end
 
   class Packet::EntityStatus < Packet
-    packet_type 0x26
+    tid_is 0x26
     attr_reader :eid, :status
 
     def receive_data(stream)
@@ -692,7 +676,7 @@ module RedstoneBot
   end
 
   class Packet::AttachEntity < Packet
-    packet_type 0x27
+    tid_is 0x27
     attr_reader :eid, :vehicle_eid
 
     def receive_data(stream)
@@ -702,7 +686,7 @@ module RedstoneBot
   end
 
   class Packet::EntityMetadata < Packet
-    packet_type 0x28
+    tid_is 0x28
     attr_reader :eid, :metadata
 
     def receive_data(stream)
@@ -716,7 +700,7 @@ module RedstoneBot
   end
 
   class Packet::EntityEffect < Packet
-    packet_type 0x29
+    tid_is 0x29
     attr_reader :eid, :effect_id, :amplifier, :duration
 
     def receive_data(stream)
@@ -728,7 +712,7 @@ module RedstoneBot
   end
 
   class Packet::SetExperience < Packet
-    packet_type 0x2B
+    tid_is 0x2B
     attr_reader :experience_bar, :level, :total_experience
 
     def receive_data(stream)
@@ -739,7 +723,7 @@ module RedstoneBot
   end
 
   class Packet::ChunkData < Packet
-    packet_type 0x33
+    tid_is 0x33
     attr_reader :ground_up_continuous
     attr_reader :primary_bit_map, :add_bit_map
     attr_reader :data
@@ -778,7 +762,7 @@ module RedstoneBot
   end
 
   class Packet::MultiBlockChange < Packet
-    packet_type 0x34
+    tid_is 0x34
     attr_reader :count
     attr_reader :data
 
@@ -809,7 +793,7 @@ module RedstoneBot
   end
 
   class Packet::BlockChange < Packet
-    packet_type 0x35
+    tid_is 0x35
     attr_reader :x, :y, :z
     attr_reader :block_type, :block_metadata
 
@@ -830,7 +814,7 @@ module RedstoneBot
   end
 
   class Packet::BlockAction < Packet
-    packet_type 0x36
+    tid_is 0x36
     attr_reader :x, :y, :z
     attr_reader :data_bytes, :block_id
 
@@ -889,7 +873,7 @@ module RedstoneBot
   end
 
   class Packet::BlockBreakAnimation < Packet
-    packet_type 0x37
+    tid_is 0x37
     attr_reader :eid, :coords
 
     # Progress goes from 0 to 10 while digging and then -1 when the animation stops.
@@ -907,7 +891,7 @@ module RedstoneBot
   end
 
   class Packet::MapChunkBulk < Packet
-    packet_type 0x38
+    tid_is 0x38
 
     attr_reader :data, :metadata
 
@@ -931,7 +915,7 @@ module RedstoneBot
   end
 
   class Packet::Explosion < Packet
-    packet_type 0x3C
+    tid_is 0x3C
     attr_reader :coords, :radius_maybe, :records
 
     def receive_data(stream)
@@ -948,7 +932,7 @@ module RedstoneBot
   end
 
   class Packet::SoundOrParticleEffect < Packet
-    packet_type 0x3D
+    tid_is 0x3D
     attr_reader :effect_id, :coords, :data, :no_volume_decrease
 
     def receive_data(stream)
@@ -960,7 +944,7 @@ module RedstoneBot
   end
 
   class Packet::NamedSoundEffect < Packet
-    packet_type 0x3E
+    tid_is 0x3E
 
     attr_reader :name, :coords, :volume, :pitch
 
@@ -973,7 +957,7 @@ module RedstoneBot
   end
 
   class Packet::ChangeGameState < Packet
-    packet_type 0x46
+    tid_is 0x46
     attr_reader :reason, :game_mode
 
     def receive_data(stream)
@@ -983,7 +967,7 @@ module RedstoneBot
   end
 
   class Packet::Thunderbolt < Packet   # a.k.a GlobalEntity on the wiki
-    packet_type 0x47
+    tid_is 0x47
     attr_accessor :eid, :coords
 
     def receive_data(stream)
@@ -998,7 +982,7 @@ module RedstoneBot
   end
 
   class Packet::OpenWindow < Packet
-    packet_type 0x64
+    tid_is 0x64
 
     attr_accessor :window_id, :type, :title, :spot_count
 
@@ -1015,7 +999,7 @@ module RedstoneBot
   end
 
   class Packet::CloseWindow < Packet
-    packet_type 0x65
+    tid_is 0x65
 
     attr_accessor :window_id
 
@@ -1037,7 +1021,7 @@ module RedstoneBot
   end
 
   class Packet::ClickWindow < Packet
-    packet_type 0x66
+    tid_is 0x66
 
     attr_reader :window_id, :spot_id, :mouse_button, :action_number, :shift, :clicked_item
 
@@ -1066,7 +1050,7 @@ module RedstoneBot
   end
 
   class Packet::SetSlot < Packet
-    packet_type 0x67
+    tid_is 0x67
     attr_reader :window_id, :spot_id, :item
 
     def receive_data(stream)
@@ -1093,7 +1077,7 @@ module RedstoneBot
   end
 
   class Packet::SetWindowItems < Packet
-    packet_type 0x68
+    tid_is 0x68
     attr_reader :window_id, :items
 
     def receive_data(stream)
@@ -1110,7 +1094,7 @@ module RedstoneBot
   end
 
   class Packet::UpdateWindowProperty < Packet
-    packet_type 0x69
+    tid_is 0x69
     attr_reader :window_id, :property, :value
 
     def receive_data(stream)
@@ -1125,7 +1109,7 @@ module RedstoneBot
   end
 
   class Packet::ConfirmTransaction < Packet
-    packet_type 0x6A
+    tid_is 0x6A
     attr_reader :window_id, :action_number, :accepted
 
     def initialize(window_id, action_number, accepted)
@@ -1154,7 +1138,7 @@ module RedstoneBot
   end
 
   class Packet::UpdateSign < Packet
-    packet_type 0x82
+    tid_is 0x82
     attr_reader :coords, :text
 
     def receive_data(stream)
@@ -1164,7 +1148,7 @@ module RedstoneBot
   end
 
   class Packet::ItemData < Packet
-    packet_type 0x83
+    tid_is 0x83
     attr_reader :item_type, :item_id, :text
 
     def receive_data(stream)
@@ -1179,7 +1163,7 @@ module RedstoneBot
   #       "Delay"=>20, "MaxNearbyEntities"=>6, "MaxSpawnDelay"=>800, "SpawnRange"=>4,
   #       "SpawnCount"=>4, "z"=>533, "EntityId"=>"Spider", "y"=>25, "x"=>-186} }
   class Packet::UpdateTileEntity < Packet
-    packet_type 0x84
+    tid_is 0x84
     attr_reader :coords, :action, :data
 
     def receive_data(stream)
@@ -1197,7 +1181,7 @@ module RedstoneBot
   end
 
   class Packet::IncrementStatistic < Packet
-    packet_type 0xC8
+    tid_is 0xC8
     attr_reader :statistic_id, :amount
 
     def receive_data(stream)
@@ -1207,7 +1191,7 @@ module RedstoneBot
   end
 
   class Packet::PlayerListItem < Packet
-    packet_type 0xC9
+    tid_is 0xC9
     attr_reader :player_name, :online, :ping
 
     def receive_data(stream)
@@ -1218,7 +1202,7 @@ module RedstoneBot
   end
 
   class Packet::PlayerAbilities < Packet
-    packet_type 0xCA
+    tid_is 0xCA
 
     attr_reader :flags
     attr_reader :flying_speed
@@ -1248,7 +1232,7 @@ module RedstoneBot
   end
 
   class Packet::ClientSettings < Packet  # AKA Locale and View Distance
-    packet_type 0xCC
+    tid_is 0xCC
 
     attr_reader :locale, :view_distance, :chat_mode, :colors_enabled, :difficulty, :show_cape
 
@@ -1272,7 +1256,7 @@ module RedstoneBot
   end
 
   class Packet::ClientStatuses < Packet
-    packet_type 0xCD
+    tid_is 0xCD
 
     # Bit field. 0: Initial spawn, 1: Respawn after death
     attr_reader :payload
@@ -1295,7 +1279,7 @@ module RedstoneBot
   end
 
   class Packet::PluginMessage < Packet
-    packet_type 0xFA
+    tid_is 0xFA
     attr_reader :channel, :data
 
     def receive_data(stream)
@@ -1306,7 +1290,7 @@ module RedstoneBot
   end
 
   class Packet::EncryptionKeyResponse < Packet
-    packet_type 0xFC
+    tid_is 0xFC
 
     attr_reader :shared_secret, :verify_token_response
 
@@ -1326,7 +1310,7 @@ module RedstoneBot
   end
 
   class Packet::EncryptionKeyRequest < Packet
-    packet_type 0xFD
+    tid_is 0xFD
 
     attr_reader :connection_hash, :public_key, :verify_token
     alias :server_id :connection_hash
@@ -1340,7 +1324,7 @@ module RedstoneBot
   end
 
   class Packet::Disconnect < Packet
-    packet_type 0xFF
+    tid_is 0xFF
     attr_reader :reason
 
     def receive_data(stream)

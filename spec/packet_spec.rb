@@ -190,3 +190,10 @@ describe RedstoneBot::Packet::EntityRelativeMove do
     p.coords_change.should be_within(0.00001).of(RedstoneBot::Coords[1.5, 1.25, -0.125])
   end
 end
+
+describe RedstoneBot::Packet::KeepAlive do
+  it "encodes binary data correctly" do
+    p = described_class.new(5)
+    p.encode.should == "\x00\x00\x00\x00\x05"
+  end
+end
