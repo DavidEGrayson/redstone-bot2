@@ -1,11 +1,12 @@
 require 'set'
 
-module AStar
+module RedstoneBot::AStar
   def run_a_star
     # closed_set is the set of points where we have considered all their neighbors.
     closed_set = Set[]
     
-    # open_set is the set of points we found but are not in in the closed set yet.
+    # open_set is the set of points we found but are not in in the closed set yet,
+    # also known as the fringe.
     open_set = Set[start]
     
     came_from = {}

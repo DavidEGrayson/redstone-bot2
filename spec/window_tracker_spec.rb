@@ -46,7 +46,7 @@ describe RedstoneBot::WindowTracker do
       [nil]*43 + [ RedstoneBot::ItemType::Melon * 2, RedstoneBot::ItemType::MushroomSoup * 2 ]
     end
     
-    it "is done after all the cursor has been set" do
+    it "is done after the cursor has been set, and we ignore redundant SetSlot packets afterwards" do
       inventory_window = subject.inventory_window
     
       subject << RedstoneBot::Packet::SetWindowItems.create(0, items)
@@ -268,20 +268,6 @@ describe RedstoneBot::WindowTracker do
       end
     end
     
-    context "after swapping the items in two spots" do
-      let(:spot1) { subject.inventory.hotbar_spots[0] }
-      let(:spot2) { subject.chest_spots[0] }
-      
-      before do 
-        subject.swap spot1, spot2
-      end
-      
-      it "has swapped them" do
-        subject.inventory.hotbar_spots[0].item.should == RedstoneBot::ItemType::Flint*30
-        subject.chest_spots[0].item.should == RedstoneBot::ItemType::IronSword * 1
-      end
-    end
-    
     context "and another SetWindowItems packet is received" do
       before do
         subject << RedstoneBot::Packet::SetWindowItems.create(subject.usable_window.id, chest_items + initial_inventory.general_spots.items)
@@ -310,10 +296,18 @@ describe RedstoneBot::WindowTracker do
     
   end
   
-  describe "shift_click in the inventory window" do
+  #### SPECS FOR DIFFERENT KINDS OF CLICKING ####
+  
+  describe :left_click do
     before do
-      server_load_window 0, [nil] * (5+4+27+9)
-      client.sent_packets.clear      
+      server_load_window 0, [nil] * 45
+    end
+
+  end
+  
+  describe :shift_click do
+    before do
+      server_load_window 0, [nil] * 45
     end
     
     context "for an empty inventory" do
@@ -409,5 +403,29 @@ describe RedstoneBot::WindowTracker do
       end
     end
   end
+  
+  #### SPECS FOR HIGH-LEVEL ITEM MANIPULATION:  swap, transfer, etc. ####
+  
+  describe :swap do
+    let(:spot1) { subject.inventory.hotbar_spots[0] }
+    let(:spot2) { subject.inventory.hotbar_spots[3] }
+    
+    before do
+      server_load_window 0, [nil] * 45
+    end
+
+    context "for two items that not stackable" do
+      before do
+        spot1.item = RedstoneBot::ItemType::IronSword * 1
+        spot2.item = RedstoneBot::ItemType::Flint*30
+      end
+      
+      it "swaps" do
+        subject.swap spot1, spot2
+        [spot1.item, spot2.item].should == [RedstoneBot::ItemType::Flint*30, RedstoneBot::ItemType::IronSword * 1]
+      end
+    end
+    
+  end    
 
 end

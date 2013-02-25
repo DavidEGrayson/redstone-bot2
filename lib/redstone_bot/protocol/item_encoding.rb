@@ -1,3 +1,5 @@
+# coding: ASCII-8BIT
+
 require 'zlib'
 require_relative '../models/item'
 

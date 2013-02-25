@@ -1,3 +1,5 @@
+# coding: ASCII-8BIT
+
 require "spec_helper"
 require "redstone_bot/protocol/packets"
 require "redstone_bot/client"

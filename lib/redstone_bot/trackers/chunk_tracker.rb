@@ -1,3 +1,5 @@
+# coding: ASCII-8BIT
+
 # Definitions:
 # Chunk = 16x256x16
 # Section = 16x16x16 

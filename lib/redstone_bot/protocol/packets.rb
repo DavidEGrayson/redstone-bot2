@@ -1,5 +1,4 @@
-# need ordered hashes!
-raise 'Please use Ruby 1.9.3 or later.' if RUBY_VERSION < '1.9.3'
+raise 'Please use Ruby 2.0.0 or later.' if RUBY_VERSION < '2.0.0'
 
 require_relative 'pack'
 require_relative 'protocol_version'

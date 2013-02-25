@@ -25,9 +25,8 @@ module RedstoneBot
         raise "Cannot open chest: #{coords} is #{block_type}."
       end
       
-      selected_slot = nil
       send_packet Packet::Animation.new client.eid, 1
-      send_packet Packet::PlayerBlockPlacement.new coords, 1, selected_slot, 8, 15, 8
+      send_packet Packet::PlayerBlockPlacement.new coords, 1, nil
     end
     
     def chest_open(coords, &block)
@@ -42,5 +41,6 @@ module RedstoneBot
       
       nil
     end
+    
   end
 end

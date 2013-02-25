@@ -1,3 +1,5 @@
+# coding: ASCII-8BIT
+
 require 'redstone_bot/models/item'
 
 # TODO: remove this after we figure out the gzip problem
