@@ -95,8 +95,9 @@ module RedstoneBot
     receive_data test_stream [window_id, spot_id].pack("CS>") + $e.encode_item(item)
   end
   
-  def (Packet::OpenWindow).create(window_id, type, title, slot_count)
-    binary_data = [window_id, type].pack("CC") + $e.string(title) + [slot_count].pack("C")
+  def (Packet::OpenWindow).create(window_id, type, title, slot_count, display_title_as_is=false)
+    binary_data = [window_id, type].pack("CC") + $e.string(title) +
+      [slot_count].pack("C") + $e.bool(display_title_as_is)
     receive_data test_stream binary_data
   end
 

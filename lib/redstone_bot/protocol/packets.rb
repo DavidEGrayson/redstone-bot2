@@ -964,6 +964,19 @@ module RedstoneBot
       @game_mode = stream.read_byte
     end
   end
+  
+  class Packet::Particle < Packet
+    tid_is 0x3F
+    attr_reader :name, :coords, :offset, :speed, :count
+    
+    def receive_data(stream)
+      @name = stream.read_string
+      @coords = Coords[stream.read_float, stream.read_float, stream.read_float]
+      @offset = Coords[stream.read_float, stream.read_float, stream.read_float]
+      @speed = stream.read_float
+      @count = stream.read_unsigned_int
+    end
+  end
 
   class Packet::Thunderbolt < Packet   # a.k.a GlobalEntity on the wiki
     tid_is 0x47
@@ -983,13 +996,14 @@ module RedstoneBot
   class Packet::OpenWindow < Packet
     tid_is 0x64
 
-    attr_accessor :window_id, :type, :title, :spot_count
+    attr_accessor :window_id, :type, :title, :spot_count, :display_title_as_is
 
     def receive_data(stream)
       @window_id = stream.read_byte
       @type = stream.read_byte
       @title = stream.read_string
       @spot_count = stream.read_byte
+      @display_title_as_is = stream.read_bool
     end
 
     def to_s
@@ -1275,6 +1289,76 @@ module RedstoneBot
     def encode_data
       byte(payload)
     end
+  end
+  
+  class Packet::Scoreboard < Packet
+    tid_is 0xCE
+    attr_reader :score_name, :text
+    
+    def remove?
+      @remove
+    end
+    
+    def receive_data(stream)
+      @score_name = stream.read_string
+      @text = stream.read_string
+      @remove = stream.read_bool
+    end
+  end
+  
+  class Packet::UpdateScore < Packet
+    tid_is 0xCF
+    attr_reader :item_name, :score_name, :value
+    
+    def remove?
+      @remove
+    end
+    
+    def receive_data(stream)
+      @item_name = stream.read_string
+      @remove = stream.read_bool
+      if !@remove
+        @score_name = stream.read_string
+        @value = stream.read_int
+      end
+    end
+  end
+  
+  class Packet::DisplayScoreboard < Packet
+    tid_is 0xD0
+    attr_reader :score_name, :position
+    Positions = %i(list sidebar below_name)
+    
+    def receive_data(stream)
+      @score_name = stream.read_string
+      @position = Positions[stream.read_byte]
+    end
+  end
+  
+  class Packet::Team < Packet
+    tid_is 0xD1
+    
+    attr_reader :team_name, :mode, :team_display_name, :team_prefix, :team_suffix, 
+      :friendly_fire, :player_names
+    Modes = %i(create remove update players_add players_remove)
+    
+    def receive_data(stream)
+      @team_name = stream.read_string
+      @mode = Modes[stream.read_byte]
+      
+      if %i(create update).include? @mode
+        @team_display_name = stream.read_string
+        @team_prefix = stream.read_string
+        @team_suffix = stream.read_string
+        @friendly_fire = stream.read_byte        
+      end
+      
+      if %i(players_add players_remove).include? @mode
+        count = stream.read_unsigned_short
+        @player_names = count.times.collect { stream.read_string }
+      end      
+    end
+    
   end
 
   class Packet::PluginMessage < Packet
