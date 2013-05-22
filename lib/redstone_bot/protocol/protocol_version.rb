@@ -1,3 +1,3 @@
 module RedstoneBot
-  ProtocolVersion = 60
+  ProtocolVersion = 61 #No changes noted in Protocl Version 60->61. Updating
 end
