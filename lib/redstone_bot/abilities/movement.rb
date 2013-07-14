@@ -15,7 +15,7 @@ module RedstoneBot
     def miracle_jump(x, z)
       return unless require_brain { miracle_jump x, z }
 
-      opts = { :update_period => 0.01, :speed => 600 }
+      opts = { update_period: 0.01, speed: 600 }
       jump_to_height 276, opts
       move_to Coords[x, 257, z], opts
       fall opts

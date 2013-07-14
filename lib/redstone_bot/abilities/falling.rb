@@ -3,17 +3,18 @@ module RedstoneBot
     def fall(opts={})
       return unless require_brain { fall opts }
 
-      move_loop do
+      move_loop(opts[:update_period]) do
         break if fall_update(opts)
       end
     end
   
     def fall_update(opts={})
       speed = opts[:speed] || 10
+      update_period = opts[:update_period] || body.default_period
       
       ground = find_nearby_ground || -1
       
-      max_distance = speed * body.default_period
+      max_distance = speed * update_period
       
       dy = ground - body.position.y
       if dy.abs > max_distance

@@ -91,7 +91,7 @@ module RedstoneBot
       update_period ||= @default_period
       
       if @busy
-        $stderr.puts "#{@client.time_string}: warning: body is already busy and #move was called."
+        $stderr.puts "#{@client.time_string}: warning: body is already busy and #move_loop was called."
       end
       
       begin
@@ -105,7 +105,7 @@ module RedstoneBot
       ensure
         @busy = false
         
-        # This is necessary because otherwise if someone called loop { move { break } }
+        # This is necessary because otherwise if someone called loop { move_loop { break } }
         # there would be no position updates sent for a long time.
         send_update
       end
