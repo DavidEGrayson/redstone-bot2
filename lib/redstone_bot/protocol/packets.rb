@@ -4,6 +4,7 @@ require_relative 'pack'
 require_relative 'protocol_version'
 require_relative '../has_tids'
 require 'zlib'
+require 'json'
 
 # TODO: implement the rest of the packets from http://www.wiki.vg/Protocol
 
@@ -131,19 +132,27 @@ module RedstoneBot
 
     def initialize(data)
       @data = data
-      init_player_chat_info or init_death_info
+      init_player_chat_info
     end
 
     def receive_data(stream)
-      initialize(stream.read_string)
+      initialize JSON.parse stream.read_string
     end
 
     def ==(other)
       other.respond_to?(:data) && @data == other.data
     end
 
+    def data_as_string
+      if @data.is_a? String
+        @data
+      else
+        JSON.generate @data
+      end
+    end
+    
     def safe_data
-      data.chars.select { |c| AllowedChatChars.include?(c) }[0,100].join
+      data_as_string.chars.select { |c| AllowedChatChars.include?(c) }[0,100].join
     end
 
     def encode_data
@@ -151,11 +160,7 @@ module RedstoneBot
     end
 
     def to_s
-		  "chat: #{self.class.strip_codes(data)}"
-    end
-
-    def death?
-      !!@death_type
+		  "chat: #{data}"
     end
 
     def player_chat?
@@ -165,10 +170,9 @@ module RedstoneBot
     def whisper?
       @whisper
     end
-
-    # Removes Minecraft color and formatting codes.
-    def self.strip_codes(str)
-      str.gsub /\u00A7[0-9a-z]/, ''
+    
+    def emote?
+      @emote
     end
 
     def self.player_chat(username, chat)
@@ -178,55 +182,22 @@ module RedstoneBot
     end
 
     def player_chat(username, chat)
-      @data = "<#{username}> #{chat}"
-      @username = username
-      @chat = chat
+      @data = {"translate"=>"chat.type.text", "using"=>[username, chat]}
+      @username, @chat = username, chat
     end
 
     protected
 
     def init_player_chat_info
-      @whisper = false
-      case self.class.strip_codes(data)
-      when /^<([^>]+)> (.*)/
-        @username, @chat = $1, $2
-        return true
-      when /^([^ ]+) whispers to you: (.*)/
-        @username, @chat = $1, $2
-        @whisper = true
-        return true
-      else
-        return false
+      types = %{commands.message.display.incoming chat.type.text chat.type.emote}
+      if @data["translate"] && types.include?(@data["translate"])
+        @username, @chat = @data["using"]
       end
+      
+      @whisper = @data["translate"] == "commands.message.display.incoming"
+      @emote = @data["translate"] == "chat.type.emote"
     end
 
-    def init_death_info
-      @death_type = case data
-        when /^(.+) drowned$/ then :drowned
-        when /^(.+) hit the ground too hard$/ then :hit_ground
-        when /^(.+) was slain by (.+)$/ then :slain
-        when /^(.+) was shot by (.+)$/ then :shot
-        when /^(.+) was killed by (.+)$/ then :killed
-        when /^(.+) fell out of the world (.+)$/ then :fell_out
-        when /^(.+) tried to swim in lava$/ then :lava
-        when /^(.+) went up in flames$/ then :flames
-        when /^(.+) burned to death$/ then :burned
-        when /^(.+) blew up$/ then :blew_up
-        when /^(.+) was fireballed by (.+)$/ then :fireballed
-        when /^(.+) was killed by magic$/ then :magic   # suicide
-        when /^(.+) suffocated in a wall$/ then :suffocated
-        when /^(.+) was pricked to death$/ then :pricked
-        when /^(.+) was shot by an arrow$/ then :arrow
-        when /^(.+) died$/ then :died
-        when /^(.+) didn't have a chance$/ then :no_chance
-        when /^([^\s]*)$/ then :unknown
-        end
-
-      if @death_type
-        @username = $1
-        @killer_name = $2   # mob or player name
-      end
-    end
   end
 
   class Packet::TimeUpdate < Packet
@@ -259,6 +230,22 @@ module RedstoneBot
     end
   end
 
+  class Packet::UseEntity < Packet
+    tid_is 0x07
+    
+    attr_reader :user_eid, :target_eid, :right_mouse_button
+    
+    def initialize(user_eid, target_eid, right_mouse_button)
+      @user_eid = user_eid
+      @target_eid = target_eid
+      @right_mouse_button = right_mouse_button
+    end
+    
+    def encode_data
+      int(@user_eid) + int(@target_eid) + bool(@right_mouse_button)
+    end
+  end
+  
   class Packet::UpdateHealth < Packet
     tid_is 0x08
     attr_reader :health
@@ -266,7 +253,7 @@ module RedstoneBot
     attr_reader :food_saturation
 
     def receive_data(stream)
-      @health = stream.read_short
+      @health = stream.read_float   # TODO: audit other parts of the code that use health because it is a float now!
       @food = stream.read_short
       @food_saturation = stream.read_float
     end
@@ -293,16 +280,29 @@ module RedstoneBot
   class Packet::Player < Packet
     tid_is 0x0A
     attr_reader :on_ground
+    
+    def encode_data
+      bool(on_ground)
+    end
   end
 
   class Packet::PlayerPosition < Packet
     tid_is 0x0B
     attr_reader :coords, :stance, :on_ground
+    
+    def encode_data
+      double(coords[0]) + double(coords[1]) + double(stance) +
+        double(coords[2]) + bool(on_ground)
+    end
   end
 
   class Packet::PlayerLook < Packet
     tid_is 0x0C
     attr_reader :yaw, :pitch, :on_ground
+    
+    def encode_data
+      float(yaw) + float(pitch) + float(on_ground)
+    end
   end
 
   class Packet::PlayerPositionAndLook < Packet
@@ -437,6 +437,24 @@ module RedstoneBot
       @animation = stream.read_byte
     end
   end
+  
+  class Packet::EntityAction < Packet
+    tid_is 0x13
+    
+    attr_reader :eid, :action, :jump_boost
+    
+    Actions = [nil, :crouch, :uncrouch, :leave_bed, :start_sprinting, :stop_sprinting]
+    
+    def initialize(eid, action, jump_boost)
+      @eid = eid
+      @action = action
+      @jump_boost = jump_boost
+    end
+    
+    def encode_data
+      int(eid) + byte(Actions.index(action)) + int(jump_boost)
+    end
+  end
 
   class Packet::SpawnNamedEntity < Packet
     tid_is 0x14
@@ -486,8 +504,8 @@ module RedstoneBot
       @eid = stream.read_int
       @type = stream.read_byte
       @coords = Coords[stream.read_int/32.0, stream.read_int/32.0, stream.read_int/32.0].freeze
-      @yaw = stream.read_signed_byte
       @pitch = stream.read_signed_byte
+      @yaw = stream.read_signed_byte
 
       # The int field has different info depending on @type.  Details are here: http://www.wiki.vg/Object_Data
       @int_field = stream.read_int
@@ -557,6 +575,20 @@ module RedstoneBot
     end
   end
 
+  class Packet::SteerVehicle < Packet
+    tid_is 0x1B
+    attr_reader :sideways, :forward, :jump, :unmount
+    
+    def initialize(sideways, forward, jump: false, unmount: false)
+      @sideways, @forward = sideways, forward
+      @jump, @unmount = jump, unmount
+    end
+    
+    def encode_data
+      float(sideways) + float(forward) + bool(jump) + bool(unmount)
+    end
+  end
+
   class Packet::EntityVelocity < Packet
     tid_is 0x1C
     attr_reader :eid
@@ -588,6 +620,16 @@ module RedstoneBot
     end
   end
 
+  class Packet::Entity < Packet
+    tid_is 0x1E
+    
+    attr_reader :eid
+    
+    def receive_data(stream)
+      @eid = stream.read_int
+    end
+  end
+  
   class Packet::EntityRelativeMove < Packet
     tid_is 0x1F
     attr_reader :eid, :dx, :dy, :dz
@@ -676,11 +718,12 @@ module RedstoneBot
 
   class Packet::AttachEntity < Packet
     tid_is 0x27
-    attr_reader :eid, :vehicle_eid
+    attr_reader :eid, :vehicle_eid, :leash
 
     def receive_data(stream)
       @eid = stream.read_int
       @vehicle_eid = stream.read_int
+      @leash = stream.read_byte
     end
   end
 
@@ -709,6 +752,16 @@ module RedstoneBot
       @duration = stream.read_unsigned_short
     end
   end
+  
+  class Packet::RemoveEntityEffect < Packet
+    tid_is 0x2A
+    attr_reader :eid, :effect_id
+    
+    def receive_data(stream)
+      @eid = stream.read_int
+      @effect_id = stream.read_byte
+    end
+  end
 
   class Packet::SetExperience < Packet
     tid_is 0x2B
@@ -721,6 +774,25 @@ module RedstoneBot
     end
   end
 
+  class Packet::EntityProperties < Packet
+    tid_is 0x2C
+    attr_reader :eid, :properties
+    
+    def receive_data(stream)
+      @eid = stream.read_int
+      property_count = stream.read_int
+      @properties = property_count.times.collect do
+        key = stream.read_string
+        value = stream.read_double
+        length = stream.read_short
+        list = length.times.collect do
+          [stream.read_long, stream.read_long, stream.read_double, stream.read_byte]
+        end
+        [key, value, list]
+      end
+    end
+  end
+  
   class Packet::ChunkData < Packet
     tid_is 0x33
     attr_reader :ground_up_continuous
@@ -875,7 +947,7 @@ module RedstoneBot
     tid_is 0x37
     attr_reader :eid, :coords
 
-    # Progress goes from 0 to 10 while digging and then -1 when the animation stops.
+    # Progress goes from 0 to 7.
     attr_reader :progress
 
     def receive_data(stream)
@@ -897,7 +969,7 @@ module RedstoneBot
     def receive_data(stream)
       chunk_column_count = stream.read_unsigned_short
       data_size = stream.read_unsigned_int
-      stream.read_bool   # unknown use
+      sky_light_sent = stream.read_bool
       @data = Zlib::Inflate.inflate stream.read(data_size)
       @metadata = chunk_column_count.times.collect do
         chunk_id = [stream.read_int*16, stream.read_int*16]
@@ -915,7 +987,7 @@ module RedstoneBot
 
   class Packet::Explosion < Packet
     tid_is 0x3C
-    attr_reader :coords, :radius_maybe, :records
+    attr_reader :coords, :radius_maybe, :records, :player_motion
 
     def receive_data(stream)
       @coords = Coords[stream.read_double, stream.read_double, stream.read_double].freeze
@@ -924,21 +996,19 @@ module RedstoneBot
       @records = count.times.collect do
         [stream.read_signed_byte, stream.read_signed_byte, stream.read_signed_byte]
       end
-      stream.read_float  #unknown
-      stream.read_float  #unknown
-      stream.read_float  #unknown
+      @player_motion = Coords[stream.read_float, stream.read_float, stream.read_float].freeze
     end
   end
 
   class Packet::SoundOrParticleEffect < Packet
     tid_is 0x3D
-    attr_reader :effect_id, :coords, :data, :no_volume_decrease
+    attr_reader :effect_id, :coords, :data, :disable_relative_volume
 
     def receive_data(stream)
       @effect_id = stream.read_int
       @coords = Coords[stream.read_int, stream.read_byte, stream.read_int].freeze
       @data = stream.read_int
-      @no_volume_decrease = stream.read_bool
+      @disable_relative_volume = stream.read_bool
     end
   end
 
@@ -955,16 +1025,6 @@ module RedstoneBot
     end
   end
 
-  class Packet::ChangeGameState < Packet
-    tid_is 0x46
-    attr_reader :reason, :game_mode
-
-    def receive_data(stream)
-      @reason = stream.read_byte
-      @game_mode = stream.read_byte
-    end
-  end
-  
   class Packet::Particle < Packet
     tid_is 0x3F
     attr_reader :name, :coords, :offset, :speed, :count
@@ -977,6 +1037,16 @@ module RedstoneBot
       @count = stream.read_unsigned_int
     end
   end
+
+  class Packet::ChangeGameState < Packet
+    tid_is 0x46
+    attr_reader :reason, :game_mode
+
+    def receive_data(stream)
+      @reason = stream.read_byte
+      @game_mode = stream.read_byte
+    end
+  end  
 
   class Packet::Thunderbolt < Packet   # a.k.a GlobalEntity on the wiki
     tid_is 0x47
@@ -996,7 +1066,7 @@ module RedstoneBot
   class Packet::OpenWindow < Packet
     tid_is 0x64
 
-    attr_accessor :window_id, :type, :title, :spot_count, :display_title_as_is
+    attr_accessor :window_id, :type, :title, :spot_count, :display_title_as_is, :eid
 
     def receive_data(stream)
       @window_id = stream.read_byte
@@ -1004,6 +1074,10 @@ module RedstoneBot
       @title = stream.read_string
       @spot_count = stream.read_byte
       @display_title_as_is = stream.read_bool
+      if @window_id == 11
+        # Animal chest: get the horse entity ID
+        @eid = stream.read_int
+      end
     end
 
     def to_s
@@ -1038,6 +1112,7 @@ module RedstoneBot
 
     attr_reader :window_id, :spot_id, :mouse_button, :action_number, :shift, :clicked_item
 
+    # TODO: shift is really "mode" and allows for a bunch of different actions
     def initialize(window_id, spot_id, mouse_button, action_number, shift, clicked_item)
       @window_id = window_id
       @spot_id = spot_id
@@ -1058,6 +1133,7 @@ module RedstoneBot
     end
 
     def encode_data
+      # TODO: this needs work...
       byte(window_id) + short(spot_id) + encode_mouse_button + unsigned_short(action_number) + bool(shift) + encode_item(clicked_item)
     end
   end
@@ -1192,6 +1268,16 @@ module RedstoneBot
       "UpdateTileEntity(#@coords, action=#@action, #{@data.inspect})"
     end
   end
+  
+  class Packet::TileEditorOpen < Packet
+    tid_is 0x85
+    attr_reader :id, :coords
+    
+    def receive_data(stream)
+      @id = stream.read_byte
+      @coords = Coords[stream.read_int, stream.read_int, stream.read_int].freeze
+    end
+  end
 
   class Packet::IncrementStatistic < Packet
     tid_is 0xC8
@@ -1199,7 +1285,7 @@ module RedstoneBot
 
     def receive_data(stream)
       @statistic_id = stream.read_int
-      @amount = stream.read_signed_byte
+      @amount = stream.read_int
     end
   end
 
@@ -1223,8 +1309,8 @@ module RedstoneBot
 
     def receive_data(stream)
       @flags = stream.read_byte
-      @flying_speed = stream.read_byte
-      @walking_speed = stream.read_byte
+      @flying_speed = stream.read_float
+      @walking_speed = stream.read_float
     end
 
     def damage_disabled?
@@ -1291,7 +1377,7 @@ module RedstoneBot
     end
   end
   
-  class Packet::Scoreboard < Packet
+  class Packet::ScoreboardObjective < Packet
     tid_is 0xCE
     attr_reader :score_name, :text
     
@@ -1300,8 +1386,8 @@ module RedstoneBot
     end
     
     def receive_data(stream)
-      @score_name = stream.read_string
-      @text = stream.read_string
+      @objective_name = stream.read_string
+      @objective_value = stream.read_string
       @remove = stream.read_bool
     end
   end
@@ -1330,8 +1416,8 @@ module RedstoneBot
     Positions = %i(list sidebar below_name)
     
     def receive_data(stream)
-      @score_name = stream.read_string
       @position = Positions[stream.read_byte]
+      @score_name = stream.read_string
     end
   end
   
@@ -1353,10 +1439,10 @@ module RedstoneBot
         @friendly_fire = stream.read_byte        
       end
       
-      if %i(players_add players_remove).include? @mode
+      if %i(create players_add players_remove).include? @mode
         count = stream.read_unsigned_short
         @player_names = count.times.collect { stream.read_string }
-      end      
+      end
     end
     
   end
