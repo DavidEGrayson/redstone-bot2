@@ -4,6 +4,7 @@ require_relative 'pack'
 require_relative 'protocol_version'
 require_relative '../has_tids'
 require 'zlib'
+require 'json'
 
 # TODO: implement the rest of the packets from http://www.wiki.vg/Protocol
 
@@ -131,19 +132,27 @@ module RedstoneBot
 
     def initialize(data)
       @data = data
-      init_player_chat_info or init_death_info
+      init_player_chat_info
     end
 
     def receive_data(stream)
-      initialize(stream.read_string)
+      initialize JSON.parse stream.read_string
     end
 
     def ==(other)
       other.respond_to?(:data) && @data == other.data
     end
 
+    def data_as_string
+      if @data.is_a? String
+        @data
+      else
+        JSON.generate @data
+      end
+    end
+    
     def safe_data
-      data.chars.select { |c| AllowedChatChars.include?(c) }[0,100].join
+      data_as_string.chars.select { |c| AllowedChatChars.include?(c) }[0,100].join
     end
 
     def encode_data
@@ -151,11 +160,7 @@ module RedstoneBot
     end
 
     def to_s
-		  "chat: #{self.class.strip_codes(data)}"
-    end
-
-    def death?
-      !!@death_type
+		  "chat: #{data}"
     end
 
     def player_chat?
@@ -165,10 +170,9 @@ module RedstoneBot
     def whisper?
       @whisper
     end
-
-    # Removes Minecraft color and formatting codes.  # TODO: get rid of this because we use JSON now
-    def self.strip_codes(str)
-      str.gsub /\u00A7[0-9a-z]/, ''
+    
+    def emote?
+      @emote
     end
 
     def self.player_chat(username, chat)
@@ -178,55 +182,22 @@ module RedstoneBot
     end
 
     def player_chat(username, chat)
-      @data = "<#{username}> #{chat}"
-      @username = username
-      @chat = chat
+      @data = {"translate"=>"chat.type.text", "using"=>[username, chat]}
+      @username, @chat = username, chat
     end
 
     protected
 
     def init_player_chat_info
-      @whisper = false
-      case self.class.strip_codes(data)
-      when /^<([^>]+)> (.*)/
-        @username, @chat = $1, $2
-        return true
-      when /^([^ ]+) whispers to you: (.*)/
-        @username, @chat = $1, $2
-        @whisper = true
-        return true
-      else
-        return false
+      types = %{commands.message.display.incoming chat.type.text chat.type.emote}
+      if @data["translate"] && types.include?(@data["translate"])
+        @username, @chat = @data["using"]
       end
+      
+      @whisper = @data["translate"] == "commands.message.display.incoming"
+      @emote = @data["translate"] == "chat.type.emote"
     end
 
-    def init_death_info
-      @death_type = case data
-        when /^(.+) drowned$/ then :drowned
-        when /^(.+) hit the ground too hard$/ then :hit_ground
-        when /^(.+) was slain by (.+)$/ then :slain
-        when /^(.+) was shot by (.+)$/ then :shot
-        when /^(.+) was killed by (.+)$/ then :killed
-        when /^(.+) fell out of the world (.+)$/ then :fell_out
-        when /^(.+) tried to swim in lava$/ then :lava
-        when /^(.+) went up in flames$/ then :flames
-        when /^(.+) burned to death$/ then :burned
-        when /^(.+) blew up$/ then :blew_up
-        when /^(.+) was fireballed by (.+)$/ then :fireballed
-        when /^(.+) was killed by magic$/ then :magic   # suicide
-        when /^(.+) suffocated in a wall$/ then :suffocated
-        when /^(.+) was pricked to death$/ then :pricked
-        when /^(.+) was shot by an arrow$/ then :arrow
-        when /^(.+) died$/ then :died
-        when /^(.+) didn't have a chance$/ then :no_chance
-        when /^([^\s]*)$/ then :unknown
-        end
-
-      if @death_type
-        @username = $1
-        @killer_name = $2   # mob or player name
-      end
-    end
   end
 
   class Packet::TimeUpdate < Packet
