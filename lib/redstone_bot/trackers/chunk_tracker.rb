@@ -69,10 +69,6 @@ module RedstoneBot
     def apply_broad_change(ground_up_continuous, primary_bit_map, add_bit_map, stream)
       raise "sorry, dunno about add_bit_map yet" if add_bit_map != 0
 
-      if @id == [-208, 784]
-        puts "#{@id.inspect} #{ground_up_continuous} #{primary_bit_map}"
-      end
-          
       included_sections = (0..15).select { |i| (primary_bit_map >> i & 1) == 1 }
       
       # WARNING: If not enough data is provided in the packet then the code below

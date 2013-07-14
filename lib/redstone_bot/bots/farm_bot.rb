@@ -4,21 +4,33 @@ require_relative '../simple_cache'
 # TODO: see if we can run an IRB thing in the console instead of using ChatEvaluator
 
 module RedstoneBot
-  class FarmBot < Bot 
+  class FarmBot < Bot
+    # FARM-SPECIFIC CODE.  Change this to match your own farm. ###########################
     ExpectedWheatCount = 9759
     FarmBounds = [(-300..-150), (63..63), (670..800)]
-    Storage = Coords[-210, 68, 798] - Coords::Z*2
-    StorageWaypoint = Coords[-210, 63, 784]  # with a better pathinder we wouldn't need this
-  
-    PrintPacketClasses = [
-      Packet::Thunderbolt,
-    ]
-  
+    FarmCenter = Coords[-227.5, 63, 745.5]   
+    Storage = Coords[-208.5, 84, 797.5]
+    WheatChestCoords = [-210, 83, 797]
+    SeedChestCoords = [-208, 83, 797]
+    
+    def go_from_farm_to_storage
+      return unless require_brain { go_from_farm_to_storage }      
+      miracle_jump Storage[0], Storage[2]      
+      if (position[1] - Storage[1]).abs > 1.5
+        $stderr.puts "FarmBot did not get very close to the storage: #{position.inspect}"
+      end
+    end
+    
+    def go_from_storage_to_farm
+      return unless require_brain { go_from_storage_to_farm }      
+      miracle_jump FarmCenter[0], FarmCenter[2]
+    end
+    
+    # GENERAL CODE.  This should not contain anything specific to your farm. ############
+    
     def setup
       super
 
-      @packet_printer = PacketPrinter.new(client, PrintPacketClasses)
-      
       @wheat_count = SimpleCache.new(@chunk_tracker) do |chunk_id|
         count_wheat_in_chunk(chunk_id)
       end
@@ -113,31 +125,35 @@ module RedstoneBot
       return wheats_dug
     end
     
-    def go_from_farm_to_storage
-      return unless require_brain { go_from_farm_to_storage }
-      
-      move_to StorageWaypoint if defined?(StorageWaypoint)
-      path_to Storage
-    end
-    
-    def go_from_storage_to_farm
-      return unless require_brain { go_from_storage_to_farm }
-      
-      path_to StorageWaypoint if defined?(StorageWaypoint)
-    end
-    
     def store_items
       return unless require_brain { store_items }
     
-      chat "hmmmm, how 2 store items in chests... I'll just dump it"
-      
-      # Dump everything, except guarantee that we at least have half a stack of seeds left
-      # TODO: express this more elegantly
-      inventory.normal_spots.each do |spot|
-        next if ItemType::Seeds === spot && inventory.spots.quantity(ItemType::Seeds) < 96
-        dump spot
+      wheat_spots = window_tracker.inventory.spots.grep(ItemType::WheatItem)
+      wheat_spots.extend SpotArray
+      wheat_quantity = wheat_spots.quantity
+      if wheat_quantity > 0    
+        chest_open(WheatChestCoords) do
+          wheat_spots.each do |spot|
+            # TODO: hide all the details about clicking and such in a nice library
+            window_tracker.shift_click spot
+          end
+        end
       end
       
+      seed_spots = window_tracker.inventory.spots.grep(ItemType::Seeds)
+      seed_spots.extend SpotArray
+      seed_spots.shift  # Keep some seeds for replanting.
+      seed_quantity = seed_spots.quantity
+      if seed_quantity > 0      
+        chest_open(SeedChestCoords) do
+          seed_spots.each do |spot|
+            # TODO: hide all the details about clicking and such in a nice library
+            window_tracker.shift_click spot
+          end
+        end
+      end
+      
+      chat "Deposited #{wheat_quantity} wheats and #{seed_quantity} seeds"
       delay(2)
     end
        
@@ -227,8 +243,15 @@ module RedstoneBot
       # At least one slot for seeds, one slot for wheat.
       inventory.general_spots.empty_spots.size < 2
     end
+
+    def inventory_report
+      wheats = inventory.spots.quantity(ItemType::WheatItem)
+      seeds = inventory.spots.quantity(ItemType::Seeds)
+      empty_spots = inventory.general_spots.empty_spots.size
+      "I have wheats: #{wheats}, seeds: #{seeds}, empty spots: #{empty_spots}"
+    end
     
-    TestChestCoords = Coords[-248, 69, 661];
+    TestChestCoords = Coords[-248, 69, 661]
     
     def openy(chest_coords=TestChestCoords)
       chest_open_start chest_coords
