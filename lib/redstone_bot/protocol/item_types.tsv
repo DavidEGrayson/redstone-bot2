@@ -135,6 +135,33 @@
 134	SpruceWoodStairs	64	solid
 135	BirchWoodStairs	64	solid
 136	JungleWoodStairs	64	solid
+137	CommandBlock	64	solid
+138	Beacon	64	solid
+139	CobblestoneWall	64	solid
+140	FlowerPotBlock	64	solid
+141	CarrotBlock	64
+142	PotatoBlock	64
+143	WoodenButton	64
+144	MobHeadBlock	64	solid
+145	Anvil	64	solid
+146	TrappedChest	64	solid
+147	WeightedPressurePlateLight	64
+148	WeightedPressurePlaterHeavy	64
+149	RedstoneComparatorInactive	64	solid
+150	RedstoneComparatorActive	64	solid
+151	DaylightSensor	64	solid
+152	Redstone	64	solid
+153	NetherQuartzOre	64	solid
+154	Hopper	64	solid
+155	Quartz	64	solid
+156	QuartzStairs	64	solid
+157	ActivatorRail	64
+158	Dropper	64	solid
+159	StainedClay	64	solid
+170	HayBlock	64	solid
+171	Carpet	64
+172	HardenedClay	64	solid
+173	CoalBlock	64	solid
 256	IronShovel	1	
 257	IronPickaxe	1	
 258	IronAxe	1	
@@ -142,7 +169,7 @@
 260	RedApple	64	
 261	Bow	1	
 262	Arrow	64	
-263	Coal	64	
+263	CoalItem	64	
 264	Diamond	64	
 265	IronIngot	64	
 266	GoldIngot	64	
@@ -269,14 +296,14 @@
 387	WrittenBook	1	
 388	Emerald	64
 389	ItemFrame	64
-390	FlowerPot	64
-391	Carrot	64
-392	Potato	64
+390	FlowerPotItem	64
+391	CarrotItem	64
+392	PotatoItem	64
 393	BakedPotato	64
 394	PoisonousPotato	64
 395	EmptyMap	64
 396	GoldenCarrot	64
-397	MobHead	64
+397	MobHeadItem	64
 398	CarrotOnStick	1
 399	NetherStar	64
 400	PumpkinPie	64

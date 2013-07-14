@@ -349,20 +349,20 @@ describe RedstoneBot::WindowTracker do
     
     context "on coal in the hotbar" do
       before do
-        subject.inventory.normal_spots[2].item = RedstoneBot::ItemType::Coal * 44
-        subject.inventory.normal_spots[3].item = RedstoneBot::ItemType::Coal * 64
-        subject.inventory.normal_spots[4].item = RedstoneBot::ItemType::Coal * 44
+        subject.inventory.normal_spots[2].item = RedstoneBot::ItemType::CoalItem * 44
+        subject.inventory.normal_spots[3].item = RedstoneBot::ItemType::CoalItem * 64
+        subject.inventory.normal_spots[4].item = RedstoneBot::ItemType::CoalItem * 44
         subject.inventory.normal_spots[5].item = RedstoneBot::ItemType::Dirt * 64
         
-        subject.inventory.hotbar_spots[5].item = RedstoneBot::ItemType::Coal * 60
+        subject.inventory.hotbar_spots[5].item = RedstoneBot::ItemType::CoalItem * 60
 
-        @initial_coal_quantity = subject.inventory.spots.quantity(RedstoneBot::ItemType::Coal)
+        @initial_coal_quantity = subject.inventory.spots.quantity(RedstoneBot::ItemType::CoalItem)
         
         subject.shift_click subject.inventory.hotbar_spots[5]
       end
 
       it "conserves the quantity of coal" do
-        subject.inventory.spots.quantity(RedstoneBot::ItemType::Coal).should == @initial_coal_quantity
+        subject.inventory.spots.quantity(RedstoneBot::ItemType::CoalItem).should == @initial_coal_quantity
       end
             
       it "removes it from that spot" do
@@ -370,28 +370,28 @@ describe RedstoneBot::WindowTracker do
       end
       
       it "distributes it first to stackable spots and then to empty spots" do
-        subject.inventory.normal_spots[0].item.should == RedstoneBot::ItemType::Coal * 20
-        subject.inventory.normal_spots[2].item.should == RedstoneBot::ItemType::Coal * 64
-        subject.inventory.normal_spots[4].item.should == RedstoneBot::ItemType::Coal * 64
+        subject.inventory.normal_spots[0].item.should == RedstoneBot::ItemType::CoalItem * 20
+        subject.inventory.normal_spots[2].item.should == RedstoneBot::ItemType::CoalItem * 64
+        subject.inventory.normal_spots[4].item.should == RedstoneBot::ItemType::CoalItem * 64
       end
     end
     
     context "on a normal spot with an almost-full hotbar" do
       before do
-        subject.inventory.normal_spots[4].item = RedstoneBot::ItemType::Coal * 44
+        subject.inventory.normal_spots[4].item = RedstoneBot::ItemType::CoalItem * 44
         
-        subject.inventory.hotbar_spots.items = [RedstoneBot::ItemType::Coal * 64] * 9
+        subject.inventory.hotbar_spots.items = [RedstoneBot::ItemType::CoalItem * 64] * 9
         subject.inventory.hotbar_spots[4].item -= 1
         subject.inventory.hotbar_spots[6].item -= 2
         subject.inventory.hotbar_spots[8].item -= 3
 
-        @initial_coal_quantity = subject.inventory.spots.quantity(RedstoneBot::ItemType::Coal)
+        @initial_coal_quantity = subject.inventory.spots.quantity(RedstoneBot::ItemType::CoalItem)
         
         subject.shift_click subject.inventory.normal_spots[4]
       end
       
       it "conserves the quantity of coal" do
-        subject.inventory.spots.quantity(RedstoneBot::ItemType::Coal).should == @initial_coal_quantity
+        subject.inventory.spots.quantity(RedstoneBot::ItemType::CoalItem).should == @initial_coal_quantity
       end
       
       it "removes 6 from the clicked spot" do
@@ -399,7 +399,7 @@ describe RedstoneBot::WindowTracker do
       end
       
       it "fills up the hotbar" do
-        subject.inventory.hotbar_spots.items.should == [RedstoneBot::ItemType::Coal * 64] * 9
+        subject.inventory.hotbar_spots.items.should == [RedstoneBot::ItemType::CoalItem * 64] * 9
       end
     end
   end
