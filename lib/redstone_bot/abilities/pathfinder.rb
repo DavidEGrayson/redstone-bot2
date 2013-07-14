@@ -50,7 +50,18 @@ module RedstoneBot
                     coords - Coords::Y, coords + Coords::Y,
                     coords - Coords::Z, coords + Coords::Z]
       candidates.select do |c|
-        !@chunk_tracker.block_type(c).solid? && !@chunk_tracker.block_type(c + Coords::Y).solid?
+        legs_block_type = @chunk_tracker.block_type(c)
+        head_block_type = @chunk_tracker.block_type(c + Coords::Y)
+        
+        if legs_block_type.nil?
+          raise "Unable to get block type of #{c} (chunk not loaded?)"
+        end
+
+        if head_block_type.nil?
+          raise "Unable to get block type of #{c} (chunk not loaded?)"
+        end
+        
+        !legs_block_type.solid? && !head_block_type.solid?
       end
     end    
     

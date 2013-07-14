@@ -12,7 +12,7 @@ module RedstoneBot
   class Chunk
     include Uninspectable
   
-    Size = [16, 256, 16]  # x,y,z size of each chunk
+    Size = [16, 256, 16].freeze  # x,y,z size of each chunk
 
     DefaultBlockTypeIdData = ("\xFF"*(16*16*16)).freeze
     DefaultMetadata = DefaultLightData = DefaultSkyLightData = ("\x00"*(8*16*16)).freeze
@@ -69,6 +69,10 @@ module RedstoneBot
     def apply_broad_change(ground_up_continuous, primary_bit_map, add_bit_map, stream)
       raise "sorry, dunno about add_bit_map yet" if add_bit_map != 0
 
+      if @id == [-208, 784]
+        puts "#{@id.inspect} #{ground_up_continuous} #{primary_bit_map}"
+      end
+          
       included_sections = (0..15).select { |i| (primary_bit_map >> i & 1) == 1 }
       
       # WARNING: If not enough data is provided in the packet then the code below
@@ -90,6 +94,8 @@ module RedstoneBot
       end
       
       @biome = stream.read(16*16)
+      
+
     end
     
     def apply_block_change(p)
@@ -225,8 +231,10 @@ module RedstoneBot
       return ItemType::Air if coords[1] > 255   # treat spots above the top of the world as air
       return ItemType::Bedrock if coords[1] < 0 # treat spots below the top of the world as bedrock
       
-      chunk = chunk_at(coords)
-      chunk && ItemType.from_id(chunk.block_type_id(coords))
+      return nil unless chunk = chunk_at(coords)
+      id = chunk.block_type_id(coords)
+      return nil if id == 255  # The server has not told us yet.
+      ItemType.from_id(id) or raise "Unknown block type id #{id}."
     end
     
     # coords is a RedstoneBot::Coords object or an array of numbers
