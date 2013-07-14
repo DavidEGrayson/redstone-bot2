@@ -158,7 +158,8 @@ module RedstoneBot
     
     def desirable_items
       entity_tracker.select do |entity|
-        (ItemType::WheatItem === entity or ItemType::Seeds === entity) and FarmBounds[1].include?(entity.coords.y.floor)
+        (ItemType::WheatItem === entity or ItemType::Seeds === entity) and
+          (FarmBounds[1].min - entity.coords.y.round).abs <= 1
       end
     end
     
