@@ -504,8 +504,8 @@ module RedstoneBot
       @eid = stream.read_int
       @type = stream.read_byte
       @coords = Coords[stream.read_int/32.0, stream.read_int/32.0, stream.read_int/32.0].freeze
-      @yaw = stream.read_signed_byte
       @pitch = stream.read_signed_byte
+      @yaw = stream.read_signed_byte
 
       # The int field has different info depending on @type.  Details are here: http://www.wiki.vg/Object_Data
       @int_field = stream.read_int
