@@ -17,6 +17,7 @@ describe RedstoneBot::TimeTracker do
     specify { @time_tracker.seconds_until_night.should == nil }
     specify { @time_tracker.ticks_until_day.should == nil }
     specify { @time_tracker.seconds_until_day.should == nil }
+    specify { @time_tracker.time_known?.should == false }
   end
   
   context "after getting a packet with non-negative times" do
@@ -30,6 +31,7 @@ describe RedstoneBot::TimeTracker do
     specify { @time_tracker.world_age.should == world_age }
     specify { @time_tracker.day_age.should == day_age }
     specify { @time_tracker.sun_moving?.should == true }
+    specify { @time_tracker.time_known?.should == true }
   end
   
   context "after getting a packet with negative day age" do
@@ -43,6 +45,7 @@ describe RedstoneBot::TimeTracker do
     specify { @time_tracker.world_age.should == world_age }
     specify { @time_tracker.day_age.should == day_age.abs }
     specify { @time_tracker.sun_moving?.should == false }
+    specify { @time_tracker.time_known?.should == true }
   end
   
   def set_day_age(day_age)

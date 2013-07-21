@@ -1,6 +1,8 @@
 require 'bigdecimal'
 
 module RedstoneBot
+
+  # The methods here return nil if we do not know the answer.
   class TimeTracker
   
     TicksPerSecond = 20
@@ -25,6 +27,11 @@ module RedstoneBot
       @world_age = p.world_age
       @sun_moving = p.day_age >= 0
       @day_age = p.day_age.abs
+      @day_age = @day_age % 24000
+    end
+    
+    def time_known?
+      !@day_age.nil?
     end
     
     def sun_moving?

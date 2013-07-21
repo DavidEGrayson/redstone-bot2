@@ -3,8 +3,9 @@ require_relative 'basic_bot'
 require_relative '../brain'
 require_relative '../packet_printer'
 
-require_relative '../trackers/entity_tracker'
 require_relative '../trackers/chunk_tracker'
+require_relative '../trackers/entity_tracker'
+require_relative '../trackers/time_tracker'
 require_relative '../trackers/window_tracker'
 
 require_relative '../abilities/block_manipulation'
@@ -18,6 +19,7 @@ require_relative '../chat/chat_evaluator'
 require_relative '../chat/chat_chunk'
 require_relative '../chat/chat_mover'
 require_relative '../chat/chat_inventory'
+require_relative '../chat/chat_time'
 
 # This class is not too useful on its own.  It is meant to be subclassed by
 # people making bots.
@@ -28,9 +30,9 @@ module RedstoneBot
     include WindowManipulation
     include Wielding
     include Movement
-    include ChatChunk, ChatMover, ChatInventory
+    include ChatChunk, ChatMover, ChatInventory, ChatTime
 
-    attr_reader :brain, :chunk_tracker, :entity_tracker, :window_tracker
+    attr_reader :brain, :chunk_tracker, :entity_tracker, :window_tracker, :time_tracker
 
     # Sets up the logical connections of the different components
     # in this bot.
@@ -42,8 +44,9 @@ module RedstoneBot
       end
 
       @brain = new_brain
-      @entity_tracker = EntityTracker.new(@client, @body)
       @chunk_tracker = ChunkTracker.new(@client)
+      @entity_tracker = EntityTracker.new(@client, @body)
+      @time_tracker = TimeTracker.new(@client)
       @window_tracker = WindowTracker.new(@client)
 
       @chat_printer = PacketPrinter.new(@client, [Packet::ChatMessage])
@@ -52,15 +55,18 @@ module RedstoneBot
       @chat_filter.only_player_chats
       @chat_filter.reject_from_self
       @chat_filter.aliases CHAT_ALIASES if defined?(CHAT_ALIASES)
-      @chat_filter.only_from_user(MASTER) if defined?(MASTER)
+      
+      @chat_filter2 = ChatFilter.new(@chat_filter)      
+      @chat_filter2.only_from_user(MASTER) if defined?(MASTER)
 
       @chat_evaluator = ChatEvaluator.new(@chat_filter, self)
       @chat_evaluator.safe_level = defined?(MASTER) ? 0 : 4
       @chat_evaluator.timeout = 2
 
-      @chat_filter.listen &method(:chat_chunk)
-      @chat_filter.listen &method(:chat_inventory)
-      @chat_filter.listen &method(:chat_mover)
+      @chat_filter.listen &method(:chat_time)
+      @chat_filter2.listen &method(:chat_chunk)
+      @chat_filter2.listen &method(:chat_inventory)
+      @chat_filter2.listen &method(:chat_mover)      
     end
 
     def default_position_update
@@ -77,5 +83,6 @@ module RedstoneBot
     def_delegators :@brain, :stop
     def_delegators :@chunk_tracker, :block_type, :block_metadata
     def_delegators :@entity_tracker, :entities_of_type, :player, :closest_entity
+    def_delegators :@time_tracker, :night?, :day?, :seconds_until_night, :seconds_until_day
   end
 end
