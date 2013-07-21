@@ -882,6 +882,9 @@ module RedstoneBot
       @block_metadata = stream.read_byte
     end
 
+    def to_s
+      "BlockChange(#@x, #@y, #@z, type=#{@block_type}, metadata=#{@block_metadata})"
+    end
   end
 
   class Packet::BlockAction < Packet

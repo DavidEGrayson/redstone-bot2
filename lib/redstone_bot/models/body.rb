@@ -22,6 +22,10 @@ module RedstoneBot
       @health <= 0
     end
     
+    def immobilized?
+      !!@immobilization
+    end
+    
     def bumped?
       @bumped
     end
@@ -81,7 +85,9 @@ module RedstoneBot
       while true
         if !@busy
           delay_after_last_update @default_period
-          @default_position_update.call if @default_position_update
+          if @default_position_update && !immobilized?
+            @default_position_update.call
+          end
           send_update
         else
           @synchronizer.delay @default_period
@@ -90,6 +96,8 @@ module RedstoneBot
     end
     
     def move_loop(update_period=nil)
+      immobilization_check!
+    
       # This must be called from inside a brain.
       # TODO: call require_brain here so this called outside of the brain?
       
@@ -136,8 +144,8 @@ module RedstoneBot
     end
     
     def look_at(target)
-      return if target.nil?
-		  @look = angle_to_look_at(target)
+      immobilization_check!
+      @look = angle_to_look_at(target) if target
     end
 
     def angle_to_look_at(target)
@@ -165,13 +173,16 @@ module RedstoneBot
       position
     end
     
-    def bed_use(coords)
-      @client.send_packet Packet::PlayerBlockPlacement.new coords, 1, nil
+    def immobilization_check!
+      # TODO: should death be an immobilization?
+      if @immobilization
+        raise "Body is immobilized by #{@immobilization}."
+      end
     end
     
-    def bed_leave
-      eid = 0  # tmphax, shouldn't this be hte entity that represents me?
-      @client.send_packet Packet::EntityAction.new eid, :leave_bed
+    def immobilize(immobilization)
+      raise "Cannot immobilize because the body is busy." if busy?
+      @immobilization = immobilization
     end
     
     protected  

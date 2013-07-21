@@ -8,6 +8,8 @@ require_relative '../trackers/entity_tracker'
 require_relative '../trackers/time_tracker'
 require_relative '../trackers/window_tracker'
 
+require_relative '../models/slumber'
+
 require_relative '../abilities/block_manipulation'
 require_relative '../abilities/falling'
 require_relative '../abilities/movement'
@@ -48,6 +50,8 @@ module RedstoneBot
       @entity_tracker = EntityTracker.new(@client, @body)
       @time_tracker = TimeTracker.new(@client)
       @window_tracker = WindowTracker.new(@client)
+      
+      @slumber = Slumber.new(@client, @body, @chunk_tracker, @entity_tracker, @time_tracker)
 
       @chat_printer = PacketPrinter.new(@client, [Packet::ChatMessage])
 
@@ -84,5 +88,6 @@ module RedstoneBot
     def_delegators :@chunk_tracker, :block_type, :block_metadata
     def_delegators :@entity_tracker, :entities_of_type, :player, :closest_entity
     def_delegators :@time_tracker, :night?, :day?, :seconds_until_night, :seconds_until_day
+    def_delegators :@slumber, :bed_use, :bed_leave, :in_bed?
   end
 end
