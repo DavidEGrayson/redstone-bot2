@@ -1,15 +1,28 @@
 module RedstoneBot
   class Slumber
-    def initialize(client, body, chunk_tracker, entity_tracker, time_tracker)
+    def initialize(client, body, chunk_tracker, entity_tracker, time_tracker, brain)
       @client = client
       @body = body
       @chunk_tracker = chunk_tracker
       @time_tracker = time_tracker
       @entity_tracker = entity_tracker
       
+      if brain
+        @brain = brain
+        @synchronizer = brain.synchronizer
+      end
+      
       @client.listen &method(:receive_packet)
     end
+    
+    def slumber(bed_coords)
+      return unless @brain.require { slumber(bed_coords) }
       
+      bed_use bed_coords
+      @synchronizer.wait_until { in_bed? }
+      @synchronizer.wait_until { !in_bed? }
+    end
+    
     def in_bed?
       !@bed_coords.nil?
     end

@@ -1,9 +1,10 @@
 require 'fiber'
 
 class TestBrain
-  attr_reader :fiber
+  attr_reader :fiber, :synchronizer
 
   def initialize(synchronizer)
+    @synchronizer = synchronizer
   end
   
   def start

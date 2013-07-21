@@ -4,10 +4,11 @@ require 'timeout'
 
 module RedstoneBot
   module Synchronizer
-    attr_reader :mutex
+    attr_reader :mutex, :change_condition
   
     def setup_synchronizer
       @mutex = Mutex.new
+      @change_condition = new_condition
     end
   
     def synchronize(&block)
@@ -16,6 +17,12 @@ module RedstoneBot
     
     def delay(time)
       @mutex.sleep(time)
+    end
+    
+    def wait_until(&condition)
+      while !condition.call
+        @change_condition.wait
+      end
     end
     
     # TODO: merge this with regular_updater somehow

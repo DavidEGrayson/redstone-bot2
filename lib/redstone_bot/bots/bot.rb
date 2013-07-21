@@ -51,7 +51,7 @@ module RedstoneBot
       @time_tracker = TimeTracker.new(@client)
       @window_tracker = WindowTracker.new(@client)
       
-      @slumber = Slumber.new(@client, @body, @chunk_tracker, @entity_tracker, @time_tracker)
+      @slumber = Slumber.new(@client, @body, @chunk_tracker, @entity_tracker, @time_tracker, @brain)
 
       @chat_printer = PacketPrinter.new(@client, [Packet::ChatMessage])
 

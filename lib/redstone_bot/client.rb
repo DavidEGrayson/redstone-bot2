@@ -81,7 +81,7 @@ module RedstoneBot
     end
 
     def notify_listeners(packet)
-      @synchronizer.synchronize do
+      synchronize do
         record_packet packet
       
         @listeners.each do |l|
@@ -216,7 +216,7 @@ module RedstoneBot
       @packets_received += 1
       @last_packets.shift
       @last_packets.push packet
-      packet_received.broadcast
+      @synchronizer.change_condition.broadcast
     end
 
     def send_packet(packet)
@@ -224,10 +224,6 @@ module RedstoneBot
       nil
     end
     
-    def packet_received
-      @packet_received ||= @synchronizer.new_condition 
-    end
-
     def chat(message)
       send_packet Packet::ChatMessage.new(message)
     end

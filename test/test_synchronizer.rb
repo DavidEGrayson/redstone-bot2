@@ -3,9 +3,12 @@ require_relative 'test_condition'
 # This module reimplements everything that RedstoneBot::Synchronizer does, but
 # in a way that makes it easier to test.
 module TestSynchronizer
-  def setup_synchronizer
-  end
+  attr_reader :change_condition
 
+  def setup_synchronizer
+    @change_condition ||= new_condition
+  end
+  
   def mutex
     raise "Direct access to the mutex should not happen during tests."
   end
@@ -16,6 +19,12 @@ module TestSynchronizer
   
   def delay(time)
     Fiber.yield
+  end
+  
+  def wait_until(&condition)
+    while !condition.call
+      Fiber.yield
+    end
   end
   
   def regularly(time, &block)
@@ -49,4 +58,8 @@ end
 
 class TestStandaloneSynchronizer
   include TestSynchronizer
+  
+  def initialize
+    setup_synchronizer
+  end
 end

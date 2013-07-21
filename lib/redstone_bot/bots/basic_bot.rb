@@ -38,12 +38,6 @@ module RedstoneBot
       @client.start
     end
     
-    def wait_until(&condition)
-      while !condition.call
-        @client.packet_received.wait
-      end
-    end
-        
     extend Forwardable
     def_delegators :@body, :position, :look_at, :distance_to, :closest, :move_loop, :health, :dead?
     def_delegators :@client, :chat, :time_string, :send_packet

@@ -2,6 +2,8 @@ require 'thread'
 
 module RedstoneBot
   class Brain
+    attr_reader :synchronizer
+  
     def initialize(synchronizer)
       @synchronizer = synchronizer
     end
