@@ -8,7 +8,10 @@ module RedstoneBot
     Noon = 6000
     Sunset = 12000
     Midnight = 18000
-    FullDay = 24000
+    DayEnd = 24000
+    
+    DayRange = Sunrise...Sunset
+    NightRange = Sunset...DayEnd
   
     attr_reader :world_age, :day_age
   
@@ -36,32 +39,34 @@ module RedstoneBot
       @day_age && !day?
     end
     
-    def ticks_until_night
+    def ticks_until(range)
       if @day_age
-        if night?
+        if range.include? @day_age
           0
         else
-          Sunset - @day_age
+          (range.min - @day_age) % 24000
         end
       end
+    end
+
+    def convert_ticks_to_seconds(ticks)
+      ticks / BigDecimal(TicksPerSecond)
+    end
+    
+    def ticks_until_night
+      ticks_until NightRange
     end
     
     def ticks_until_day
-      if @day_age
-        if day?
-          0
-        else
-          FullDay - @day_age
-        end
-      end
+      ticks_until DayRange
     end
 
     def seconds_until_night
-      @day_age && ticks_until_night / BigDecimal(TicksPerSecond)
+      @day_age && convert_ticks_to_seconds(ticks_until_night)
     end
 
     def seconds_until_day
-      @day_age && ticks_until_day / BigDecimal(TicksPerSecond)
+      @day_age && convert_ticks_to_seconds(ticks_until_day)
     end
     
   end
