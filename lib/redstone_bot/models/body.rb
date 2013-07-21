@@ -67,6 +67,11 @@ module RedstoneBot
               # We died, so respawn.
               @client.send_packet Packet::ClientStatuses.respawn
             end
+            
+          when Packet::ChangeGameState
+            if p.reason == :invalid_bed
+              puts "Invalid bed!!"
+            end
         end
       end
       
@@ -158,6 +163,15 @@ module RedstoneBot
     
     def to_coords
       position
+    end
+    
+    def bed_use(coords)
+      @client.send_packet Packet::PlayerBlockPlacement.new coords, 1, nil
+    end
+    
+    def bed_leave
+      eid = 0  # tmphax, shouldn't this be hte entity that represents me?
+      @client.send_packet Packet::EntityAction.new eid, :leave_bed
     end
     
     protected  

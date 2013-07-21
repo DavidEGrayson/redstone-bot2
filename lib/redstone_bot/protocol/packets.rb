@@ -445,7 +445,7 @@ module RedstoneBot
     
     Actions = [nil, :crouch, :uncrouch, :leave_bed, :start_sprinting, :stop_sprinting]
     
-    def initialize(eid, action, jump_boost)
+    def initialize(eid, action, jump_boost: 0)
       @eid = eid
       @action = action
       @jump_boost = jump_boost
@@ -1042,8 +1042,10 @@ module RedstoneBot
     tid_is 0x46
     attr_reader :reason, :game_mode
 
+    ReasonCodes = %i[invalid_bed begin_raining end_raining change_game_mode enter_credits]
+    
     def receive_data(stream)
-      @reason = stream.read_byte
+      @reason = ReasonCodes[stream.read_byte]
       @game_mode = stream.read_byte
     end
   end  

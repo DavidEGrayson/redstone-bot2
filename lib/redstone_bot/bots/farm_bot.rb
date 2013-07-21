@@ -8,11 +8,13 @@ module RedstoneBot
     # FARM-SPECIFIC CODE.  Change this to match your own farm. ###########################
     ExpectedWheatCount = 9680
     FarmBounds = [(-300..-150), (63..63), (670..800)]
-    FarmCenter = Coords[-227.5, 63, 745.5]   
+    FarmCenter = Coords[-227.5, 63, 745.5]
     
     Storage = Coords[-208.5, 84, 797.5]
     WheatChestCoords = [-210, 83, 797]
     SeedChestCoords = [-208, 83, 797]
+    BedCoords = Coords[-209, 84, 798]
+    
     
     def go_from_farm_to_storage
       return unless require_brain { go_from_farm_to_storage }      
