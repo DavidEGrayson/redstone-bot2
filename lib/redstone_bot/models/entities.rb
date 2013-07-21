@@ -97,14 +97,11 @@ module RedstoneBot
       hash.delete(0)
       hash.delete(1)
     
-      item = hash[10]
-      if hash != {10 => item} || !item.is_a?(Item)
-        raise ArgumentError.new("Unexpected metadata for a #{self.class}: #{hash.inspect}.")
+      if hash.has_key?(10)
+        @item = hash[10]
       end
       
-      # Oops, look at that, a little bit of the protocol leaked into the models directory :(
-      
-      @item = item
+      # Oops, look at that, a little bit of the protocol leaked into the models directory :(      
     end
     
     def to_s

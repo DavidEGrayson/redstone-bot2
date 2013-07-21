@@ -125,4 +125,8 @@ module RedstoneBot
     receive_data test_stream $e.int(eid) +
       $e.signed_byte(coords[0]*32) + $e.signed_byte(coords[1]*32) + $e.signed_byte(coords[2]*32)
   end
+  
+  def (Packet::TimeUpdate).create(world_age, day_age)
+    receive_data test_stream $e.long(world_age) + $e.long(day_age)
+  end
 end

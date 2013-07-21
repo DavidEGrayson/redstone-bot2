@@ -202,11 +202,11 @@ module RedstoneBot
 
   class Packet::TimeUpdate < Packet
     tid_is 0x04
-    attr_reader :time, :day_time
+    attr_reader :world_age, :day_age
 
     def receive_data(stream)
-      @time = stream.read_long
-      @day_time = stream.read_long
+      @world_age = stream.read_long
+      @day_age = stream.read_long
     end
   end
 

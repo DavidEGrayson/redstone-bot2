@@ -6,9 +6,10 @@ require_relative '../simple_cache'
 module RedstoneBot
   class FarmBot < Bot
     # FARM-SPECIFIC CODE.  Change this to match your own farm. ###########################
-    ExpectedWheatCount = 9759
+    ExpectedWheatCount = 9680
     FarmBounds = [(-300..-150), (63..63), (670..800)]
     FarmCenter = Coords[-227.5, 63, 745.5]   
+    
     Storage = Coords[-208.5, 84, 797.5]
     WheatChestCoords = [-210, 83, 797]
     SeedChestCoords = [-208, 83, 797]
@@ -54,6 +55,8 @@ module RedstoneBot
     def farm
       return unless require_brain { farm }
       
+      @stop_farming = false
+      
       while true
         if wheat_count < ExpectedWheatCount - 50
           $stderr.puts "uh oh, wheat_count=#{wheat_count}"
@@ -75,6 +78,9 @@ module RedstoneBot
             go_from_farm_to_storage
             store_items
             go_from_storage_to_farm
+          end
+          if @stop_farming
+            break
           end
         end
         
@@ -111,13 +117,13 @@ module RedstoneBot
         next unless distance_to(ground) < 5
         
         if block_type(coords) == ItemType::WheatBlock && block_metadata(coords) == ItemType::WheatBlock.fully_grown
-          puts "#{time_string} digging #{coords}"
+          #puts "#{time_string} digging #{coords}"
           wheats_dug += 1
           dig coords
         end
         
         if block_type(ground) == ItemType::Farmland && block_type(coords) == ItemType::Air
-          puts "#{time_string} replanting #{coords}"
+          #puts "#{time_string} replanting #{coords}"
           place_block_above ground, ItemType::WheatBlock
           #delay(0.1)  # tmphax to slow down the farming
         end
@@ -131,10 +137,15 @@ module RedstoneBot
       wheat_spots = window_tracker.inventory.spots.grep(ItemType::WheatItem)
       wheat_spots.extend SpotArray
       wheat_quantity = wheat_spots.quantity
-      if wheat_quantity > 0    
+      deposited_wheat_quantity = 0
+      if wheat_quantity > 0
         chest_open(WheatChestCoords) do
           wheat_spots.each do |spot|
-            # TODO: hide all the details about clicking and such in a nice library
+            if window_tracker.chest_spots.empty_spots.empty?
+              # wheat chest is full
+              break
+            end
+            deposited_wheat_quantity += spot.item.count
             window_tracker.shift_click spot
           end
         end
@@ -144,16 +155,34 @@ module RedstoneBot
       seed_spots.extend SpotArray
       seed_spots.shift  # Keep some seeds for replanting.
       seed_quantity = seed_spots.quantity
-      if seed_quantity > 0      
+      deposited_seed_quantity = 0
+      if seed_quantity > 0
         chest_open(SeedChestCoords) do
           seed_spots.each do |spot|
-            # TODO: hide all the details about clicking and such in a nice library
+            if window_tracker.chest_spots.empty_spots.empty?
+              # seed chest is full
+              break
+            end
+            
+            deposited_seed_quantity += spot.item.count
             window_tracker.shift_click spot
           end
         end
       end
       
-      chat "Deposited #{wheat_quantity} wheats and #{seed_quantity} seeds"
+      report = if deposited_wheat_quantity != wheat_quantity
+        @stop_farming = true
+        "Wheat storage is full.  Farming stopped."
+      elsif deposited_seed_quantity != seed_quantity
+        @stop_farming = true
+        "Seed storage is full.  Farming stopped."
+      else
+        "Deposited #{wheat_quantity} wheats and #{seed_quantity} seeds"
+      end
+      
+      chat report
+      puts time_string + " " + report
+      
       delay(2)
     end
        
@@ -164,7 +193,7 @@ module RedstoneBot
         item = closest desirable_items
         
         if item && distance_to(item) < 30
-          puts "#{time_string} moving to #{item}"
+          #puts "#{time_string} moving to #{item}"
           move_to item.coords.change_y(FarmBounds[1].min)
         else
           return
