@@ -1079,7 +1079,7 @@ module RedstoneBot
       @title = stream.read_string
       @spot_count = stream.read_byte
       @display_title_as_is = stream.read_bool
-      if @window_id == 11
+      if @type == 11
         # Animal chest: get the horse entity ID
         @eid = stream.read_int
       end
