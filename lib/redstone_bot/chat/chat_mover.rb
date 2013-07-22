@@ -7,6 +7,8 @@ module RedstoneBot
   module ChatMover
     def chat_mover(p)
       case p.chat
+      when /\Awhere u looking?\??/
+        chat "yaw=%.2f pitch=%.2f" % [body.look.yaw, body.look.pitch]
       when /\Awhere (.+)\Z/ then
         name = $1
         if name == "u" || name == @chatter.username

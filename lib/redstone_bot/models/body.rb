@@ -97,15 +97,12 @@ module RedstoneBot
     
     def move_loop(update_period=nil)
       immobilization_check!
-    
+      busy_check!
+      
       # This must be called from inside a brain.
       # TODO: call require_brain here so this called outside of the brain?
       
       update_period ||= @default_period
-      
-      if @busy
-        $stderr.puts "#{@client.time_string}: warning: body is already busy and #move_loop was called."
-      end
       
       begin
         @busy = true
@@ -121,6 +118,16 @@ module RedstoneBot
         # This is necessary because otherwise if someone called loop { move_loop { break } }
         # there would be no position updates sent for a long time.
         send_update
+      end
+    end
+    
+    def with_look(look)
+      move_loop do
+        self.look = look
+        delay_after_last_update @default_period        
+        send_update
+        yield
+        break
       end
     end
 
@@ -171,6 +178,12 @@ module RedstoneBot
     
     def to_coords
       position
+    end
+    
+    def busy_check!
+      if @busy
+        raise "Body is already busy."
+      end
     end
     
     def immobilization_check!

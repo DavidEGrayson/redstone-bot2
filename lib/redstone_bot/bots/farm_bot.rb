@@ -14,7 +14,7 @@ module RedstoneBot
     WheatChestCoords = [-210, 83, 797]
     SeedChestCoords = [-208, 83, 797]
     BedCoords = Coords[-209, 84, 798]
-    
+    DumpLook = Look.new(233, 29)    
     
     def go_from_farm_to_storage
       return unless require_brain { go_from_farm_to_storage }      
@@ -194,6 +194,12 @@ module RedstoneBot
         end
       end
       
+      if deposited_seed_quantity != seed_quantity
+        # The seed chest got filled up.  Dump the extra seeds.
+        puts "Dumping seeds (#{deposited_seed_quantity}, #{seed_quantity})"
+        dump_seeds
+      end
+      
       report = if deposited_wheat_quantity != wheat_quantity
         @stop_farming = true
         "Wheat storage is full.  Farming stopped."
@@ -209,7 +215,19 @@ module RedstoneBot
       
       delay(2)
     end
-       
+    
+    def dump_seeds
+      return unless require_brain { dump_seeds }
+    
+      body.with_look(DumpLook) do
+        #dump(ItemType::Seeds)
+        spot = window_tracker.usable_window.spots.grep(ItemType::Seeds).first
+        if spot
+          dump spot
+        end
+      end
+    end
+    
     def collect_nearby_items
       while true
         # Get the closest Wheat or Seed item that is at the right level.
