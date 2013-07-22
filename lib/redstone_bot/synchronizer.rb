@@ -46,6 +46,7 @@ module RedstoneBot
     def timeout(*args, &block)
       Timeout::timeout(*args, &block)
     rescue Timeout::Error
+      :timeout
     end
     
     # timeout function that throws exceptions

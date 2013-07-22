@@ -84,7 +84,15 @@ module RedstoneBot
         
         wheats_dug = dig_and_replant_within_reach
         if wheats_dug > 0
+          expected_wheat_count = inventory_wheat_count + wheats_dug
+          expected_seed_count = inventory_seed_count + wheats_dug
+
           time(2..10) do
+            if inventory_wheat_count >= expected_wheat_count && inventory_seed_count >= expected_seed_count
+              # We collected all the wheat and seeds we were expecting.
+              break
+            end
+            
             collect_nearby_items
             delay 0.05  # avoid blocking if there are no items
           end
@@ -112,6 +120,7 @@ module RedstoneBot
         delay 1
         
         if night?
+          chat "Going to sleep."
           bed_sleep_until_woken BedCoords
           delay 1
         end
@@ -221,6 +230,14 @@ module RedstoneBot
         (ItemType::WheatItem === entity or ItemType::Seeds === entity) and
           (FarmBounds[1].min - entity.coords.y.round).abs <= 1
       end
+    end
+    
+    def inventory_wheat_count
+      inventory.spots.quantity(ItemType::WheatItem)
+    end
+    
+    def inventory_seed_count
+      inventory.spots.quantity(ItemType::Seeds)
     end
     
     def save_wheats

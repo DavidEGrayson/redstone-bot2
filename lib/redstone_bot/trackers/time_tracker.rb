@@ -8,7 +8,7 @@ module RedstoneBot
     TicksPerSecond = 20
     Sunrise = 0
     Noon = 6000
-    Sunset = 12000
+    Sunset = 13000
     Midnight = 18000
     DayEnd = 24000
     

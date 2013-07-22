@@ -19,9 +19,13 @@ module RedstoneBot
       return unless @brain.require { bed_sleep_until_woken(bed_coords) }
       
       bed_use bed_coords
-      @synchronizer.timeout!(10) do
+      result = @synchronizer.timeout(10) do
         @synchronizer.wait_until { in_bed? }
       end
+      if result == :timeout
+        raise "Failed to get into bed."
+      end
+      
       @synchronizer.wait_until { !in_bed? }
     end
     
