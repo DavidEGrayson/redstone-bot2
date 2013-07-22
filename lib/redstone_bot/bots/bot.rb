@@ -88,6 +88,6 @@ module RedstoneBot
     def_delegators :@chunk_tracker, :block_type, :block_metadata
     def_delegators :@entity_tracker, :entities_of_type, :player, :closest_entity
     def_delegators :@time_tracker, :night?, :day?, :seconds_until_night, :seconds_until_day
-    def_delegators :@slumber, :bed_use, :bed_leave, :in_bed?
+    def_delegators :@slumber, :bed_use, :bed_leave, :in_bed?, :bed_sleep_until_woken
   end
 end

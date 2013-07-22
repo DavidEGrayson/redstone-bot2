@@ -6,7 +6,7 @@ require_relative '../simple_cache'
 module RedstoneBot
   class FarmBot < Bot
     # FARM-SPECIFIC CODE.  Change this to match your own farm. ###########################
-    ExpectedWheatCount = 9680
+    ExpectedWheatCount = 9666
     FarmBounds = [(-300..-150), (63..63), (670..800)]
     FarmCenter = Coords[-227.5, 63, 745.5]
     
@@ -75,12 +75,8 @@ module RedstoneBot
           return
         end
         
-        if inventory_too_full?
-          timeout(180) do
-            go_from_farm_to_storage
-            store_items
-            go_from_storage_to_farm
-          end
+        if inventory_too_full? || night?
+          visit_storage
           if @stop_farming
             break
           end
@@ -104,7 +100,24 @@ module RedstoneBot
         delay 0.05
       end
       
-      chat "done farming"
+      chat "done farming.  bye!"
+      exit
+    end
+    
+    def visit_storage
+      timeout(12*60) do
+        go_from_farm_to_storage
+        
+        store_items
+        delay 1
+        
+        if night?
+          bed_sleep_until_woken BedCoords
+          delay 1
+        end
+        
+        go_from_storage_to_farm
+      end
     end
     
     def dig_and_replant_within_reach

@@ -15,11 +15,13 @@ module RedstoneBot
       @client.listen &method(:receive_packet)
     end
     
-    def slumber(bed_coords)
-      return unless @brain.require { slumber(bed_coords) }
+    def bed_sleep_until_woken(bed_coords)
+      return unless @brain.require { bed_sleep_until_woken(bed_coords) }
       
       bed_use bed_coords
-      @synchronizer.wait_until { in_bed? }
+      @synchronizer.timeout!(10) do
+        @synchronizer.wait_until { in_bed? }
+      end
       @synchronizer.wait_until { !in_bed? }
     end
     
@@ -54,6 +56,12 @@ module RedstoneBot
         raise "Cannot use bed: #{bed_coords} is #{block_type}."
       end
 
+      if @time_tracker.day?
+        raise "Cannot use bed: it is daytime."
+      end
+      
+      # TODO: check object metadata so we can tell if the bed is occupied
+      
       @body.immobilization_check!
       
       if @body.busy?
@@ -63,7 +71,7 @@ module RedstoneBot
       if @body.distance_to(bed_coords) > 10
         raise "Bed is too far away."
       end
-          
+                
       @client.send_packet Packet::PlayerBlockPlacement.new bed_coords, 1, nil
       
       # If this fails, we could get get:
