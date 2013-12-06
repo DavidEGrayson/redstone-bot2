@@ -23,7 +23,7 @@ module RedstoneBot
         @synchronizer.wait_until { in_bed? }
       end
       if result == :timeout
-        raise "Failed to get into bed."
+        $stderr.puts "Failed to get into bed.  day_age=#{time_tracker.day_age}"
       end
       
       @synchronizer.wait_until { !in_bed? }

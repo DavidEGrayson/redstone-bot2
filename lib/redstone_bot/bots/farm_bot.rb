@@ -175,9 +175,7 @@ module RedstoneBot
         end
       end
       
-      seed_spots = window_tracker.inventory.spots.grep(ItemType::Seeds)
-      seed_spots.extend SpotArray
-      seed_spots.shift  # Keep some seeds for replanting.
+      seed_spots = discardable_seed_spots
       seed_quantity = seed_spots.quantity
       deposited_seed_quantity = 0
       if seed_quantity > 0
@@ -203,9 +201,6 @@ module RedstoneBot
       report = if deposited_wheat_quantity != wheat_quantity
         @stop_farming = true
         "Wheat storage is full.  Farming stopped."
-      elsif deposited_seed_quantity != seed_quantity
-        @stop_farming = true
-        "Seed storage is full.  Farming stopped."
       else
         "Deposited #{wheat_quantity} wheats and #{seed_quantity} seeds"
       end
@@ -217,15 +212,19 @@ module RedstoneBot
     end
     
     def dump_seeds
-      return unless require_brain { dump_seeds }
-    
-      body.with_look(DumpLook) do
-        #dump(ItemType::Seeds)
-        spot = window_tracker.usable_window.spots.grep(ItemType::Seeds).first
-        if spot
-          dump spot
-        end
+      body.look = DumpLook
+      body.send_update
+      discardable_seed_spots.each do |spot|
+        dump spot
       end
+      nil
+    end
+    
+    def discardable_seed_spots
+      seed_spots = window_tracker.inventory.spots.grep(ItemType::Seeds)
+      seed_spots.extend SpotArray
+      seed_spots.shift  # Keep some seeds for replanting.
+      seed_spots
     end
     
     def collect_nearby_items
