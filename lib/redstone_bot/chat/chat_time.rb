@@ -2,7 +2,7 @@ module RedstoneBot
   module ChatTime
     def chat_time(p)
       case p.chat
-      when /\Atime\??/
+      when /\Atime\??\Z/
         chat time_report
       end
     end

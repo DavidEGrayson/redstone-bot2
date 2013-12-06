@@ -121,16 +121,6 @@ module RedstoneBot
       end
     end
     
-    def with_look(look)
-      move_loop do
-        self.look = look
-        delay_after_last_update @default_period        
-        send_update
-        yield
-        break
-      end
-    end
-
     def delay_after_last_update(period)
       diff = period - time_since_last_update
       if diff > 0
@@ -198,7 +188,6 @@ module RedstoneBot
       @immobilization = immobilization
     end
     
-    protected  
     def send_update
       self.stance = position.y + 1.62   # TODO: handle this better!
       packet = Packet::PlayerPositionAndLook.new(
