@@ -1,3 +1,25 @@
+h2. Setup
+
+Create a @config.rb@ file with the following contents
+
+bc. USERNAME = "steve"
+PASSWORD = "pa$$word"
+HOSTNAME = "localhost"
+PORT = 25565
+
+h2. Running
+
+You can run different types of bots.
+They are located in @lib/redstone_bot/bots@. Make sure to use UpperCamelCase of the file names without the file extension.
+
+Like this for example
+
+bc. ruby run.rb BasicBot
+
+or
+
+bc. ruby run.rb FarmBot
+
 h2. Method Types
 
 * Quick: Method does not sleep or perform any blocking operations.  This type of method is safe to call anywhere, as long as the current thread holds the lock to the proper mutex (if any).
