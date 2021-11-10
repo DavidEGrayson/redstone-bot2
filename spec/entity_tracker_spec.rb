@@ -22,12 +22,12 @@ describe RedstoneBot::EntityTracker do
     @client << RedstoneBot::Packet::EntityMetadata.create(eid, item)
     
     shovels = @entity_tracker.entities_of_type(RedstoneBot::ItemType::IronShovel)
-    shovels.size.should == 1
+    expect(shovels.size).to eq(1)
     shovel = shovels.first
-    shovel.eid.should == 44
-    shovel.should be_a_kind_of RedstoneBot::DroppedItem
-    RedstoneBot::ItemType::IronShovel.should === shovel
-    shovel.to_s.should == "DroppedItem(44, IronShovel*13(damage=3), ( 100.00, 200.00, 300.00))"
+    expect(shovel.eid).to eq(44)
+    expect(shovel).to be_a_kind_of RedstoneBot::DroppedItem
+    expect(RedstoneBot::ItemType::IronShovel).to be === shovel
+    expect(shovel.to_s).to eq("DroppedItem(44, IronShovel*13(damage=3), ( 100.00, 200.00, 300.00))")
   end
   
   it "tracks mobs" do
@@ -42,21 +42,21 @@ describe RedstoneBot::EntityTracker do
     @client << RedstoneBot::Packet::SpawnMob.create(eid+1, type+1, coords, yaw, pitch, head_yaw)
 
     # Verify two mobs
-    @entity_tracker.entities_of_type(RedstoneBot::Mob).size.should == 2
+    expect(@entity_tracker.entities_of_type(RedstoneBot::Mob).size).to eq(2)
     
     # Examine the creeper
     creepers = @entity_tracker.entities_of_type(RedstoneBot::Creeper)
-    creepers.size.should == 1
+    expect(creepers.size).to eq(1)
     creeper = creepers.first
-    creeper.eid.should == -45
-    creeper.should be_a_kind_of RedstoneBot::Mob
-    creeper.coords.should be_a RedstoneBot::Coords
-    creeper.coords.should be_within(0.00001).of(coords)
-    creeper.to_s.should == "Creeper(-45, ( 100.25, 200.00, 300.03), 0 items)"
+    expect(creeper.eid).to eq(-45)
+    expect(creeper).to be_a_kind_of RedstoneBot::Mob
+    expect(creeper.coords).to be_a RedstoneBot::Coords
+    expect(creeper.coords).to be_within(0.00001).of(coords)
+    expect(creeper.to_s).to eq("Creeper(-45, ( 100.25, 200.00, 300.03), 0 items)")
     
     # Destroy two mobs
     @client << RedstoneBot::Packet::DestroyEntity.create([-45, -44])
-    @entity_tracker.entities_of_type(RedstoneBot::Mob).size.should == 0
+    expect(@entity_tracker.entities_of_type(RedstoneBot::Mob).size).to eq(0)
   end
   
   context "with a creeper loaded" do
@@ -68,23 +68,23 @@ describe RedstoneBot::EntityTracker do
 
     it "tracks entity equipment" do
       @client << RedstoneBot::Packet::EntityEquipment.create(eid, 4, RedstoneBot::ItemType::LeatherBoots * 1)
-      creeper.items.should == [nil, nil, nil, nil, RedstoneBot::ItemType::LeatherBoots * 1]
-      creeper.boots.should == RedstoneBot::ItemType::LeatherBoots * 1
+      expect(creeper.items).to eq([nil, nil, nil, nil, RedstoneBot::ItemType::LeatherBoots * 1])
+      expect(creeper.boots).to eq(RedstoneBot::ItemType::LeatherBoots * 1)
     end
 
     it "tracks teleports" do
       @client << RedstoneBot::Packet::EntityTeleport.create(eid, [10, 40, 1.5], 45, 90)
-      creeper.coords.should be_within(0.00001).of(RedstoneBot::Coords[10, 40, 1.5])
+      expect(creeper.coords).to be_within(0.00001).of(RedstoneBot::Coords[10, 40, 1.5])
     end
 
     it "tracks relative movements + look packet" do
       @client << RedstoneBot::Packet::EntityLookAndRelativeMove.create(eid, [-0.25, 0.25, -0.03125], 45, 90)
-      creeper.coords.should be_within(0.00001).of(RedstoneBot::Coords[100, 200.25, 300])
+      expect(creeper.coords).to be_within(0.00001).of(RedstoneBot::Coords[100, 200.25, 300])
     end
     
     it "tracks relative movements" do
       @client << RedstoneBot::Packet::EntityRelativeMove.create(eid, [-0.25, 0.25, -0.03125])
-      creeper.coords.should be_within(0.00001).of(RedstoneBot::Coords[100, 200.25, 300])
+      expect(creeper.coords).to be_within(0.00001).of(RedstoneBot::Coords[100, 200.25, 300])
     end
 
   end
@@ -105,11 +105,11 @@ describe RedstoneBot::EntityTracker do
     end
     
     it "can select entitites by type" do
-      @entity_tracker.entities_of_type(RedstoneBot::ItemType::Seeds).collect(&:eid).should == [45]
+      expect(@entity_tracker.entities_of_type(RedstoneBot::ItemType::Seeds).collect(&:eid)).to eq([45])
     end
     
     it "can select entities" do
-      @entity_tracker.select { |e| (RedstoneBot::ItemType::WheatItem === e or RedstoneBot::ItemType::Seeds === e) }.collect(&:eid).should == [45]
+      expect(@entity_tracker.select { |e| (RedstoneBot::ItemType::WheatItem === e or RedstoneBot::ItemType::Seeds === e) }.collect(&:eid)).to eq([45])
     end
   end
   

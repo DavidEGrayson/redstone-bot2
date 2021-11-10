@@ -20,15 +20,15 @@ module HasTidsSpec
   
   describe RedstoneBot::HasTids do
     it "keeps a hash that associates type to subclass" do
-      A.types[1].should == A1
+      expect(A.types[1]).to eq(A1)
     end
   
     it "lets each class tree have a different types hash" do
-      A.types.should_not == B.types
+      expect(A.types).not_to eq(B.types)
     end
     
     it "has a #tid method on each subclass" do
-      B2.tid.should == 2
+      expect(B2.tid).to eq(2)
     end
   end
 end

@@ -44,6 +44,6 @@ end
 
 describe Graph1 do
   it "finds the optimal path" do
-    subject.run_a_star.should == [:start, :a, :d, :goal]
+    expect(subject.run_a_star).to eq([:start, :a, :d, :goal])
   end
 end

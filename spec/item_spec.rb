@@ -13,7 +13,7 @@ describe "basic problem with Ruby's GZipWriter" do
     gzdata = sio.string
   
     reader = Zlib::GzipReader.new(StringIO.new gzdata)
-    reader.mtime.to_i.should be_within(1).of(Time.now.to_i)
+    expect(reader.mtime.to_i).to be_within(1).of(Time.now.to_i)
   end
   
   it "can be worked around by modifying the gzip header" do
@@ -25,7 +25,7 @@ describe "basic problem with Ruby's GZipWriter" do
     gzdata[4..7] = "\x00\x00\x00\x00"
   
     reader = Zlib::GzipReader.new(StringIO.new gzdata)
-    reader.mtime.to_i.should == 0
+    expect(reader.mtime.to_i).to eq(0)
   end 
 end
 
@@ -33,13 +33,13 @@ describe RedstoneBot::Item do
   it "matches spots that hold the same item" do
     item = RedstoneBot::ItemType::Wood * 1
     spot = RedstoneBot::Spot.new(RedstoneBot::ItemType::Wood * 1)
-    item.should === spot
+    expect(item).to be === spot
   end
   
   it "encodes and reads some dummy data correctly" do
     item0 = described_class.new(RedstoneBot::ItemType::Bow, 1, 9, { :infinity => 15000, :fire_aspect => -4 })
     item = test_stream($e.encode_item(item0)).read_item
-    item.should == item0
+    expect(item).to eq(item0)
   end
 
   context "given an enchanted axe" do
@@ -57,13 +57,13 @@ describe RedstoneBot::Item do
       @item = test_stream(binary_data).read_item
     end
     
-    specify { @item.item_type.should == RedstoneBot::ItemType::IronAxe }
-    specify { @item.damage.should == 12 }
-    specify { @item.enchantments.should == { unbreaking: 1 } }    
-    specify { @item.to_s.should == "IronAxe(damage=12 unbreaking=1)" }
+    specify { expect(@item.item_type).to eq(RedstoneBot::ItemType::IronAxe) }
+    specify { expect(@item.damage).to eq(12) }
+    specify { expect(@item.enchantments).to eq({ unbreaking: 1 }) }    
+    specify { expect(@item.to_s).to eq("IronAxe(damage=12 unbreaking=1)") }
     
     it "re-encodes the same way" do
-      $e.encode_item(@item).should == binary_data 
+      expect($e.encode_item(@item)).to eq(binary_data) 
     end
   end
 end

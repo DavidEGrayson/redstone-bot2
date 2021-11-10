@@ -8,6 +8,6 @@ describe RedstoneBot::Mob do
   
   it "creates an instance of Mob if it doesn't recognize the type" do
     mob = RedstoneBot::Mob.create(unrecognized_type, eid, RedstoneBot::Coords[3, 4, 5])
-    mob.class.should == RedstoneBot::Mob
+    expect(mob.class).to eq(RedstoneBot::Mob)
   end
 end

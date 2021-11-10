@@ -10,11 +10,11 @@ describe RedstoneBot::WindowTracker do
       
   shared_examples_for "no windows are open" do
     it "has no chest model" do
-      subject.chest_spots.should_not be
+      expect(subject.chest_spots).not_to be
     end
   
     it "has just one open window (inventory)" do
-      subject.should have(1).windows
+      expect(subject.windows.size).to eq(1)
     end
   end
 
@@ -27,18 +27,18 @@ describe RedstoneBot::WindowTracker do
     it_behaves_like "no windows are open"
     
     it "has an inventory window" do
-      subject.inventory_window.should be_a RedstoneBot::InventoryWindow
+      expect(subject.inventory_window).to be_a RedstoneBot::InventoryWindow
     end
     
     it "has a nil inventory" do
-      subject.inventory.should be_nil
+      expect(subject.inventory).to be_nil
     end
     
     it "has no usable window" do
-      subject.usable_window.should be_nil
+      expect(subject.usable_window).to be_nil
     end
     
-    it { should_not be_rejected }
+    it { is_expected.not_to be_rejected }
   end
 
   context "loading an inventory" do
@@ -50,11 +50,11 @@ describe RedstoneBot::WindowTracker do
       inventory_window = subject.inventory_window
     
       subject << RedstoneBot::Packet::SetWindowItems.create(0, items)
-      subject.inventory.should_not be
+      expect(subject.inventory).not_to be
       
       subject << RedstoneBot::Packet::SetSlot.create(-1, -1, nil)  # set the cursor
-      subject.inventory.should be
-      subject.usable_window.should == subject.inventory_window
+      expect(subject.inventory).to be
+      expect(subject.usable_window).to eq(subject.inventory_window)
       
       # The server will actually send packets after this, but they are redundant so we just ignore
       # them at a low level in WindowTracker.
@@ -62,12 +62,12 @@ describe RedstoneBot::WindowTracker do
       subject.inventory_window.spots[44].item = nil
       subject << RedstoneBot::Packet::SetSlot.create(0, 43, RedstoneBot::ItemType::Melon * 2)
       subject << RedstoneBot::Packet::SetSlot.create(0, 44, RedstoneBot::ItemType::MushroomSoup * 2)
-      subject.inventory_window.spots[43].should be_empty
-      subject.inventory_window.spots[44].should be_empty
+      expect(subject.inventory_window.spots[43]).to be_empty
+      expect(subject.inventory_window.spots[44]).to be_empty
       
       # But if they send a non-redundant packet then we start paying attention.
       subject << RedstoneBot::Packet::SetSlot.create(0, 43, RedstoneBot::ItemType::Melon * 20)
-      subject.inventory_window.spots[43].item.should == RedstoneBot::ItemType::Melon * 20
+      expect(subject.inventory_window.spots[43].item).to eq(RedstoneBot::ItemType::Melon * 20)
     end
   end
   
@@ -79,19 +79,19 @@ describe RedstoneBot::WindowTracker do
     end
 
     it "has an open ChestWindow" do
-      subject.windows[1].should be_a RedstoneBot::ChestWindow
+      expect(subject.windows[1]).to be_a RedstoneBot::ChestWindow
     end
     
     it "has an open ChestWindow with 27 chest_spots" do
-      subject.windows[1].should have(27).chest_spots
+      expect(subject.windows[1].chest_spots.size).to eq(27)
     end
     
     it "doesn't have a chest model yet" do
-      subject.chest_spots.should == nil
+      expect(subject.chest_spots).to eq(nil)
     end
     
     it "has no usable window (waiting for chest to load)" do
-      subject.usable_window.should be_nil
+      expect(subject.usable_window).to be_nil
     end
   end
   
@@ -109,11 +109,11 @@ describe RedstoneBot::WindowTracker do
     end
     
     it "has a chest model with 54 spots" do
-      subject.should have(54).chest_spots
+      expect(subject.chest_spots.size).to eq(54)
     end
     
     it "has a usuable window" do
-      subject.usable_window.should be_a RedstoneBot::ChestWindow
+      expect(subject.usable_window).to be_a RedstoneBot::ChestWindow
     end
     
   end
@@ -121,7 +121,7 @@ describe RedstoneBot::WindowTracker do
   it "responds to SetSlot packets for the cursor after SetWindowItems packets" do
     server_set_items [nil]*45
     subject << RedstoneBot::Packet::SetSlot.create(-1, -1, RedstoneBot::ItemType::RedstoneRepeater * 10)
-    subject.cursor_spot.item.should == RedstoneBot::ItemType::RedstoneRepeater * 10
+    expect(subject.cursor_spot.item).to eq(RedstoneBot::ItemType::RedstoneRepeater * 10)
   end
   
   context "after the inventory and a double chest is loaded" do
@@ -147,11 +147,11 @@ describe RedstoneBot::WindowTracker do
     end
     
     it "has a chest model with 54 spots" do
-      subject.should have(54).chest_spots
+      expect(subject.chest_spots.size).to eq(54)
     end
     
     it "has no item on the cursor" do
-      subject.cursor_spot.should be_empty
+      expect(subject.cursor_spot).to be_empty
     end
     
     context "after left clicking on a empty spot in the chest" do
@@ -161,15 +161,15 @@ describe RedstoneBot::WindowTracker do
       end
       
       it "the spot is still empty" do
-        spot.should be_empty
+        expect(spot).to be_empty
       end
       
       it "the cursor is still empty" do
-        subject.cursor_spot.should be_empty
+        expect(subject.cursor_spot).to be_empty
       end
       
       it "is synced because no clicks happened" do
-        subject.should be_synced
+        expect(subject).to be_synced
       end
     end
     
@@ -181,31 +181,31 @@ describe RedstoneBot::WindowTracker do
       
       it "sent the correct ClickWindow packet" do
         packet = client.sent_packets.last
-        packet.should be_a RedstoneBot::Packet::ClickWindow
-        packet.spot_id.should == 0
-        packet.mouse_button.should == :left
-        packet.shift.should == false
-        packet.clicked_item.should == RedstoneBot::ItemType::Flint*30
+        expect(packet).to be_a RedstoneBot::Packet::ClickWindow
+        expect(packet.spot_id).to eq(0)
+        expect(packet.mouse_button).to eq(:left)
+        expect(packet.shift).to eq(false)
+        expect(packet.clicked_item).to eq(RedstoneBot::ItemType::Flint*30)
       end
       
       it "the spot is empty" do
-        spot.should be_empty
+        expect(spot).to be_empty
       end
       
       it "the cursor has 30 Flint" do
-        subject.cursor_spot.item.should == RedstoneBot::ItemType::Flint*30
+        expect(subject.cursor_spot.item).to eq(RedstoneBot::ItemType::Flint*30)
       end
       
-      it { should_not be_synced }
-      it { should_not be_rejected }
+      it { is_expected.not_to be_synced }
+      it { is_expected.not_to be_rejected }
       
       context "and confirming the transaction" do
         before do
           server_confirm_transaction
         end
         
-        it { should be_synced }
-        it { should_not be_rejected }
+        it { is_expected.to be_synced }
+        it { is_expected.not_to be_rejected }
       end
       
       context "and rejecting the transaction" do
@@ -213,15 +213,15 @@ describe RedstoneBot::WindowTracker do
           server_reject_transaction
         end
         
-        it { should be_rejected }
-        it { should_not be_synced }
+        it { is_expected.to be_rejected }
+        it { is_expected.not_to be_synced }
         
         it "sends the rejection packet back to the server" do
           packet = client.sent_packets[-1]
-          packet.should be_a RedstoneBot::Packet::ConfirmTransaction
-          packet.window_id.should == window_id
-          packet.action_number.should == 1
-          packet.accepted.should == false
+          expect(packet).to be_a RedstoneBot::Packet::ConfirmTransaction
+          expect(packet.window_id).to eq(window_id)
+          expect(packet.action_number).to eq(1)
+          expect(packet.accepted).to eq(false)
         end
         
         context "and setting the window items" do
@@ -230,28 +230,28 @@ describe RedstoneBot::WindowTracker do
           end
           
           # We still need to wait for the cursor to be set
-          it { should be_rejected }
-          it { should_not be_synced }
+          it { is_expected.to be_rejected }
+          it { is_expected.not_to be_synced }
           
           context "and setting the cursor" do
             before do
               server_set_cursor nil
             end
             
-            it { should be_synced }
-            it { should_not be_rejected }
+            it { is_expected.to be_synced }
+            it { is_expected.not_to be_rejected }
             
             it "ignores redundant packets" do
               spot = subject.inventory.hotbar_spots[0]
               spot.item = nil
               server_set_spot spot, RedstoneBot::ItemType::Wood * 2
-              spot.should be_empty   # the packet was ignored
+              expect(spot).to be_empty   # the packet was ignored
             end
             
             it "pays attention to non-redundant packets" do
               spot = subject.inventory.hotbar_spots[0]
               server_set_spot spot, RedstoneBot::ItemType::Wood * 30
-              spot.item.should == RedstoneBot::ItemType::Wood * 30  
+              expect(spot.item).to eq(RedstoneBot::ItemType::Wood * 30)  
             end
           end
         end
@@ -264,7 +264,7 @@ describe RedstoneBot::WindowTracker do
         end
         
         # The chest window was out of sync but the inventory should still be in sync, I guess.
-        it { should be_synced }
+        it { is_expected.to be_synced }
       end
     end
     
@@ -274,7 +274,7 @@ describe RedstoneBot::WindowTracker do
       end
       
       it "window is still loaded" do
-        subject.usable_window.should be_loaded
+        expect(subject.usable_window).to be_loaded
       end
     end
     
@@ -316,8 +316,8 @@ describe RedstoneBot::WindowTracker do
       end
       
       it "doesn't do anything" do
-        client.should have(0).sent_packets
-        subject.should be_synced
+        expect(client.sent_packets.size).to eq(0)
+        expect(subject).to be_synced
       end
     end
     
@@ -329,21 +329,21 @@ describe RedstoneBot::WindowTracker do
       end
       
       it "puts it in the first available boring spot" do
-        subject.inventory.normal_spots[1].item.should == RedstoneBot::ItemType::DiamondSword * 1
+        expect(subject.inventory.normal_spots[1].item).to eq(RedstoneBot::ItemType::DiamondSword * 1)
       end
       
       it "removes it from that spot" do
-        subject.inventory.hotbar_spots[8].should be_empty
+        expect(subject.inventory.hotbar_spots[8]).to be_empty
       end
       
       it "sends the right packet" do
         packet = client.sent_packets.last
-        packet.should be_a RedstoneBot::Packet::ClickWindow
-        packet.window_id.should == 0
-        packet.spot_id.should == 44
-        packet.mouse_button.should == :left
-        packet.shift.should == true
-        packet.clicked_item.should == RedstoneBot::ItemType::DiamondSword * 1
+        expect(packet).to be_a RedstoneBot::Packet::ClickWindow
+        expect(packet.window_id).to eq(0)
+        expect(packet.spot_id).to eq(44)
+        expect(packet.mouse_button).to eq(:left)
+        expect(packet.shift).to eq(true)
+        expect(packet.clicked_item).to eq(RedstoneBot::ItemType::DiamondSword * 1)
       end
     end
     
@@ -362,17 +362,17 @@ describe RedstoneBot::WindowTracker do
       end
 
       it "conserves the quantity of coal" do
-        subject.inventory.spots.quantity(RedstoneBot::ItemType::CoalItem).should == @initial_coal_quantity
+        expect(subject.inventory.spots.quantity(RedstoneBot::ItemType::CoalItem)).to eq(@initial_coal_quantity)
       end
             
       it "removes it from that spot" do
-        subject.inventory.hotbar_spots[8].should be_empty
+        expect(subject.inventory.hotbar_spots[8]).to be_empty
       end
       
       it "distributes it first to stackable spots and then to empty spots" do
-        subject.inventory.normal_spots[0].item.should == RedstoneBot::ItemType::CoalItem * 20
-        subject.inventory.normal_spots[2].item.should == RedstoneBot::ItemType::CoalItem * 64
-        subject.inventory.normal_spots[4].item.should == RedstoneBot::ItemType::CoalItem * 64
+        expect(subject.inventory.normal_spots[0].item).to eq(RedstoneBot::ItemType::CoalItem * 20)
+        expect(subject.inventory.normal_spots[2].item).to eq(RedstoneBot::ItemType::CoalItem * 64)
+        expect(subject.inventory.normal_spots[4].item).to eq(RedstoneBot::ItemType::CoalItem * 64)
       end
     end
     
@@ -391,15 +391,15 @@ describe RedstoneBot::WindowTracker do
       end
       
       it "conserves the quantity of coal" do
-        subject.inventory.spots.quantity(RedstoneBot::ItemType::CoalItem).should == @initial_coal_quantity
+        expect(subject.inventory.spots.quantity(RedstoneBot::ItemType::CoalItem)).to eq(@initial_coal_quantity)
       end
       
       it "removes 6 from the clicked spot" do
-        subject.inventory.normal_spots[4].item.count.should == 44 - 6
+        expect(subject.inventory.normal_spots[4].item.count).to eq(44 - 6)
       end
       
       it "fills up the hotbar" do
-        subject.inventory.hotbar_spots.items.should == [RedstoneBot::ItemType::CoalItem * 64] * 9
+        expect(subject.inventory.hotbar_spots.items).to eq([RedstoneBot::ItemType::CoalItem * 64] * 9)
       end
     end
   end
@@ -422,7 +422,7 @@ describe RedstoneBot::WindowTracker do
       
       it "swaps" do
         subject.swap spot1, spot2
-        [spot1.item, spot2.item].should == [RedstoneBot::ItemType::Flint*30, RedstoneBot::ItemType::IronSword * 1]
+        expect([spot1.item, spot2.item]).to eq([RedstoneBot::ItemType::Flint*30, RedstoneBot::ItemType::IronSword * 1])
       end
     end
     

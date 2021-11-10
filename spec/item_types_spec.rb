@@ -4,55 +4,55 @@ require 'redstone_bot/protocol/item_types'
 describe RedstoneBot::ItemType do
   it "can flexibly figure out what block type you want" do
     glass = RedstoneBot::ItemType::Glass
-    described_class.from("glass").should == glass
-    described_class.from("20").should == glass
-    described_class.from("0x14").should == glass
-    described_class.from(20).should == glass
-    described_class.from(nil).should == nil
-    described_class.from("nil").should == nil
-    described_class.from("diamond").should == RedstoneBot::ItemType::Diamond
-    described_class.from("diamond ore").should == RedstoneBot::ItemType::DiamondOre
+    expect(described_class.from("glass")).to eq(glass)
+    expect(described_class.from("20")).to eq(glass)
+    expect(described_class.from("0x14")).to eq(glass)
+    expect(described_class.from(20)).to eq(glass)
+    expect(described_class.from(nil)).to eq(nil)
+    expect(described_class.from("nil")).to eq(nil)
+    expect(described_class.from("diamond")).to eq(RedstoneBot::ItemType::Diamond)
+    expect(described_class.from("diamond ore")).to eq(RedstoneBot::ItemType::DiamondOre)
   end
   
   it "has items also" do
-    described_class.from(256).should == RedstoneBot::ItemType::IronShovel
+    expect(described_class.from(256)).to eq(RedstoneBot::ItemType::IronShovel)
   end
   
   it "avoids ambiguous names" do
     names = described_class.instance_variable_get(:@types_by_string).keys
-    names.size.should > 100
+    expect(names.size).to be > 100
     names.each do |name|
       next if ["diamond", "emerald"].include?(name)
-      names.should_not include name + "block"
-      names.should_not include name + "item"
+      expect(names).not_to include name + "block"
+      expect(names).not_to include name + "item"
     end
   end
   
   it "has a nice matcher" do
     s = double("something")
-    s.stub(:item_type) { RedstoneBot::ItemType::IronShovel}
-    RedstoneBot::ItemType::IronShovel.should === s
-    RedstoneBot::ItemType::IronShovel.should === RedstoneBot::ItemType::IronShovel
-    RedstoneBot::ItemType::IronShovel.should === RedstoneBot::Item.new(RedstoneBot::ItemType::IronShovel, 44, 1, nil)
-    RedstoneBot::ItemType::WheatItem.should === RedstoneBot::Item.new(RedstoneBot::ItemType::WheatItem)
+    allow(s).to receive(:item_type) { RedstoneBot::ItemType::IronShovel}
+    expect(RedstoneBot::ItemType::IronShovel).to be === s
+    expect(RedstoneBot::ItemType::IronShovel).to be === RedstoneBot::ItemType::IronShovel
+    expect(RedstoneBot::ItemType::IronShovel).to be === RedstoneBot::Item.new(RedstoneBot::ItemType::IronShovel, 44, 1, nil)
+    expect(RedstoneBot::ItemType::WheatItem).to be === RedstoneBot::Item.new(RedstoneBot::ItemType::WheatItem)
   end
   
   it "tells you if it is a block or not" do
-    RedstoneBot::ItemType::DiamondOre.should be_block
-    RedstoneBot::ItemType::Diamond.should_not be_block
+    expect(RedstoneBot::ItemType::DiamondOre).to be_block
+    expect(RedstoneBot::ItemType::Diamond).not_to be_block
   end
   
   it "tells you if it is solid or not" do
-    RedstoneBot::ItemType::CoalOre.should be_solid
-    RedstoneBot::ItemType::WheatBlock.should_not be_solid
+    expect(RedstoneBot::ItemType::CoalOre).to be_solid
+    expect(RedstoneBot::ItemType::WheatBlock).not_to be_solid
   end
   
   it "tells you how stackable items are" do
-    RedstoneBot::ItemType::CoalOre.max_stack.should == 64
-    RedstoneBot::ItemType::SignPost.max_stack.should == 16
-    RedstoneBot::ItemType::IronShovel.max_stack.should == 1
+    expect(RedstoneBot::ItemType::CoalOre.max_stack).to eq(64)
+    expect(RedstoneBot::ItemType::SignPost.max_stack).to eq(16)
+    expect(RedstoneBot::ItemType::IronShovel.max_stack).to eq(1)
   
-    RedstoneBot::ItemType::SignPost.should be_stackable
-    RedstoneBot::ItemType::IronShovel.should_not be_stackable
+    expect(RedstoneBot::ItemType::SignPost).to be_stackable
+    expect(RedstoneBot::ItemType::IronShovel).not_to be_stackable
   end
 end

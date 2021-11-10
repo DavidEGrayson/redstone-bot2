@@ -5,11 +5,11 @@ require 'redstone_bot/protocol/item_types'
 describe RedstoneBot::Spot do
   context "when initialized without arguments" do
     it "is empty" do
-      subject.should be_empty
+      expect(subject).to be_empty
     end
     
     it "returns nil for item_type" do
-      subject.item_type.should == nil
+      expect(subject.item_type).to eq(nil)
     end
   end
 
@@ -17,16 +17,16 @@ describe RedstoneBot::Spot do
     subject { described_class.new(RedstoneBot::ItemType::DiamondBlock * 1) }
     
     it "stores the data" do
-      subject.item.should == RedstoneBot::ItemType::DiamondBlock * 1
+      expect(subject.item).to eq(RedstoneBot::ItemType::DiamondBlock * 1)
     end
     
     it "is not empty" do
-      subject.should_not be_empty
+      expect(subject).not_to be_empty
     end
     
     it "delegates item_type to the item" do
       subject.item = RedstoneBot::ItemType::DiamondBlock * 1
-      subject.item_type.should == RedstoneBot::ItemType::DiamondBlock
+      expect(subject.item_type).to eq(RedstoneBot::ItemType::DiamondBlock)
     end
   end
 
@@ -35,10 +35,10 @@ describe RedstoneBot::Spot do
   end
   
   it "compares by identity, not anything else" do
-    described_class.new.should_not == described_class.new
+    expect(described_class.new).not_to eq(described_class.new)
     
     spot = described_class.new
-    spot.should == spot
+    expect(spot).to eq(spot)
   end
   
 end

@@ -24,43 +24,44 @@ describe RedstoneBot::Pathfinder do
  end
 
   it "is a class" do
-    RedstoneBot::Pathfinder.should be_a_kind_of Class
+    expect(RedstoneBot::Pathfinder).to be_a_kind_of Class
   end
   
   it "knows the start point" do
-    pathfinder.start.should == RedstoneBot::Coords[1,71,1]
+    expect(pathfinder.start).to eq(RedstoneBot::Coords[1,71,1])
   end
   
   it "can tell if a node is a goal" do
-    pathfinder.is_goal?(RedstoneBot::Coords[1, 71, 1]).should be false
-    pathfinder.is_goal?(RedstoneBot::Coords[5, 71, 8]).should be true
+    expect(pathfinder.is_goal?(RedstoneBot::Coords[1, 71, 1])).to be false
+    expect(pathfinder.is_goal?(RedstoneBot::Coords[5, 71, 8])).to be true
   end
   
   it "can calculate costs between neighboring points" do
-    pathfinder.cost(RedstoneBot::Coords[1,71,1], RedstoneBot::Coords[1,71,2]).should == 1
+    expect(pathfinder.cost(RedstoneBot::Coords[1,71,1], RedstoneBot::Coords[1,71,2])).to eq(1)
   end
   
   it "can estimate costs between any points" do
-    pathfinder.heuristic_cost_estimate(RedstoneBot::Coords[4,71,7]).should == 2
+    expect(pathfinder.heuristic_cost_estimate(RedstoneBot::Coords[4,71,7])).to eq(2)
   end
   
   it "can find the neighbors of a point on a flat plane" do
-    Set.new(pathfinder.neighbors(RedstoneBot::Coords[1,71,1])).should ==
+    expect(Set.new(pathfinder.neighbors(RedstoneBot::Coords[1,71,1]))).to eq(
       Set.new([
                   [1, 71, 2], 
       [0, 71, 1], [1, 72, 1], [2, 71, 1],
                   [1, 71, 0],
       ].collect { |a| RedstoneBot::Coords[*a] })
+    )
   end
   
   it "can find paths" do
     path = pathfinder.find_path
-    path.first.should == pathfinder.start
+    expect(path.first).to eq(pathfinder.start)
     path.each_cons(2) do |a, b|
-      pathfinder.distance(a, b).should < 2
+      expect(pathfinder.distance(a, b)).to be < 2
     end
-    path.last.should == pathfinder.goal
-    path.size.should == 12
+    expect(path.last).to eq(pathfinder.goal)
+    expect(path.size).to eq(12)
     # path.each { |n| n.inspect }
   end
   

@@ -8,9 +8,9 @@ describe RedstoneBot::Falling do
     
     bot.body.default_updater.run   # should delay
     bot.body.default_updater.run   # should call fall_update and then delay
-    bot.body.position.should be_within(0.001).of RedstoneBot::Coords[0, 69.5, 0]
+    expect(bot.body.position).to be_within(0.001).of RedstoneBot::Coords[0, 69.5, 0]
 
     bot.body.default_updater.run
-    bot.body.position.should be_within(0.001).of RedstoneBot::Coords[0, 69.0, 0]
+    expect(bot.body.position).to be_within(0.001).of RedstoneBot::Coords[0, 69.0, 0]
   end
 end
