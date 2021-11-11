@@ -31,7 +31,7 @@ module RedstoneBot
 
     def self.receive(stream)
       tid = stream.read_byte
-      packet_class = types[tid] or raise UnknownPacketError, type
+      packet_class = types[tid] or raise UnknownPacketError, tid
       packet_class.receive_data(stream)
     end
 
