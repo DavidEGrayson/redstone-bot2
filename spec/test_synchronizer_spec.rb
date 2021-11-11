@@ -8,11 +8,11 @@ describe TestSynchronizer do
       let(:original_method) { RedstoneBot::Synchronizer.instance_method(method_name) }
 
       it "exists" do
-        test_method.should be
+        expect(test_method).to be
       end
     
       it "has the same signature as the original method" do
-        test_method.parameters.should == original_method.parameters
+        expect(test_method.parameters).to eq(original_method.parameters)
       end
     end
   end

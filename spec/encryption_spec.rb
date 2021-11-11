@@ -15,7 +15,7 @@ describe RedstoneBot::EncryptionStream do
   
   it "works" do
     @enc_stream.write "hey there"
-    @writeable.string.should == "\x73\x83\x80\x83\x08\x35\x2D\xDF\xE3"
+    expect(@writeable.string).to eq("\x73\x83\x80\x83\x08\x35\x2D\xDF\xE3")
   end
 end
 
@@ -30,6 +30,6 @@ describe "EncryptionStream and DecryptionStream" do
   it "work together" do
     packet = "David"*100
     @enc_stream.write packet
-    @dec_stream.read(packet.size).should == packet
+    expect(@dec_stream.read(packet.size)).to eq(packet)
   end
 end

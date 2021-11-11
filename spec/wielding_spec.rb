@@ -20,22 +20,22 @@ describe RedstoneBot::Wielding do
   end
   
   it "is set up correctly" do
-    @bot.window_tracker.inventory_window.should be_loaded
-    @bot.window_tracker.inventory.should be
-    @bot.inventory.should be
+    expect(@bot.window_tracker.inventory_window).to be_loaded
+    expect(@bot.window_tracker.inventory).to be
+    expect(@bot.inventory).to be
   end
   
   it "initially no spot is wielded" do
-    bot.wielded_spot.should == nil
+    expect(bot.wielded_spot).to eq(nil)
   end
   
   it "initially wielded_item is nil" do
-    bot.wielded_item.should == nil
+    expect(bot.wielded_item).to eq(nil)
   end
   
   it "cannot wield anything" do
     # we shouldn't try to wield anything until we get the HeldItemChange packet from the server; too confusing
-    bot.wield(hotbar_spots[3]).should == false
+    expect(bot.wield(hotbar_spots[3])).to eq(false)
   end
 
   context "after receiving a HeldItemChange packet (1)" do
@@ -44,18 +44,18 @@ describe RedstoneBot::Wielding do
     end
   
     it "wielded_spot is set correctly" do
-      bot.wielded_spot.should == hotbar_spots[1]
+      expect(bot.wielded_spot).to eq(hotbar_spots[1])
     end
  
     it "wielded_item is set correctly" do
-      bot.wielded_item.should == RedstoneBot::ItemType::Bread * 44
+      expect(bot.wielded_item).to eq(RedstoneBot::ItemType::Bread * 44)
     end
     
     describe :wielded_item_drop do
       it "just sends the right PlayerDigging packet" do
         @bot.wielded_item_drop
         packet = @client.sent_packets.last
-        packet.should be_a RedstoneBot::Packet::PlayerDigging
+        expect(packet).to be_a RedstoneBot::Packet::PlayerDigging
       end
     end
 
@@ -68,27 +68,27 @@ describe RedstoneBot::Wielding do
     
     shared_examples_for "it succeeds trivially" do
       it "doesn't send any packets and returns true" do
-        @client.should_not_receive :send_packet
-        @bot.wield(wield_spec).should == true
-        @bot.wielded_spot.should == hotbar_spots[0]
-        @bot.window_tracker.should be_synced
+        expect(@client).not_to receive :send_packet
+        expect(@bot.wield(wield_spec)).to eq(true)
+        expect(@bot.wielded_spot).to eq(hotbar_spots[0])
+        expect(@bot.window_tracker).to be_synced
       end    
     end
 
     shared_examples_for "it switches to the second hotbar spot" do
       it "returns true and sends one packet" do
-        @client.should_receive(:send_packet).with(RedstoneBot::Packet::HeldItemChange.new(1))
-        @bot.wield(wield_spec).should == true
-        @bot.wielded_spot.should == hotbar_spots[1]
-        @bot.window_tracker.should be_synced
+        expect(@client).to receive(:send_packet).with(RedstoneBot::Packet::HeldItemChange.new(1))
+        expect(@bot.wield(wield_spec)).to eq(true)
+        expect(@bot.wielded_spot).to eq(hotbar_spots[1])
+        expect(@bot.window_tracker).to be_synced
       end
     end
     
     shared_examples_for "it fails" do
       it "returns false and doesn't send any packets" do
-        @client.should_not_receive(:send_packets)
-        @bot.wield(wield_spec).should == false
-        @bot.window_tracker.should be_synced
+        expect(@client).not_to receive(:send_packets)
+        expect(@bot.wield(wield_spec)).to eq(false)
+        expect(@bot.window_tracker).to be_synced
       end
     end
     
@@ -135,11 +135,11 @@ describe RedstoneBot::Wielding do
     context "when passed an item type not in the hotbar" do
       let(:wield_spec) { RedstoneBot::ItemType::IronShovel }
       it "swaps two spots" do
-        @client.should_receive(:send_packet).exactly(3).times # left click, left click, change held item
-        @bot.wield(wield_spec).should == true
-        @bot.wielded_spot.should == hotbar_spots[2]
-        @bot.wielded_item.should == RedstoneBot::ItemType::IronShovel * 1
-        @bot.window_tracker.should_not be_synced
+        expect(@client).to receive(:send_packet).exactly(3).times # left click, left click, change held item
+        expect(@bot.wield(wield_spec)).to eq(true)
+        expect(@bot.wielded_spot).to eq(hotbar_spots[2])
+        expect(@bot.wielded_item).to eq(RedstoneBot::ItemType::IronShovel * 1)
+        expect(@bot.window_tracker).not_to be_synced
       end
     end
     
@@ -151,9 +151,9 @@ describe RedstoneBot::Wielding do
       end
       
       it "swaps two spots" do
-        @client.should_receive(:send_packet).exactly(3).times # left click, left click, left click
-        @bot.wield(wield_spec).should == true
-        @bot.window_tracker.should_not be_synced
+        expect(@client).to receive(:send_packet).exactly(3).times # left click, left click, left click
+        expect(@bot.wield(wield_spec)).to eq(true)
+        expect(@bot.window_tracker).not_to be_synced
       end
     end
     
@@ -165,9 +165,9 @@ describe RedstoneBot::Wielding do
       end
       
       it "moves an item out of the hotbar" do
-        @client.should_receive(:send_packet).exactly(2).times # left click, left click
-        @bot.wield(wield_spec).should == true
-        @bot.window_tracker.should_not be_synced      
+        expect(@client).to receive(:send_packet).exactly(2).times # left click, left click
+        expect(@bot.wield(wield_spec)).to eq(true)
+        expect(@bot.window_tracker).not_to be_synced      
       end
     end
     

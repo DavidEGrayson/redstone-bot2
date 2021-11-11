@@ -27,17 +27,17 @@ describe RedstoneBot::WindowManipulation do
       let(:dump_spec) { RedstoneBot::ItemType::CoalItem }
 
       it "dumps all spots matching that item type" do
-        @client.should_receive(:send_packet).exactly(4).times  # 4 clicks
-        @bot.dump(dump_spec).should == nil
-        @bot.inventory.general_spots.quantity(RedstoneBot::ItemType::CoalItem).should == 0
+        expect(@client).to receive(:send_packet).exactly(4).times  # 4 clicks
+        expect(@bot.dump(dump_spec)).to eq(nil)
+        expect(@bot.inventory.general_spots.quantity(RedstoneBot::ItemType::CoalItem)).to eq(0)
       end
     end
   end
 
   describe :dump do
     it "dumps all non-empty spots" do
-      @client.should_receive(:send_packet).exactly(6).times  # 6 clicks
-      @bot.dump_all.should == nil
+      expect(@client).to receive(:send_packet).exactly(6).times  # 6 clicks
+      expect(@bot.dump_all).to eq(nil)
     end
   end
 
@@ -50,20 +50,20 @@ describe RedstoneBot::WindowManipulation do
       it "sends the animation packet" do
         # almost not worth testing
         packet = @client.sent_packets[-2]
-        packet.eid.should == @client.eid
-        packet.animation.should == 1
+        expect(packet.eid).to eq(@client.eid)
+        expect(packet.animation).to eq(1)
       end
 
       it "sends the right packet to open the chest" do
         packet = @client.sent_packets[-1]
-        packet.should be_a RedstoneBot::Packet::PlayerBlockPlacement
-        packet.coords.should == RedstoneBot::Coords[8, 70, 13]
-        packet.direction.should == 1  # actually I'm not sure what this is supposed to be, but 1 works
+        expect(packet).to be_a RedstoneBot::Packet::PlayerBlockPlacement
+        expect(packet.coords).to eq(RedstoneBot::Coords[8, 70, 13])
+        expect(packet.direction).to eq(1)  # actually I'm not sure what this is supposed to be, but 1 works
       end
     end
 
     it "when passed the coordinates of a non-chest block raises an exception" do
-      lambda { @bot.chest_open_start RedstoneBot::Coords[8, 70, 19] }.should raise_error
+      expect { @bot.chest_open_start RedstoneBot::Coords[8, 70, 19] }.to raise_error
     end
 
   end
@@ -77,7 +77,7 @@ describe RedstoneBot::WindowManipulation do
     end
 
     it "has not yet yielded" do
-      @block_started.should be_nil
+      expect(@block_started).to be_nil
     end
 
     context "and the server loads the window" do
@@ -87,16 +87,16 @@ describe RedstoneBot::WindowManipulation do
       end
 
       it "yields to the block" do
-        @bot.window_tracker.chest_spots.should be
+        expect(@bot.window_tracker.chest_spots).to be
         @bot.brain.run
-        @block_started.should == true
+        expect(@block_started).to eq(true)
       end
 
       context "and the block returns" do
         it "closes the window" do
           @bot.brain.run
-          @bot.brain.should_not be_alive
-          @bot.window_tracker.chest_spots.should be_nil
+          expect(@bot.brain).not_to be_alive
+          expect(@bot.window_tracker.chest_spots).to be_nil
         end
       end
     end

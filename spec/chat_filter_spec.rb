@@ -16,12 +16,12 @@ describe RedstoneBot::ChatFilter do
   end
 
   it "should pass all Packet::ChatMessages by default" do
-    @receiver.should_receive :packet
+    expect(@receiver).to receive :packet
     @chatter << player_chat("Elavid", "wazzup")
   end
   
   it "should reject objects other than Packet::ChatMessage" do
-    @receiver.should_not_receive :packet
+    expect(@receiver).not_to receive :packet
     @chatter << RedstoneBot::Packet::KeepAlive.new
   end
   
@@ -31,12 +31,12 @@ describe RedstoneBot::ChatFilter do
     end
   
     it "rejects messages from self" do
-      @receiver.should_not_receive :packet
+      expect(@receiver).not_to receive :packet
       @chatter << player_chat(@chatter.username, "hey")
     end
 
     it "passes messages from others" do
-      @receiver.should_receive :packet
+      expect(@receiver).to receive :packet
       @chatter << player_chat("Elavid", "hey")
     end
   end
@@ -47,17 +47,17 @@ describe RedstoneBot::ChatFilter do
     end
     
     it "rejects messages from others" do
-      @receiver.should_not_receive :packet
+      expect(@receiver).not_to receive :packet
       @chatter << player_chat("RyanTM", "stuff")
     end
     
     it "passes messages from that user" do    
-      @receiver.should_receive :packet
+      expect(@receiver).to receive :packet
       @chatter << player_chat("Elavid", "do something")
     end
         
     it "rejects non-player chats" do
-      @receiver.should_not_receive :packet
+      expect(@receiver).not_to receive :packet
       @chatter << ChatMessage.new("DavidBot joined the game.")
     end
   end
@@ -68,12 +68,12 @@ describe RedstoneBot::ChatFilter do
     end
     
     it "rejects non-player chats" do
-      @receiver.should_not_receive :packet
+      expect(@receiver).not_to receive :packet
       @chatter << ChatMessage.new("DavidBot joined the game.")
     end
     
     it "passes player chats" do
-      @receiver.should_receive :packet
+      expect(@receiver).to receive :packet
       @chatter << player_chat("iprefermuffins", "stuff")
     end
   end
@@ -84,7 +84,7 @@ describe RedstoneBot::ChatFilter do
     end
     
     it "changes player chats that match the alias" do
-      @receiver.should_receive(:packet).with player_chat("Elavid", "great")
+      expect(@receiver).to receive(:packet).with player_chat("Elavid", "great")
       @chatter << player_chat("Elavid", "good")
     end
   end

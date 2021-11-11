@@ -20,7 +20,7 @@ end
 describe RedstoneBot::SimpleCache do
   before do
     @calc = double("data")
-    @calc.stub(:calc) { |n| n.succ if n }
+    allow(@calc).to receive(:calc) { |n| n.succ if n }
     @sender = TestChangeSource.new
     @cache = described_class.new(@sender) do |id|
       @calc.calc(id)
@@ -28,24 +28,24 @@ describe RedstoneBot::SimpleCache do
   end
   
   it "caches calculation results" do
-    @calc.should_receive(:calc).once.with(8)
+    expect(@calc).to receive(:calc).once.with(8)
     3.times { @cache[8] }
   end
   
   it "caches nil calculation results" do
-    @calc.should_receive(:calc).once.with(false)
+    expect(@calc).to receive(:calc).once.with(false)
     3.times { @cache[false] }
   end
   
   it "updates the cache when there is a change" do
-    @calc.should_receive(:calc).twice.with(3)
+    expect(@calc).to receive(:calc).twice.with(3)
     3.times { @cache[3] }
     @sender << 3
     3.times { @cache[3] }    
   end
   
   it "clears the cache" do
-    @calc.should_receive(:calc).twice.with(3)
+    expect(@calc).to receive(:calc).twice.with(3)
     3.times { @cache[3] }
     @cache.clear
     3.times { @cache[3] }    

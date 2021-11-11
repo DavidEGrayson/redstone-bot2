@@ -6,7 +6,7 @@ describe TestBot do
   end
 
   it "does not use any real threads" do
-    Thread.list.should have(1).items
+    expect(Thread.list.size).to eq(1)
   end
   
   it "has an awesome wait_until method" do
@@ -22,11 +22,11 @@ describe TestBot do
 
     3.times do
       @bot.brain.run
-      @bot.brain.should be_alive
+      expect(@bot.brain).to be_alive
     end
     
     @foo = true
     @bot.brain.run
-    @bot.brain.should_not be_alive
+    expect(@bot.brain).not_to be_alive
   end
 end

@@ -5,17 +5,17 @@ require 'redstone_bot/protocol/pack'
 
 shared_examples_for "equates" do |name, nbt, data|
   it "correctly decodes #{name}" do
-    test_stream(nbt).read_nbt.should == data
+    expect(test_stream(nbt).read_nbt).to eq(data)
   end
   
   it "correctly encodes #{name}" do
-    encoder.nbt(data).should == nbt.force_encoding("BINARY")
+    expect(encoder.nbt(data)).to eq(nbt.force_encoding("BINARY"))
   end  
 end
 
 shared_examples_for "decodes" do |name, nbt, data|
   it "correctly decodes #{name}" do
-    test_stream(nbt).read_nbt.should == data
+    expect(test_stream(nbt).read_nbt).to eq(data)
   end
 end
 
